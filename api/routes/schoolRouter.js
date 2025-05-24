@@ -3,10 +3,11 @@ const { registerSchool, getAllSchools, loginSchool, updateSchool, getSchoolOwnDa
 const authMiddleware = require('../auth/auth');
 const router = express.Router();
 
-router.post('/register', authMiddleware(['SCHOOL']), registerSchool);
+
+router.post('/register', registerSchool);
 router.get('/all', getAllSchools);
 router.post('/login', loginSchool);
-router.put('/update', authMiddleware(['SCHOOL']), updateSchool); // Changed from 'School' to 'SCHOOL'
-router.get('/fetch-single', authMiddleware(['SCHOOL']), getSchoolOwnData); // Changed from 'School' to 'SCHOOL'
+router.put('/update', authMiddleware(['SCHOOL']), updateSchool);
+router.get('/fetch-single', authMiddleware(['SCHOOL']), getSchoolOwnData);
 
 module.exports = router;

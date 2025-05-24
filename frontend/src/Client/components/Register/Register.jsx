@@ -97,12 +97,14 @@ export default function Register() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
   const [success, setSuccess] = React.useState(null);
+  const [termsAccepted, setTermsAccepted] = React.useState(false); // Added state for terms checkbox
 
   const addImage = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
       setImageUrl(URL.createObjectURL(selectedFile));
       setFile(selectedFile);
+      setError(null); // Clear any previous errors when file is selected
     }
   };
 
@@ -112,6 +114,9 @@ export default function Register() {
   const handleClearFile = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+    if (hiddenFileInputRef.current) {
+      hiddenFileInputRef.current.value = '';
     }
     setFile(null);
     setImageUrl(null);
@@ -138,12 +143,20 @@ export default function Register() {
       setSuccess(null);
 
       try {
+        // Validation checks
         if (!file) {
           setError("School image is required");
           setLoading(false);
           return;
         }
 
+        if (!termsAccepted) {
+          setError("Please accept the Terms and Conditions");
+          setLoading(false);
+          return;
+        }
+
+        // Create FormData
         const fd = new FormData();
         fd.append("image", file);
         fd.append("schoolName", values.schoolName);
@@ -151,7 +164,14 @@ export default function Register() {
         fd.append("ownerName", values.ownerName);
         fd.append("password", values.password);
 
-        await axios.post(
+        console.log("Submitting registration data:", {
+          schoolName: values.schoolName,
+          email: values.email,
+          ownerName: values.ownerName,
+          fileName: file.name
+        });
+
+        const response = await axios.post(
           `${baseApi}/school/register`,
           fd,
           {
@@ -161,12 +181,34 @@ export default function Register() {
           }
         );
 
-        setSuccess("School registered successfully!");
+        console.log("Registration response:", response.data);
+
+        setSuccess("School registered successfully! Redirecting to login...");
+        
+        // Reset form and file after successful registration
         formik.resetForm();
         handleClearFile();
+        setTermsAccepted(false);
+        
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+
       } catch (error) {
         console.error("Registration error:", error);
-        setError(error.response?.data?.message || "Registration failed");
+        
+        // Handle different error scenarios
+        if (error.response) {
+          // Server responded with an error
+          setError(error.response.data?.message || "Registration failed");
+        } else if (error.request) {
+          // Network error
+          setError("Network error. Please check your connection and try again.");
+        } else {
+          // Other errors
+          setError("Registration failed. Please try again.");
+        }
       } finally {
         setLoading(false);
       }
@@ -175,7 +217,7 @@ export default function Register() {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4  sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <Box
           component="form"
           sx={{
@@ -184,7 +226,6 @@ export default function Register() {
             flexDirection: "column",
             margin: "50px",
             justifyContent: "center",
-
             width: "80vw",
             minWidth: '320px',
             maxWidth: '600px',
@@ -193,7 +234,7 @@ export default function Register() {
             boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
             bgcolor: 'background.paper',
           }}
-          className="bg-gray-800 border  border-gray-700"
+          className="bg-gray-800 border border-gray-700"
           noValidate
           autoComplete="off"
           onSubmit={formik.handleSubmit}
@@ -210,8 +251,6 @@ export default function Register() {
 
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
           {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-
-
 
           <TextField
             name="schoolName"
@@ -283,7 +322,6 @@ export default function Register() {
             <Button
               variant="outlined"
               onClick={handleUploadClick}
-
               className="bg-amber-500 flex justify-center items-center h-10 gap-5"
             >
               <CloudUploadIcon />
@@ -324,9 +362,11 @@ export default function Register() {
             <input
               id="terms-checkbox"
               type="checkbox"
-              className="w-4 h-4  text-orange-500 bg-gray-700 border-gray-600 rounded focus:ring-orange-500"
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
+              className="w-4 h-4 text-orange-500 bg-gray-700 border-gray-600 rounded focus:ring-orange-500"
             />
-            <label htmlFor="terms-checkbox" className="ml-2 text-sm  text-gray-300">
+            <label htmlFor="terms-checkbox" className="ml-2 text-sm text-gray-300">
               I agree to the Terms and Conditions and Privacy Policy
             </label>
           </div>
@@ -349,7 +389,7 @@ export default function Register() {
           <div className="mt-4 text-center">
             <Typography variant="body2" className="text-gray-400">
               Already have an account?
-              <span onClick={()=>navigate('/login')} className="text-orange-500 ml-1 cursor-pointer hover:underline">
+              <span onClick={() => navigate('/login')} className="text-orange-500 ml-1 cursor-pointer hover:underline">
                 Login
               </span>
             </Typography>
@@ -365,7 +405,7 @@ export default function Register() {
             <div>
               <button
                 type="button"
-                className=" h-10 w-full inline-flex justify-center items-center py-2 px-4 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-sm font-medium text-gray-300 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                className="h-10 w-full inline-flex justify-center items-center py-2 px-4 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-sm font-medium text-gray-300 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
               >
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
