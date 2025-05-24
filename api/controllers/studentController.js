@@ -1,3 +1,4 @@
+require("dotenv").config();
 const formidable = require("formidable");
 const Student = require("../models/studentModel");
 const path = require("path");
@@ -6,67 +7,79 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 module.exports = {
-  registerStudent: async (req, res) => {
-    try {
-      const form = new formidable.IncomingForm();
-      form.parse(req, async (err, fields, files) => {
-        if (err) {
-          return res
-            .status(400)
-            .json({ success: false, message: "Form parsing error" });
-        }
+registerStudent: async (req, res) => {
+  try {
+    const form = new formidable.IncomingForm();
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Form parsing error" });
+      }
 
-        if (!files.image || !files.image[0]) {
-          return res
-            .status(400)
-            .json({ success: false, message: "Student image is required" });
-        }
+      if (!files.image || !files.image[0]) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Student image is required" });
+      }
 
-        const photo = files.image[0];
-        let filepath = photo.filepath;
-        let originalFilename = photo.originalFilename.replace(/\s+/g, "_");
-        let newPath = path.join(
-          __dirname,
-          process.env.STUDENT_IMAGE_PATH,
-          originalFilename
-        );
-
-        // Create directory if it doesn't exist
-        const dir = path.dirname(newPath);
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
-        }
-
-        let photoData = fs.readFileSync(filepath);
-        fs.writeFileSync(newPath, photoData);
-
-        const newStudent = new Student({
-          school: req.user.schoolId,
-          email: fields.email[0],
-          name: fields.name[0],
-          studentClass: fields.studentClass[0],
-          age: fields.age[0],
-          gender: fields.gender[0],
-          parent: fields.parent[0],
-          parentNum: fields.parentNum[0],
-          studentImg: originalFilename,
-          password: fields.password[0],
-        });
-
-        const savedStudent = await newStudent.save();
-        res.status(200).json({
-          success: true,
-          data: savedStudent,
-          message: "Student is registered Successfully",
-        });
+      const existingStudent = await Student.findOne({
+        email: fields.email[0],
       });
-    } catch (error) {
-      console.error("Register Student error:", error);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal Server Error" });
-    }
-  },
+
+      if (existingStudent) {
+        return res.status(409).json({
+          success: false,
+          message: "A student with this email already exists.",
+        });
+      }
+
+      const photo = files.image[0];
+      let filepath = photo.filepath;
+
+      // Generate unique filename
+      const timestamp = Date.now();
+      const fileExtension = path.extname(photo.originalFilename);
+      const originalName = path
+        .basename(photo.originalFilename, fileExtension)
+        .replace(/\s+/g, "_");
+      const uniqueFilename = `${originalName}_${timestamp}${fileExtension}`;
+
+      // Save to backend uploads directory
+      let newPath = path.join(__dirname, "../uploads/student/", uniqueFilename);
+      const dir = path.dirname(newPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      let photoData = fs.readFileSync(filepath);
+      fs.writeFileSync(newPath, photoData);
+
+      const newStudent = new Student({
+        school: req.user.schoolId,
+        email: fields.email[0],
+        name: fields.name[0],
+        studentClass: fields.studentClass[0],
+        age: fields.age[0],
+        gender: fields.gender[0],
+        parent: fields.parent[0],
+        parentNum: fields.parentNum[0],
+        studentImg: uniqueFilename,
+        password: fields.password[0], // stored as plain-text as per your instruction
+      });
+
+      const savedStudent = await newStudent.save();
+      res.status(200).json({
+        success: true,
+        data: savedStudent,
+        message: "Student is registered Successfully",
+      });
+    });
+  } catch (error) {
+    console.error("Register Student error:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+},
 
   loginStudent: async (req, res) => {
     try {
@@ -226,13 +239,18 @@ module.exports = {
         if (files.image && files.image[0]) {
           const photo = files.image[0];
           let filepath = photo.filepath;
-          let originalFilename = photo.originalFilename.replace(/\s+/g, "_");
+
+          // Generate unique filename
+          const timestamp = Date.now();
+          const fileExtension = path.extname(photo.originalFilename);
+          const originalName = path.basename(photo.originalFilename, fileExtension).replace(/\s+/g, "_");
+          const uniqueFilename = `${originalName}_${timestamp}${fileExtension}`;
 
           // Delete old image if exists
           if (student.studentImg) {
             let oldImagePath = path.join(
               __dirname,
-              process.env.STUDENT_IMAGE_PATH,
+              "../uploads/student/",
               student.studentImg
             );
             if (fs.existsSync(oldImagePath)) {
@@ -242,8 +260,8 @@ module.exports = {
 
           let newPath = path.join(
             __dirname,
-            process.env.STUDENT_IMAGE_PATH,
-            originalFilename
+            "../uploads/student/",
+            uniqueFilename
           );
 
           // Create directory if it doesn't exist
@@ -255,7 +273,7 @@ module.exports = {
           let photoData = fs.readFileSync(filepath);
           fs.writeFileSync(newPath, photoData);
 
-          student.studentImg = originalFilename;
+          student.studentImg = uniqueFilename; // Update the filename
         }
 
         await student.save();

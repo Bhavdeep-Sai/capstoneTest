@@ -468,7 +468,7 @@ export default function Teachers() {
 
     // Set the image preview if available
     if (teacherToEdit.teacherImg) {
-      setEditImageUrl(`/images/uploaded/teacher/${teacherToEdit.teacherImg}`);
+      setEditImageUrl(`${baseApi}/uploads/teacher/${teacherToEdit.teacherImg}`);
     } else {
       setEditImageUrl(null);
     }
@@ -865,7 +865,7 @@ export default function Teachers() {
                   <CardMedia
                     component="img"
                     height="140"
-                    image={`/images/uploaded/teacher/${teacher.teacherImg}`}
+                    image={`${baseApi}/uploads/teacher/${teacher.teacherImg}`}
                     alt={teacher.name}
                   />
                   <CardContent>

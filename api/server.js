@@ -1,9 +1,11 @@
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const cron = require('node-cron');
+const path = require('path');
 const Schedule = require('./models/scheduleModel');
 
 // Routes IMPORT
@@ -24,6 +26,29 @@ app.use(express.urlencoded({ extended: true }));
 const corsOptions = { exposedHeaders: "Authorization" };
 app.use(cors(corsOptions));
 app.use(cookieParser()); // To accept cookies
+
+// Serve static files from uploads directory
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Create uploads directories if they don't exist
+const fs = require('fs');
+const uploadsDir = path.join(__dirname, 'uploads');
+const schoolDir = path.join(uploadsDir, 'school');
+const studentDir = path.join(uploadsDir, 'student');
+const teacherDir = path.join(uploadsDir, 'teacher');
+
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+if (!fs.existsSync(schoolDir)) {
+    fs.mkdirSync(schoolDir, { recursive: true });
+}
+if (!fs.existsSync(studentDir)) {
+    fs.mkdirSync(studentDir, { recursive: true });
+}
+if (!fs.existsSync(teacherDir)) {
+    fs.mkdirSync(teacherDir, { recursive: true });
+}
 
 // Mongodb Connection
 mongoose.connect(process.env.MONGO_URI)
@@ -91,4 +116,5 @@ app.use('/api/notice', noticeRouter);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Uploads directory: ${uploadsDir}`);
 });

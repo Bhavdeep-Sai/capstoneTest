@@ -2,120 +2,126 @@ const formidable = require("formidable");
 const Teacher = require("../models/teacherModel");
 const path = require("path");
 const fs = require("fs");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 module.exports = {
-  registerTeacher: async (req, res) => {
-    try {
-      const form = new formidable.IncomingForm();
-      form.parse(req, async (err, fields, files) => {
-        if (err) {
-          return res
-            .status(400)
-            .json({ success: false, message: "Form parsing error" });
+registerTeacher: async (req, res) => {
+  try {
+    const form = new formidable.IncomingForm();
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Form parsing error" });
+      }
+
+      if (!files.image || !files.image[0]) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Teacher image is required" });
+      }
+
+      // Check for required fields based on the schema
+      const requiredFields = [
+        "email",
+        "name",
+        "qualification",
+        "age",
+        "gender",
+        "password",
+      ];
+      for (const field of requiredFields) {
+        if (!fields[field] || !fields[field][0]) {
+          return res.status(400).json({
+            success: false,
+            message: `${field.charAt(0).toUpperCase() + field.slice(1)} is required`,
+          });
         }
+      }
 
-        if (!files.image || !files.image[0]) {
-          return res
-            .status(400)
-            .json({ success: false, message: "Teacher image is required" });
-        }
-
-        // Check for required fields based on the schema
-        const requiredFields = [
-          "email",
-          "name",
-          "qualification",
-          "age",
-          "gender",
-          "password",
-        ];
-        for (const field of requiredFields) {
-          if (!fields[field] || !fields[field][0]) {
-            return res.status(400).json({
-              success: false,
-              message: `${
-                field.charAt(0).toUpperCase() + field.slice(1)
-              } is required`,
-            });
-          }
-        }
-
-        const photo = files.image[0];
-        let filepath = photo.filepath;
-        let originalFilename = photo.originalFilename.replace(/\s+/g, "_");
-        let newPath = path.join(
-          __dirname,
-          process.env.TEACHER_IMAGE_PATH,
-          originalFilename
-        );
-
-        // Create directory if it doesn't exist
-        const dir = path.dirname(newPath);
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
-        }
-
-        let photoData = fs.readFileSync(filepath);
-        fs.writeFileSync(newPath, photoData);
-
-        // Handle teacherClasses as array
-        let teacherClasses = [];
-        if (fields.teacherClasses && fields.teacherClasses[0]) {
-          try {
-            teacherClasses = JSON.parse(fields.teacherClasses[0]);
-          } catch (e) {
-            console.error("Error parsing teacherClasses:", e);
-          }
-        }
-
-        // Handle subjects as array
-        let subjects = [];
-        if (fields.subjects && fields.subjects[0]) {
-          try {
-            subjects = JSON.parse(fields.subjects[0]);
-          } catch (e) {
-            console.error("Error parsing subjects:", e);
-          }
-        } else if (fields.subject && fields.subject[0]) {
-          // For backward compatibility - if subjects is not provided but subject is
-          try {
-            // First try to parse subject as JSON in case it's already an array
-            subjects = JSON.parse(fields.subject[0]);
-          } catch (e) {
-            // If it's not JSON, treat it as a single subject ID
-            subjects = [fields.subject[0]];
-          }
-        }
-
-        const newTeacher = new Teacher({
-          school: req.user.schoolId,
-          email: fields.email[0],
-          name: fields.name[0],
-          qualification: fields.qualification[0],
-          subjects: subjects,
-          teacherClasses: teacherClasses,
-          age: fields.age[0],
-          gender: fields.gender[0],
-          teacherImg: originalFilename,
-          password: fields.password[0],
-        });
-
-        const savedTeacher = await newTeacher.save();
-        res.status(200).json({
-          success: true,
-          data: savedTeacher,
-          message: "Teacher is registered Successfully",
-        });
+      // Check if email already exists
+      const existingTeacher = await Teacher.findOne({
+        email: fields.email[0],
       });
-    } catch (error) {
-      console.error("Register Teacher error:", error);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal Server Error" });
-    }
-  },
+
+      if (existingTeacher) {
+        return res.status(409).json({
+          success: false,
+          message: "Email already exists. Please use a different email.",
+        });
+      }
+
+      const photo = files.image[0];
+      let filepath = photo.filepath;
+
+      const timestamp = Date.now();
+      const fileExtension = path.extname(photo.originalFilename);
+      const originalName = path
+        .basename(photo.originalFilename, fileExtension)
+        .replace(/\s+/g, "_");
+      const uniqueFilename = `${originalName}_${timestamp}${fileExtension}`;
+
+      let newPath = path.join(__dirname, "../uploads/teacher/", uniqueFilename);
+
+      const dir = path.dirname(newPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      let photoData = fs.readFileSync(filepath);
+      fs.writeFileSync(newPath, photoData);
+
+      let teacherClasses = [];
+      if (fields.teacherClasses && fields.teacherClasses[0]) {
+        try {
+          teacherClasses = JSON.parse(fields.teacherClasses[0]);
+        } catch (e) {
+          console.error("Error parsing teacherClasses:", e);
+        }
+      }
+
+      let subjects = [];
+      if (fields.subjects && fields.subjects[0]) {
+        try {
+          subjects = JSON.parse(fields.subjects[0]);
+        } catch (e) {
+          console.error("Error parsing subjects:", e);
+        }
+      } else if (fields.subject && fields.subject[0]) {
+        try {
+          subjects = JSON.parse(fields.subject[0]);
+        } catch (e) {
+          subjects = [fields.subject[0]];
+        }
+      }
+
+      const newTeacher = new Teacher({
+        school: req.user.schoolId,
+        email: fields.email[0],
+        name: fields.name[0],
+        qualification: fields.qualification[0],
+        subjects: subjects,
+        teacherClasses: teacherClasses,
+        age: fields.age[0],
+        gender: fields.gender[0],
+        teacherImg: uniqueFilename,
+        password: fields.password[0], // Store password as plain text (as requested)
+      });
+
+      const savedTeacher = await newTeacher.save();
+      res.status(200).json({
+        success: true,
+        data: savedTeacher,
+        message: "Teacher is registered Successfully",
+      });
+    });
+  } catch (error) {
+    console.error("Register Teacher error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
+  }
+},
 
   loginTeacher: async (req, res) => {
     try {
@@ -159,8 +165,6 @@ module.exports = {
           .status(401)
           .json({ success: false, message: "Password is Incorrect" });
       }
-
-
     } catch (error) {
       console.error("Login Teacher error:", error);
       res.status(500).json({
@@ -276,8 +280,7 @@ module.exports = {
           // Handle special cases and skip password updates here
           if (
             field !== "teacherClasses" &&
-            field !== "subjects" &&
-            field !== "password"
+            field !== "subjects" // password handled separately below
           ) {
             teacher[field] = Array.isArray(fields[field])
               ? fields[field][0]
@@ -304,15 +307,13 @@ module.exports = {
         } else if (fields.subject && fields.subject[0]) {
           // For backward compatibility
           try {
-            // First try to parse subject as JSON in case it's already an array
             teacher.subjects = JSON.parse(fields.subject[0]);
           } catch (e) {
-            // If it's not JSON, treat it as a single subject ID
             teacher.subjects = [fields.subject[0]];
           }
         }
 
-        // Handle password updates separately to trigger bcrypt hooks
+        // Handle password updates separately (store as plain text)
         if (fields.password && fields.password[0]) {
           teacher.password = fields.password[0];
         }
@@ -327,7 +328,7 @@ module.exports = {
           if (teacher.teacherImg) {
             let oldImagePath = path.join(
               __dirname,
-              process.env.TEACHER_IMAGE_PATH,
+              "../uploads/teacher/",
               teacher.teacherImg
             );
             if (fs.existsSync(oldImagePath)) {
@@ -335,11 +336,15 @@ module.exports = {
             }
           }
 
-          let newPath = path.join(
-            __dirname,
-            process.env.TEACHER_IMAGE_PATH,
-            originalFilename
-          );
+          // Generate unique filename to avoid conflicts
+          const timestamp = Date.now();
+          const fileExtension = path.extname(photo.originalFilename);
+          const originalName = path
+            .basename(photo.originalFilename, fileExtension)
+            .replace(/\s+/g, "_");
+          const uniqueFilename = `${originalName}_${timestamp}${fileExtension}`;
+
+          let newPath = path.join(__dirname, "../uploads/teacher/", uniqueFilename);
 
           // Create directory if it doesn't exist
           const dir = path.dirname(newPath);
@@ -350,7 +355,7 @@ module.exports = {
           let photoData = fs.readFileSync(filepath);
           fs.writeFileSync(newPath, photoData);
 
-          teacher.teacherImg = originalFilename;
+          teacher.teacherImg = uniqueFilename;
         }
 
         await teacher.save();
@@ -395,7 +400,7 @@ module.exports = {
       if (deletedTeacher.teacherImg) {
         let imagePath = path.join(
           __dirname,
-          process.env.TEACHER_IMAGE_PATH,
+          "../uploads/teacher/",
           deletedTeacher.teacherImg
         );
         if (fs.existsSync(imagePath)) {
@@ -415,3 +420,4 @@ module.exports = {
     }
   },
 };
+

@@ -579,7 +579,7 @@ export default function Dashboard() {
                 justifyContent: "center",
               }}>
                 <img
-                  src={`/images/uploaded/teacher/${teacherData.teacherImg || 'default.png'}`}
+                  src={`${baseApi}/uploads/teacher/${teacherData.teacherImg || 'default.png'}`}
                   alt="Teacher"
                   style={{
                     width: '100%',

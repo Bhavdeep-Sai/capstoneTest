@@ -21,11 +21,18 @@ module.exports = {
 
         const photo = files.image[0];
         let filepath = photo.filepath;
-        let originalFilename = photo.originalFilename.replace(/\s+/g, "_"); // Replace all spaces with underscore
+        
+        // Generate unique filename to avoid conflicts
+        const timestamp = Date.now();
+        const fileExtension = path.extname(photo.originalFilename);
+        const originalName = path.basename(photo.originalFilename, fileExtension).replace(/\s+/g, "_");
+        const uniqueFilename = `${originalName}_${timestamp}${fileExtension}`;
+        
+        // Save to backend uploads directory
         let newPath = path.join(
           __dirname,
-          process.env.SCHOOL_IMAGE_PATH,
-          originalFilename
+          "../uploads/school/",
+          uniqueFilename
         );
 
         // Create directory if it doesn't exist
@@ -44,7 +51,7 @@ module.exports = {
           schoolName: fields.schoolName[0],
           email: fields.email[0],
           ownerName: fields.ownerName[0],
-          schoolImg: originalFilename, // Using schoolImg to match schema
+          schoolImg: uniqueFilename, // Store the unique filename
           password: hashPassword,
         });
 
@@ -170,13 +177,18 @@ module.exports = {
         if (files.image && files.image[0]) {
           const photo = files.image[0];
           let filepath = photo.filepath;
-          let originalFilename = photo.originalFilename.replace(/\s+/g, "_");
+          
+          // Generate unique filename
+          const timestamp = Date.now();
+          const fileExtension = path.extname(photo.originalFilename);
+          const originalName = path.basename(photo.originalFilename, fileExtension).replace(/\s+/g, "_");
+          const uniqueFilename = `${originalName}_${timestamp}${fileExtension}`;
 
           // Delete old image if exists
           if (school.schoolImg) {
             let oldImagePath = path.join(
               __dirname,
-              process.env.SCHOOL_IMAGE_PATH,
+              "../uploads/school/",
               school.schoolImg
             );
             if (fs.existsSync(oldImagePath)) {
@@ -186,14 +198,20 @@ module.exports = {
 
           let newPath = path.join(
             __dirname,
-            process.env.SCHOOL_IMAGE_PATH,
-            originalFilename
+            "../uploads/school/",
+            uniqueFilename
           );
+          
+          // Create directory if it doesn't exist
+          const dir = path.dirname(newPath);
+          if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+          }
           
           let photoData = fs.readFileSync(filepath);
           fs.writeFileSync(newPath, photoData);
           
-          school.schoolImg = originalFilename;
+          school.schoolImg = uniqueFilename;
         }
 
         await school.save();

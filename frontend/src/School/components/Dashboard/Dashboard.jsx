@@ -60,6 +60,12 @@ const Dashboard = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const fileInputRef = useRef(null);
 
+  // Helper function to get school image URL from backend
+  const getSchoolImageUrl = (imageName) => {
+    if (!imageName) return null;
+    return `${baseApi}/uploads/school/${imageName}`;
+  };
+
   const addImage = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
@@ -165,41 +171,42 @@ const Dashboard = () => {
   };
 
   // Fetch notices for the calendar
-const fetchNotices = async () => {
-  try {
-    setLoading(prev => ({ ...prev, notices: true }));
+  const fetchNotices = async () => {
+    try {
+      setLoading(prev => ({ ...prev, notices: true }));
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError("No authentication token found");
-      return;
-    }
-
-    const response = await axios.get(`${baseApi}/notice/important`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError("No authentication token found");
+        return;
       }
-    });
 
-    if (response.data && response.data.data) {
-      // Transform notices to include 'important' flag based on content or type
-      const formattedNotices = response.data.data.map(notice => ({
-        id: notice._id,
-        date: new Date(notice.createdAt).toISOString().split('T')[0], // Format as YYYY-MM-DD
-        title: notice.title,
-        important: notice.isImportant === true,
-        content: notice.message
-      }));
+      const response = await axios.get(`${baseApi}/notice/important`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-      setNotices(formattedNotices);
+      if (response.data && response.data.data) {
+        // Transform notices to include 'important' flag based on content or type
+        const formattedNotices = response.data.data.map(notice => ({
+          id: notice._id,
+          date: new Date(notice.createdAt).toISOString().split('T')[0], // Format as YYYY-MM-DD
+          title: notice.title,
+          important: notice.isImportant === true,
+          content: notice.message
+        }));
+
+        setNotices(formattedNotices);
+      }
+    } catch (err) {
+      console.error("Error fetching notices:", err);
+      // Don't show error for notices as they're not critical
+    } finally {
+      setLoading(prev => ({ ...prev, notices: false }));
     }
-  } catch (err) {
-    console.error("Error fetching notices:", err);
-    // Don't show error for notices as they're not critical
-  } finally {
-    setLoading(prev => ({ ...prev, notices: false }));
-  }
-};
+  };
+
   const handleEditSubmit = () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -230,6 +237,8 @@ const fetchNotices = async () => {
           setSuccess(res.data.message);
           setEdit(false);
           fetchSchool(); // Refresh data
+          // Clear the file input after successful update
+          handleClearFile();
         }
       })
       .catch(e => {
@@ -574,8 +583,36 @@ const fetchNotices = async () => {
               )}
             </Box>
 
+            {/* Preview current school image if no new file selected */}
+            {!imageUrl && schoolData?.schoolImg && (
+              <Box sx={{ maxWidth: '300px', marginTop: '10px', marginBottom: '20px' }}>
+                <Typography variant="body2" sx={{ color: '#AAA', mb: 1 }}>
+                  Current Image:
+                </Typography>
+                <CardMedia
+                  component="img"
+                  image={getSchoolImageUrl(schoolData.schoolImg)}
+                  alt="Current school image"
+                  sx={{
+                    borderRadius: '8px',
+                    border: '1px solid #444',
+                    maxHeight: '150px',
+                    objectFit: 'contain'
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    console.error('Failed to load school image');
+                  }}
+                />
+              </Box>
+            )}
+
+            {/* Preview new image if selected */}
             {imageUrl && (
               <Box sx={{ maxWidth: '300px', marginTop: '10px', marginBottom: '20px' }}>
+                <Typography variant="body2" sx={{ color: '#AAA', mb: 1 }}>
+                  New Image Preview:
+                </Typography>
                 <CardMedia
                   component="img"
                   image={imageUrl}
@@ -645,8 +682,10 @@ const fetchNotices = async () => {
             <Box sx={{
               height: "100%",
               width: "100%",
-              background: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(/images/uploaded/school/${schoolData.schoolImg})`,
-              backgroundSize: "fit",
+              background: schoolData.schoolImg ? 
+                `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${getSchoolImageUrl(schoolData.schoolImg)})` :
+                'linear-gradient(135deg, #FF6B00 0%, #FF9800 100%)',
+              backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
               display: 'flex',
@@ -686,11 +725,9 @@ const fetchNotices = async () => {
                 </Typography>
               </Box>
             </Box>
-
           </Box>
         </>
       )}
-
 
       <div className='min-h-100 flex flex-col md:flex-row flex-wrap w-full '>
         <div className='flex flex-col gap-20  w-[60%] p-10 h-[120%]'>
@@ -827,38 +864,56 @@ const fetchNotices = async () => {
             overflow: 'auto',
             border: '1px solid #333'
           }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5" sx={{ color: '#FF9800', fontWeight: 'bold' }}>
-                School Preview
+<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h5" sx={{ color: '#fff' }}>
+                School Information Preview
               </Typography>
               <IconButton onClick={() => setPreview(false)} sx={{ color: '#fff' }}>
                 <CloseIcon />
               </IconButton>
             </Box>
-            <Box sx={{ mb: 3 }}>
-              <img
-                src={`/images/uploaded/school/${schoolData.schoolImg}`}
-                alt={schoolData.schoolName}
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  borderRadius: '8px',
-                  border: '1px solid #444'
-                }}
-              />
+            <Divider sx={{ backgroundColor: '#333', mb: 2 }} />
+            
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {schoolData.schoolImg && (
+                <Box sx={{ textAlign: 'center', mb: 2 }}>
+                  <CardMedia
+                    component="img"
+                    image={getSchoolImageUrl(schoolData.schoolImg)}
+                    alt="School image"
+                    sx={{
+                      maxWidth: '300px',
+                      maxHeight: '200px',
+                      objectFit: 'contain',
+                      borderRadius: '8px',
+                      border: '1px solid #444',
+                      margin: '0 auto'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      console.error('Failed to load school image');
+                    }}
+                  />
+                </Box>
+              )}
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant="body1" sx={{ color: '#fff' }}>
+                  <strong style={{ color: '#FF9800' }}>School Name:</strong> {schoolData.schoolName}
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#fff' }}>
+                  <strong style={{ color: '#FF9800' }}>Owner Name:</strong> {schoolData.ownerName}
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#fff' }}>
+                  <strong style={{ color: '#FF9800' }}>Email:</strong> {schoolData.email}
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#fff' }}>
+                  <strong style={{ color: '#FF9800' }}>Created:</strong> {new Date(schoolData.createdAt).toLocaleDateString()}
+                </Typography>
+              </Box>
             </Box>
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h4" sx={{ color: '#fff', fontWeight: 'bold', mb: 1 }}>
-                {schoolData.schoolName}
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#ccc', mb: 1 }}>
-                <strong>Owner:</strong> {schoolData.ownerName}
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#ccc' }}>
-                <strong>Email:</strong> {schoolData.email}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
               <Button
                 variant="contained"
                 onClick={() => setPreview(false)}
