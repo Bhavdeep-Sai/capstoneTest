@@ -27,6 +27,10 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import HomeIcon from '@mui/icons-material/Home';
 import LogoutIcon from "@mui/icons-material/Logout";
+import { useState } from "react";
+import axios from "axios";
+import { baseApi } from "../environment";
+import { useEffect } from "react";
 
 const drawerWidth = 240;
 
@@ -110,9 +114,24 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 export default function Student() {
+
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation(); // Get current route
+  const [studentData, setStudentData] = useState([])
+
+  const fetchStudentData = async () => {
+    try {
+      const res = await axios.get(`${baseApi}/student/fetch-single`);
+      setStudentData(res.data.student);
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    fetchStudentData();
+  }, [])
 
   const handleDrawerToggle = () => setOpen(!open);
 
@@ -124,13 +143,15 @@ export default function Student() {
 
   const SubnavArr = [
     { link: "/student/schedule", component: "Schedule", icon: CalendarMonthIcon },
-    { link: "/student/attendance", component: "Attendance", icon: BarChartIcon },
+    { link: `/student/attendance/${studentData._id}`, component: "Attendance", icon: BarChartIcon },
     { link: "/student/examination", component: "Examinations", icon: AssignmentIcon },
     { link: "/student/notice", component: "Notices", icon: NotificationsActiveIcon }
   ];
 
   // Function to check if a route is active
   const isActive = (path) => location.pathname === path;
+
+
 
   return (
     <ThemeProvider theme={darkTheme}>

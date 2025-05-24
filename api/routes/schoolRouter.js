@@ -3,7 +3,6 @@ const { registerSchool, getAllSchools, loginSchool, updateSchool, getSchoolOwnDa
 const authMiddleware = require('../auth/auth');
 const router = express.Router();
 
-
 router.post('/register', registerSchool);
 router.get('/all', getAllSchools);
 router.post('/login', loginSchool);

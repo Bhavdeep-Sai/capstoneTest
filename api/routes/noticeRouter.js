@@ -14,7 +14,7 @@ const {
     getActiveNotices,
 } = require("../controllers/noticeController");
 
-// Protected routes - All routes require authentication
+
 router.get("/all", authMiddleware(["SCHOOL", "TEACHER", "STUDENT"]), getAllNotices);
 router.get("/important", authMiddleware(["SCHOOL", "TEACHER", "STUDENT"]), getImportantNotices);
 router.get("/active", authMiddleware(["SCHOOL", "TEACHER", "STUDENT"]), getActiveNotices);

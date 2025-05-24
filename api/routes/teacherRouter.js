@@ -3,11 +3,8 @@ const { registerTeacher, loginTeacher, getTeachersWithQuery, getTeacherOwnData, 
 const authMiddleware = require('../auth/auth');
 const router = express.Router();
 
-// Public routes (no authentication required)
 router.post('/register', authMiddleware(['SCHOOL']), registerTeacher);
 router.post('/login', loginTeacher);
-
-// Protected routes (authentication required)
 router.get('/fetch-with-query', authMiddleware(['SCHOOL']), getTeachersWithQuery);
 router.get('/fetch-single', authMiddleware(['TEACHER']), getTeacherOwnData);
 router.get('/fetch/:id', authMiddleware(['SCHOOL']), fetchTeacherWithId);

@@ -7,22 +7,18 @@ const {
     updateScheduleWithId,
     getScheduleById,
     cleanupCompletedSchedules,
-    getTeacherSubjects // Added new function
+    getTeacherSubjects 
 } = require('../controllers/scheduleController');
 
 const router = express.Router();
 
-// CRUD operations
+
 router.post('/create', authMiddleware(['SCHOOL', 'TEACHER']), createSchedule);
-router.get('/fetch-with-class/:id', authMiddleware(['SCHOOL', 'TEACHER']), getSchedulewithClass);
-router.get('/fetch/:id', authMiddleware(['SCHOOL', 'TEACHER']), getScheduleById);
+router.get('/fetch-with-class/:id', authMiddleware(['SCHOOL', 'TEACHER', 'STUDENT']), getSchedulewithClass);
+router.get('/fetch/:id', authMiddleware(['SCHOOL', 'TEACHER', 'STUDENT']), getScheduleById);
 router.put('/update/:id', authMiddleware(['SCHOOL', 'TEACHER']), updateScheduleWithId); 
 router.delete('/delete/:id', authMiddleware(['SCHOOL','TEACHER']), deleteScheduleWithId); 
-
-// New endpoint to fetch subjects for a teacher
 router.get('/teacher/subjects/:teacherId', authMiddleware(['SCHOOL']), getTeacherSubjects);
-
-// Manual trigger for cleanup (admin only)
 router.post('/cleanup', authMiddleware(['SCHOOL']), cleanupCompletedSchedules);
 
 module.exports = router;
