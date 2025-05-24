@@ -11,7 +11,6 @@ const Client = () => {
             <Box sx={{height:"80vh"}} component={'div'}>
                 <Outlet />
             </Box>
-            {/* <Footer/> */}
         </div>
     )
 }

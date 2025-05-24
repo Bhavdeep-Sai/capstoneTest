@@ -6,6 +6,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import axios from 'axios';
+import { baseApi } from '../../../../environment';
 
 export default function Gallery() {
     const [open, setOpen] = React.useState(false);
@@ -13,7 +14,7 @@ export default function Gallery() {
     const [schools, setSchools] = React.useState([]);
 
     React.useEffect(() => {
-        axios.get(`http://localhost:5000/api/school/all`)
+        axios.get(`${baseApi}/school/all`)
             .then(res => {
                 console.log("School", res)
                 setSchools(res.data.schools)
