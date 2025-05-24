@@ -11,6 +11,7 @@ import BookIcon from '@mui/icons-material/MenuBook';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useNavigate } from 'react-router-dom';
+import { baseApi } from '../../../environment';
 
 // Create a custom dark theme with orange/yellow/red accents
 const darkTheme = createTheme({
@@ -151,7 +152,7 @@ export default function Register() {
         fd.append("password", values.password);
 
         await axios.post(
-          'http://localhost:5000/api/school/register',
+          `${baseApi}/school/register`,
           fd,
           {
             headers: {
