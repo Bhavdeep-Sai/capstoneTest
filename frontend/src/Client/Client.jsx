@@ -7,7 +7,6 @@ import { Box } from '@mui/material'
 const Client = () => {
     return (
         <div>
-            <Navbar />
             <Box sx={{height:"80vh"}} component={'div'}>
                 <Outlet />
             </Box>
