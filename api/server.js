@@ -23,8 +23,7 @@ const noticeRouter = require('./routes/noticeRouter');
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const corsOptions = { exposedHeaders: "Authorization" };
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(cookieParser()); // To accept cookies
 
 // Serve static files from uploads directory
