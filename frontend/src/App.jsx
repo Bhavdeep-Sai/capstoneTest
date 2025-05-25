@@ -34,18 +34,33 @@ import ProtectedRoute from './Guard/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
 import AttendanceDetails from './School/components/Attendance/AttendanceDetails'
 import Logout from './Client/components/Logout/Logout'
+import RoleSelection from './Client/components/RoleSelection/RoleSelection'
 
 const App = () => {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* School */}
+          {/* Home Route */}
+          <Route path='/' element={<Client />}>
+            <Route index element={<Home />} />
+          </Route>
+
+          {/* Authentication Routes - These should be standalone, not nested */}
+          <Route path='/select-role' element={<RoleSelection />} />
+          <Route path='/login/:role' element={<Login />} />
+          <Route path='/register' element={<Register />} />
+          <Route path='/logout' element={<Logout />} />
+
+          {/* Legacy login route (redirect to role selection) */}
+          <Route path='/login' element={<Login />} />
+
+          {/* School Routes */}
           <Route path='/school' element={<ProtectedRoute allowedRoles={['SCHOOL']}><School /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
             <Route path='dashboard' element={<Dashboard />} />
             <Route path='attendance' element={<AttendanceStudentList />} />
-            <Route path='attendance/:id' element={<AttendanceDetails/>} />
+            <Route path='attendance/:id' element={<AttendanceDetails />} />
             <Route path='class' element={<Class />} />
             <Route path='subject' element={<Subjects />} />
             <Route path='student' element={<Students />} />
@@ -55,32 +70,24 @@ const App = () => {
             <Route path='examination' element={<Examination />} />
           </Route>
 
-          {/* Student */}
+          {/* Student Routes */}
           <Route path='/student' element={<ProtectedRoute allowedRoles={['STUDENT']}><Student /></ProtectedRoute>}>
-            <Route index element={<StudentDashboard/>} />
-            <Route path='dashboard' element={<StudentDashboard/>} />
-            <Route path='schedule' element={<StudentSchedule/>} />
-            <Route path='attendance/:id' element={<StudentAttendance/>} />
-            <Route path='examination' element={<StudentExamination/>} />
-            <Route path='notice' element={<StudentNotice/>} />
+            <Route index element={<StudentDashboard />} />
+            <Route path='dashboard' element={<StudentDashboard />} />
+            <Route path='schedule' element={<StudentSchedule />} />
+            <Route path='attendance/:id' element={<StudentAttendance />} />
+            <Route path='examination' element={<StudentExamination />} />
+            <Route path='notice' element={<StudentNotice />} />
           </Route>
 
-          {/* Teacher */}
+          {/* Teacher Routes */}
           <Route path='/teacher' element={<ProtectedRoute allowedRoles={['TEACHER']}><Teacher /></ProtectedRoute>}>
-            <Route index element={<TeacherDashboard/>} />
-            <Route path='dashboard' element={<TeacherDashboard/>} />
-            <Route path='schedule' element={<TeacherSchedule/>} />
-            <Route path='attendance' element={<TeacherAttendance/>} />
-            <Route path='examination' element={<TeacherExamination/>} />
-            <Route path='notice' element={<TeacherNotice/>} />
-          </Route>
-
-          {/* Client */}
-          <Route path='/' element={<Client />}>
-            <Route index element={<Home />} />
-            <Route path='login' element={<Login />} />
-            <Route path='logout' element={<Logout />} />
-            <Route path='register' element={<Register />} />
+            <Route index element={<TeacherDashboard />} />
+            <Route path='dashboard' element={<TeacherDashboard />} />
+            <Route path='schedule' element={<TeacherSchedule />} />
+            <Route path='attendance' element={<TeacherAttendance />} />
+            <Route path='examination' element={<TeacherExamination />} />
+            <Route path='notice' element={<TeacherNotice />} />
           </Route>
         </Routes>
       </BrowserRouter>
