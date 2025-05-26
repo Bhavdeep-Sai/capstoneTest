@@ -11,8 +11,8 @@ const nodemailer = require("nodemailer");
 
 // Email configuration - Fixed function name
 const createTransporter = () => {
-  return nodemailer.createTransporter({
-    service: "gmail",
+  return nodemailer.createTransport({
+    service: "Gmail",
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD,
