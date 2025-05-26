@@ -14,6 +14,7 @@ import Client from './Client/Client'
 import Home from './Client/components/Home/Home'
 import Login from './Client/components/Login/Login'
 import Register from './Client/components/Register/Register'
+import ResetPassword from './Client/components/Login/ResetPassword'
 
 // Teacher Router
 import Teacher from './Teacher/Teacher'
@@ -51,6 +52,9 @@ const App = () => {
           <Route path='/login/:role' element={<Login />} />
           <Route path='/register' element={<Register />} />
           <Route path='/logout' element={<Logout />} />
+          
+          {/* Password Reset Route - Add this line */}
+          <Route path='/reset-password/:token' element={<ResetPassword />} />
 
           {/* Legacy login route (redirect to role selection) */}
           <Route path='/login' element={<Login />} />
