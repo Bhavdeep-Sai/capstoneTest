@@ -101,8 +101,14 @@ const ResetPassword = () => {
   const [tokenValid, setTokenValid] = useState(false);
   const [schoolName, setSchoolName] = useState('');
 
-  // Your base API URL - replace with your actual backend URL
-  const baseApi = import.meta.env.VITE_BASE_API || 'http://localhost:5000/api';
+  // Updated API configuration
+  const baseApi = import.meta.env.VITE_BASE_API || 'https://capstonetest-gmxh.onrender.com/api';
+
+  // Debug logging
+  console.log('Reset Password Component Loaded');
+  console.log('Token from URL:', token);
+  console.log('Base API URL:', baseApi);
+  console.log('Current URL:', window.location.href);
 
   const formik = useFormik({
     initialValues: {
@@ -116,10 +122,13 @@ const ResetPassword = () => {
       setSuccess('');
 
       try {
+        console.log('Submitting password reset...');
         const response = await axios.post(`${baseApi}/school/reset-password`, {
           token,
           newPassword: values.newPassword,
         });
+
+        console.log('Password reset response:', response.data);
 
         if (response.data.success) {
           setSuccess('Password has been reset successfully! Redirecting to login...');
@@ -131,6 +140,7 @@ const ResetPassword = () => {
         }
       } catch (error) {
         console.error('Reset password error:', error);
+        console.error('Error response:', error.response);
         setError(
           error.response?.data?.message || 
           'Failed to reset password. Please try again.'
@@ -145,20 +155,26 @@ const ResetPassword = () => {
   useEffect(() => {
     const verifyToken = async () => {
       if (!token) {
-        setError('Invalid reset token');
+        console.error('No token provided');
+        setError('Invalid reset token - no token provided');
         setVerifying(false);
         return;
       }
 
       try {
+        console.log('Verifying token:', token);
         const response = await axios.get(`${baseApi}/school/verify-reset-token/${token}`);
         
+        console.log('Token verification response:', response.data);
+
         if (response.data.success) {
           setTokenValid(true);
           setSchoolName(response.data.schoolName || '');
+          console.log('Token is valid');
         }
       } catch (error) {
         console.error('Token verification error:', error);
+        console.error('Error response:', error.response);
         setError(
           error.response?.data?.message || 
           'Invalid or expired reset token'
@@ -179,6 +195,9 @@ const ResetPassword = () => {
             <CircularProgress size={40} sx={{ color: '#FF9800' }} />
             <Typography variant="h6" sx={{ mt: 2, color: 'white' }}>
               Verifying reset token...
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1, color: 'gray' }}>
+              Token: {token}
             </Typography>
           </div>
         </div>
@@ -206,6 +225,9 @@ const ResetPassword = () => {
               </Typography>
               <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3 }}>
                 {error || 'This password reset link is invalid or has expired.'}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3, fontFamily: 'monospace' }}>
+                Token: {token}
               </Typography>
               <Button
                 variant="contained"
