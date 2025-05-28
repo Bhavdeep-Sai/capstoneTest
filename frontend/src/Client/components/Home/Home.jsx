@@ -99,8 +99,8 @@ export default function LandingPage() {
             >
               Contact
             </a>
-            <button onClick={()=> navigate('/login')} className="px-4 py-2 text-orange-500 hover:text-orange-400 transition-colors cursor-pointer">Login</button>
-            <button onClick={()=> navigate('/register')} className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors cursor-pointer">Get Started</button>
+            <button onClick={() => navigate('/login')} className="px-4 py-2 text-orange-500 hover:text-orange-400 transition-colors cursor-pointer">Login</button>
+            <button onClick={() => navigate('/register')} className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors cursor-pointer">Get Started</button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -117,7 +117,7 @@ export default function LandingPage() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden bg-gray-800 shadow-lg">
-            <div className="container mx-auto px-6 py-4 flex flex-col space-y-4">
+            <div className="container  text-center mx-auto px-6 py-4 flex flex-col space-y-4">
               <a
                 href="#"
                 className="text-gray-300 hover:text-orange-500 transition-colors cursor-pointer"
@@ -143,8 +143,8 @@ export default function LandingPage() {
                 Contact
               </a>
               <div className="flex flex-col space-y-2 pt-2">
-                <button onClick={()=> navigate('/login')} className="px-4 py-2 text-orange-500 border border-orange-500 rounded-md hover:bg-gray-700 transition-colors">Login</button>
-                <button onClick={()=> navigate('/register')} className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors">Get Started</button>
+                <button onClick={() => navigate('/login')} className="px-4 py-2 text-orange-500 border border-orange-500 rounded-md hover:bg-gray-700 transition-colors">Login</button>
+                <button onClick={() => navigate('/register')} className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors">Get Started</button>
               </div>
             </div>
           </div>
@@ -156,11 +156,11 @@ export default function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-10 md:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold mb-6">Modern Institutions Management Made Simple</h1>
-              <p className="text-lg mb-8">Streamline your educational institution's administrative processes with our comprehensive management system.</p>
+              <h1 className="text-[1.6rem] text-center sm:text-left sm:text-4xl md:text-5xl font-bold mb-6">Modern Institutions Management Made Simple</h1>
+              <p className="text-sm sm:block sm:text-lg mb-8">Streamline your educational institution's administrative processes with our comprehensive management system.</p>
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                 <button className="px-6 py-3 bg-gray-900 text-white font-medium rounded-md hover:bg-gray-800 transition-colors"
-                onClick={(e) => handleNavClick(e, 'contact')}
+                  onClick={(e) => handleNavClick(e, 'contact')}
                 >
                   Contact Us
                 </button>
@@ -172,8 +172,8 @@ export default function LandingPage() {
                 </button>
               </div>
             </div>
-            <div className="md:w-1/2 p-5">
-              <div className="bg-gray-800 p-4 rounded-lg shadow-xl">
+            <div className="md:w-1/2 md:p-5">
+              <div className="bg-gray-800 p-2 md:p-3 rounded-lg shadow-xl">
                 <img
                   src={logo}
                   alt="Dashboard Preview"
@@ -211,14 +211,14 @@ export default function LandingPage() {
       <section className="py-20 bg-gray-800">
         <div className="container mx-auto px-6">
           <div className="flex flex-col lg:flex-row items-center">
-            <div className="lg:w-1/2 mb-10 p-10 lg:mb-0">
+            <div className="lg:w-1/2 w-full p-5 lg:p-10 lg:mb-0">
               <img
                 src={question}
                 alt="System Demo"
               />
             </div>
             <div className="lg:w-1/2 lg:pl-16">
-              <h2 className="text-3xl font-bold text-gray-100 mb-6">Why Choose Our Management System</h2>
+              <h2 className="text-3xl text-center lg:text-left font-bold text-gray-100 mb-6">Why Choose Our Management System</h2>
               <div className="space-y-4">
                 <div className="flex items-start">
                   <div className="flex-shrink-0 mt-1">
@@ -263,12 +263,12 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-orange-600 text-white py-16">
+      <section className="bg-orange-600 text-white py-7 lg:py-10">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to transform your educational institution?</h2>
           <p className="mb-8 max-w-2xl mx-auto">Join thousands of schools and colleges that have improved their administrative efficiency with our system.</p>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <button onClick={()=> navigate('/register')} className="px-8 py-3 bg-gray-900 text-white font-medium rounded-md hover:bg-gray-800 transition-colors cursor-pointer">
+            <button onClick={() => navigate('/register')} className="px-8 py-3 bg-gray-900 text-white font-medium rounded-md hover:bg-gray-800 transition-colors cursor-pointer">
               Get Started
             </button>
           </div>
@@ -277,7 +277,7 @@ export default function LandingPage() {
 
       {/* Contact Section */}
       <section id="contact" className="py-20 bg-gray-900">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-100">Get In Touch</h2>
             <p className="text-gray-400 mt-4 max-w-2xl mx-auto">Have questions? Our team is here to help you.</p>
@@ -285,8 +285,8 @@ export default function LandingPage() {
 
           <div className="max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <form>
+              <div className='px-6'>
+                <form className='flex flex-col'>
                   <div className="mb-4">
                     <label htmlFor="name" className="block text-gray-300 font-medium mb-2">Full Name</label>
                     <input
@@ -325,13 +325,13 @@ export default function LandingPage() {
                   </div>
                   <button
                     type="submit"
-                    className="px-6 py-3 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+                    className="px-6 py-3 w-1/2 mx-auto  bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
                   >
                     Send Message
                   </button>
                 </form>
               </div>
-              <div className="bg-gray-800 rounded-lg p-6">
+              <div className="bg-gray-800 rounded-sm mx-4 sm:rounded-lg p-6">
                 <h3 className="text-xl font-semibold text-orange-400 mb-4 text-center py-3">Contact Information</h3>
                 <div className="space-y-4">
                   <div className="flex items-start">
@@ -396,16 +396,16 @@ export default function LandingPage() {
 
       {/* Footer */}
 
-      <footer className="bg-gray-800 text-white py-12">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <footer className="bg-gray-800 text-white pt-10 pb-5">
+        <div className="container mx-auto px-6 lg:px-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div>
               <h3 className="text-xl font-semibold text-orange-500 mb-4">Beacon <span className='text-white'>Port</span></h3>
               <p className="text-gray-400">Simplifying education management for institutions</p>
             </div>
             <div>
-              <h4 className="font-semibold text-orange-400 mb-4">Quick Links</h4>
-              <ul className="space-y-2">
+              <h4 className="font-semibold text-orange-400 mb-4 text-center">Quick Links</h4>
+              <ul className="space-y-2 flex gap-10 justify-center">
                 <li>
                   <a
                     href="#"
@@ -429,15 +429,6 @@ export default function LandingPage() {
                 </li>
                 <li>
                   <a
-                    href="#testimonials"
-                    className="text-gray-400 hover:text-orange-500 transition-colors cursor-pointer"
-                    onClick={(e) => handleNavClick(e, 'testimonials')}
-                  >
-                    Testimonials
-                  </a>
-                </li>
-                <li>
-                  <a
                     href="#contact"
                     className="text-gray-400 hover:text-orange-500 transition-colors cursor-pointer"
                     onClick={(e) => handleNavClick(e, 'contact')}
@@ -447,23 +438,9 @@ export default function LandingPage() {
                 </li>
               </ul>
             </div>
-            <div>
-              <h4 className="font-semibold text-orange-400 mb-4">Resources</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-orange-500 transition-colors cursor-pointer">Blog</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-orange-500 transition-colors cursor-pointer">Documentation</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-orange-500 transition-colors cursor-pointer">Support</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-orange-500 transition-colors cursor-pointer">Tutorials</a></li>
-              </ul>
-            </div>
           </div>
-          <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+          <div className="border-t border-gray-700 mt-8 pt-4 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400">© 2025 BeaconPort. All rights reserved.</p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-orange-500 transition-colors">Privacy Policy</a>
-              <a href="#" className="text-gray-400 hover:text-orange-500 transition-colors">Terms of Service</a>
-              <a href="#" className="text-gray-400 hover:text-orange-500 transition-colors">Cookie Policy</a>
-            </div>
           </div>
         </div>
       </footer>

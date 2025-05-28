@@ -10,10 +10,13 @@ import {
   Alert,
   CardMedia,
   Card,
-  Grid,
   Paper,
   Badge,
-  Divider
+  Divider,
+  Container,
+  useTheme,
+  useMediaQuery,
+  Grid
 } from '@mui/material';
 import PreviewIcon from '@mui/icons-material/Preview';
 import EditIcon from '@mui/icons-material/Edit';
@@ -26,9 +29,15 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import CloseIcon from '@mui/icons-material/Close';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import { Shrink } from 'lucide-react';
+import SubjectIcon from '@mui/icons-material/Subject';
 
 const Dashboard = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isExtraSmall = useMediaQuery(theme.breakpoints.down('xs'));
+
   const [schoolData, setSchoolData] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -42,7 +51,8 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     students: 0,
     teachers: 0,
-    classes: 0
+    classes: 0,
+    subjects: 0
   });
 
   // Calendar and notices
@@ -52,6 +62,7 @@ const Dashboard = () => {
     students: false,
     teachers: false,
     classes: false,
+    subjects: false,
     notices: false
   });
 
@@ -83,7 +94,6 @@ const Dashboard = () => {
   };
 
   const fetchSchool = () => {
-    // Get token from localStorage
     const token = localStorage.getItem('token');
 
     if (!token) {
@@ -120,52 +130,55 @@ const Dashboard = () => {
       return;
     }
 
-    // Set loading states
     setLoading(prev => ({
       ...prev,
       students: true,
       teachers: true,
-      classes: true
+      classes: true,
+      subjects: true
     }));
 
     try {
-      // Fetch students count
       const studentsResponse = await axios.get(`${baseApi}/student/fetch-with-query`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      // Fetch teachers count
       const teachersResponse = await axios.get(`${baseApi}/teacher/fetch-with-query`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      // Fetch classes count
       const classesResponse = await axios.get(`${baseApi}/class/all`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      // Update stats with actual counts
+      const subjectsResponse = await axios.get(`${baseApi}/subject/all`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
       setStats({
         students: studentsResponse.data.students?.length || 0,
         teachers: teachersResponse.data.teachers?.length || 0,
-        classes: classesResponse.data.data?.length || 0
+        classes: classesResponse.data.data?.length || 0,
+        subjects: subjectsResponse.data.data?.length || 0
       });
     } catch (err) {
       console.error("Error fetching stats:", err);
       setError("Failed to fetch dashboard statistics");
     } finally {
-      // Clear loading states
       setLoading(prev => ({
         ...prev,
         students: false,
         teachers: false,
-        classes: false
+        classes: false,
+        subjects: false
       }));
     }
   };
@@ -181,17 +194,16 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await axios.get(`${baseApi}/notice/important`, {
+      const response = await axios.get(`${baseApi}/notice/active`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
       if (response.data && response.data.data) {
-        // Transform notices to include 'important' flag based on content or type
         const formattedNotices = response.data.data.map(notice => ({
           id: notice._id,
-          date: new Date(notice.createdAt).toISOString().split('T')[0], // Format as YYYY-MM-DD
+          date: new Date(notice.expiryDate).toISOString().split('T')[0],
           title: notice.title,
           important: notice.isImportant === true,
           content: notice.message
@@ -201,7 +213,6 @@ const Dashboard = () => {
       }
     } catch (err) {
       console.error("Error fetching notices:", err);
-      // Don't show error for notices as they're not critical
     } finally {
       setLoading(prev => ({ ...prev, notices: false }));
     }
@@ -214,7 +225,6 @@ const Dashboard = () => {
       return;
     }
 
-    // Create form data
     const formData = new FormData();
     formData.append('schoolName', schoolName);
     formData.append('ownerName', ownerName);
@@ -236,8 +246,7 @@ const Dashboard = () => {
           setSchoolData(res.data.school);
           setSuccess(res.data.message);
           setEdit(false);
-          fetchSchool(); // Refresh data
-          // Clear the file input after successful update
+          fetchSchool();
           handleClearFile();
         }
       })
@@ -259,7 +268,7 @@ const Dashboard = () => {
     }
   };
 
-  // Generate calendar days
+  // Calendar functions
   const getDaysInMonth = (year, month) => {
     return new Date(year, month + 1, 0).getDate();
   };
@@ -268,91 +277,66 @@ const Dashboard = () => {
     return new Date(year, month, 1).getDay();
   };
 
-  // Check if a date has notices
-  const hasNotice = (day) => {
-    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return notices.some(notice => notice.date === dateStr);
-  };
-
-  // Get notice for a specific day
-  const getNoticesForDay = (day) => {
-    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return notices.filter(notice => notice.date === dateStr);
-  };
-
   const renderCalendar = () => {
     const daysInMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
     const firstDay = getFirstDayOfMonth(currentDate.getFullYear(), currentDate.getMonth());
     const days = [];
     const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-    // Add weekday headers
     weekdays.forEach(day => {
       days.push(
-        <Box key={`header-${day}`} sx={{ width: '35px', height: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <Typography variant="caption" sx={{ color: '#bbb' }}>{day}</Typography>
+        <Box key={`header-${day}`} sx={{
+          width: { xs: '30px', sm: '35px' },
+          height: { xs: '25px', sm: '30px' },
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <Typography variant="caption" sx={{ color: '#bbb', fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+            {isSmallScreen ? day.slice(0, 1) : day.slice(0, 3)}
+          </Typography>
         </Box>
       );
     });
 
-    // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
-      days.push(<Box key={`empty-${i}`} sx={{ width: '35px', height: '35px' }} />);
+      days.push(<Box key={`empty-${i}`} sx={{ width: { xs: '30px', sm: '35px' }, height: { xs: '30px', sm: '35px' } }} />);
     }
 
-    // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const isToday = day === new Date().getDate() &&
         currentDate.getMonth() === new Date().getMonth() &&
         currentDate.getFullYear() === new Date().getFullYear();
-
-      const hasEvent = hasNotice(day);
-
       days.push(
         <Box
           key={`day-${day}`}
           sx={{
-            width: '35px',
-            height: '35px',
+            width: { xs: '30px', sm: '35px' },
+            height: { xs: '30px', sm: '35px' },
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             position: 'relative',
             borderRadius: '50%',
             backgroundColor: isToday ? '#FF6B00' : 'transparent',
-            '&:hover': {
-              backgroundColor: '#444',
-              cursor: 'pointer',
-            }
           }}
         >
           <Typography
             variant="body2"
             sx={{
               color: isToday ? '#000' : '#fff',
-              fontWeight: isToday ? 'bold' : 'normal'
+              fontWeight: isToday ? 'bold' : 'normal',
+              fontSize: { xs: '0.75rem', sm: '0.875rem' }
             }}
           >
             {day}
           </Typography>
-          {hasEvent && (
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: '2px',
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: '#FF9800'
-              }}
-            />
-          )}
         </Box>
       );
     }
 
     return (
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '5px' }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: { xs: '2px', sm: '5px' } }}>
         {days}
       </Box>
     );
@@ -364,7 +348,6 @@ const Dashboard = () => {
     fetchNotices();
   }, []);
 
-  // Set form data when schoolData is updated
   useEffect(() => {
     if (schoolData) {
       setSchoolName(schoolData.schoolName);
@@ -378,20 +361,19 @@ const Dashboard = () => {
       backgroundColor: '#121212',
       color: '#fff',
       minHeight: '100vh',
-      padding: '20px',
     },
     headerSection: {
       borderRadius: '12px',
       overflow: 'hidden',
-      marginBottom: '20px',
+      marginBottom: { xs: '16px', sm: '20px', md: '24px' },
       position: 'relative',
-      height: '60vh'
+      height: { xs: '200px', sm: '300px', md: '400px', lg: '500px' }
     },
     statsCard: {
       backgroundColor: '#1E1E1E',
-      borderRadius: '12px',
-      padding: '20px',
-      height: '100%',
+      borderRadius: '10px',
+      padding: { xs: '12px', sm: '16px', md: '20px' },
+      width: { xs: '150px', lg: '200px' },
       border: '1px solid #333',
       transition: 'all 0.3s ease',
       '&:hover': {
@@ -402,23 +384,34 @@ const Dashboard = () => {
     statIcon: {
       backgroundColor: '#FF6B00',
       color: '#000',
-      padding: '10px',
-      borderRadius: '50%',
-      marginBottom: '10px'
+      padding: { xs: '8px', sm: '10px' },
+      borderRadius: { xs: '25%', lg: '50%' },
+      marginBottom: '10px',
+      '& svg': {
+        fontSize: { xs: '1.2rem', sm: '1.5rem' }
+      }
     },
     calendarCard: {
       backgroundColor: '#1E1E1E',
-      borderRadius: '12px',
-      padding: '20px',
+      borderRadius: { xs: '10px', lg: '12px' },
+      padding: { xs: '12px', sm: '16px', md: '20px' },
       border: '1px solid #333',
-      height: '100%'
+
+    },
+    noticeCard: {
+      backgroundColor: '#2A2A2A',
+      borderRadius: '8px',
+      padding: { xs: '8px', sm: '10px' },
+      marginBottom: '10px',
+      width: '100%',
     },
     noticeItem: {
       backgroundColor: '#2A2A2A',
       borderRadius: '8px',
-      padding: '10px',
+      padding: { xs: '8px', sm: '10px' },
       marginBottom: '10px',
-      borderLeft: '4px solid #FF6B00'
+      width: '95%',
+      borderLeft: '2px solid #FF6B00'
     }
   };
 
@@ -435,30 +428,35 @@ const Dashboard = () => {
           backgroundColor: 'rgba(0,0,0,0.8)',
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          zIndex: 1000,
+          padding: { xs: '8px', sm: '20px' },
+          overflow: 'auto',
         }}>
           <Box
             component="form"
             sx={{
               display: "flex",
               flexDirection: "column",
-              width: "80vw",
-              minWidth: '320px',
+              width: { xs: '95%', sm: '90%', md: '70%', lg: '40%' },
               maxWidth: '600px',
-              padding: '30px',
-              borderRadius: '12px',
+              padding: { xs: '16px', sm: '24px', md: '30px' },
+              borderRadius: { xs: '5px', sm: '12px' },
               boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
               backgroundColor: '#1E1E1E',
               border: '1px solid #333',
+              maxHeight: { xs: '100vh', sm: '90vh' },
+              overflow: 'auto',
+              scrollBehavior: 'smooth',
+              marginTop: '70px',
             }}
             noValidate
             autoComplete="off"
           >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <BookIcon sx={{ color: '#FF9800', fontSize: 40, mr: 1 }} />
-                <Typography variant="h5" gutterBottom sx={{ color: '#FFF', m: 0 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                <BookIcon sx={{ color: '#FF9800', fontSize: { xs: 30, sm: 40 }, mr: 1 }} />
+                <Typography variant={isSmallScreen ? "h6" : "h5"} gutterBottom sx={{ color: '#FFF', m: 0 }}>
                   Edit School Information
                 </Typography>
               </Box>
@@ -475,6 +473,7 @@ const Dashboard = () => {
               label="Institute Name"
               value={schoolName}
               onChange={(e) => setSchoolName(e.target.value)}
+              fullWidth
               sx={{
                 mb: 2,
                 '& .MuiOutlinedInput-root': {
@@ -502,6 +501,7 @@ const Dashboard = () => {
               label="Owner Name"
               value={ownerName}
               onChange={(e) => setOwnerName(e.target.value)}
+              fullWidth
               sx={{
                 mb: 2,
                 '& .MuiOutlinedInput-root': {
@@ -529,6 +529,7 @@ const Dashboard = () => {
               label="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              fullWidth
               sx={{
                 mb: 2,
                 '& .MuiOutlinedInput-root': {
@@ -560,7 +561,7 @@ const Dashboard = () => {
               style={{ display: 'none' }}
               id="upload-image"
             />
-            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ mb: 2, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'stretch', sm: 'center' }, gap: { xs: 1, sm: 2 } }}>
               <Button
                 variant="contained"
                 component="label"
@@ -577,15 +578,14 @@ const Dashboard = () => {
                 Upload Image
               </Button>
               {file && (
-                <Typography variant="body2" sx={{ ml: 2, color: '#AAA' }}>
+                <Typography variant="body2" sx={{ color: '#AAA', textAlign: { xs: 'center', sm: 'left' } }}>
                   {file.name}
                 </Typography>
               )}
             </Box>
 
-            {/* Preview current school image if no new file selected */}
             {!imageUrl && schoolData?.schoolImg && (
-              <Box sx={{ maxWidth: '300px', marginTop: '10px', marginBottom: '20px' }}>
+              <Box sx={{ maxWidth: '100%', marginTop: '10px', marginBottom: '20px', textAlign: 'center' }}>
                 <Typography variant="body2" sx={{ color: '#AAA', mb: 1 }}>
                   Current Image:
                 </Typography>
@@ -596,7 +596,8 @@ const Dashboard = () => {
                   sx={{
                     borderRadius: '8px',
                     border: '1px solid #444',
-                    maxHeight: '150px',
+                    maxHeight: { xs: '120px', sm: '150px' },
+                    maxWidth: '100%',
                     objectFit: 'contain'
                   }}
                   onError={(e) => {
@@ -607,9 +608,8 @@ const Dashboard = () => {
               </Box>
             )}
 
-            {/* Preview new image if selected */}
             {imageUrl && (
-              <Box sx={{ maxWidth: '300px', marginTop: '10px', marginBottom: '20px' }}>
+              <Box sx={{ maxWidth: '100%', marginTop: '10px', marginBottom: '20px', textAlign: 'center' }}>
                 <Typography variant="body2" sx={{ color: '#AAA', mb: 1 }}>
                   New Image Preview:
                 </Typography>
@@ -620,7 +620,8 @@ const Dashboard = () => {
                   sx={{
                     borderRadius: '8px',
                     border: '1px solid #444',
-                    maxHeight: '150px',
+                    maxHeight: { xs: '120px', sm: '150px' },
+                    maxWidth: '100%',
                     objectFit: 'contain'
                   }}
                 />
@@ -635,7 +636,7 @@ const Dashboard = () => {
               </Box>
             )}
 
-            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mt: 2 }}>
               <Button
                 variant="contained"
                 sx={{
@@ -671,266 +672,366 @@ const Dashboard = () => {
       )}
 
       {/* Main Dashboard Content */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
-      )}
+      <Container maxWidth="xl" sx={{ p: 0 }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
+        )}
 
-      {schoolData && (
-        <>
-          {/* Header Section with School Info */}
-          <Box sx={dashboardStyles.headerSection}>
-            <Box sx={{
-              height: "100%",
-              width: "100%",
-              background: schoolData.schoolImg ? 
-                `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${getSchoolImageUrl(schoolData.schoolImg)})` :
-                'linear-gradient(135deg, #FF6B00 0%, #FF9800 100%)',
-              backgroundSize: "cover",
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "center",
-              display: 'flex',
-              justifyContent: "center",
-              alignItems: 'center',
-              position: 'relative'
-            }}>
-              <Typography variant="h2" sx={{ color: '#fff', fontWeight: 'bold', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
-                {schoolData.schoolName}
-              </Typography>
-              <Box sx={{ position: 'absolute', bottom: "10px", right: "10px", display: 'flex', gap: 1 }}>
-                <IconButton
-                  onClick={() => setPreview(true)}
+        {schoolData && (
+          <>
+            {/* Header Section with School Info */}
+            <Box sx={dashboardStyles.headerSection}>
+              <Box sx={{
+                height: "100%",
+                width: "100%",
+                background: schoolData.schoolImg ?
+                  `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${getSchoolImageUrl(schoolData.schoolImg)})` :
+                  'linear-gradient(135deg, #FF6B00 0%, #FF9800 100%)',
+                backgroundSize: "cover",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
+                display: 'flex',
+                justifyContent: "center",
+                alignItems: 'center',
+                position: 'relative',
+                padding: { xs: '16px', sm: '24px', md: '30px' }
+              }}>
+                <Typography
+                  variant={isExtraSmall ? "h5" : isSmallScreen ? "h4" : isTablet ? "h3" : "h2"}
                   sx={{
-                    backgroundColor: 'rgba(0,0,0,0.6)',
-                    '&:hover': { backgroundColor: 'rgba(0,0,0,0.8)' }
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+                    textAlign: 'center',
+                    wordBreak: 'break-word',
+                    maxWidth: '80%'
                   }}
                 >
-                  <PreviewIcon sx={{ color: "#FF9800", fontSize: '24px' }} />
-                </IconButton>
-                <IconButton
-                  onClick={() => setEdit(true)}
-                  sx={{
-                    backgroundColor: 'rgba(0,0,0,0.6)',
-                    '&:hover': { backgroundColor: 'rgba(0,0,0,0.8)' }
-                  }}
-                >
-                  <EditIcon sx={{ color: "#FF9800", fontSize: '24px' }} />
-                </IconButton>
-              </Box>
-              <Box sx={{ position: 'absolute', bottom: "10px", left: "10px", display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="body1" sx={{ color: '#fff' }}>
-                  <strong>Owner:</strong> {schoolData.ownerName}
+                  {schoolData.schoolName}
                 </Typography>
-                <Typography variant="body1" sx={{ color: '#fff' }}>
-                  <strong>Email:</strong> {schoolData.email}
-                </Typography>
+
+                {/* Action Buttons */}
+                <Box sx={{
+                  position: 'absolute',
+                  top: { xs: '8px', sm: '12px', md: '16px' },
+                  right: { xs: '8px', sm: '12px', md: '16px' },
+                  display: 'flex',
+                  gap: { xs: 0.5, sm: 1 },
+                  flexDirection: { xs: 'column', sm: 'row' }
+                }}>
+                  <IconButton
+                    onClick={() => setPreview(true)}
+                    sx={{
+                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      '&:hover': { backgroundColor: 'rgba(0,0,0,0.8)' },
+                      width: { xs: '36px', sm: '44px', md: '48px' },
+                      height: { xs: '36px', sm: '44px', md: '48px' }
+                    }}
+                  >
+                    <PreviewIcon sx={{ color: "#FF9800", fontSize: { xs: '18px', sm: '22px', md: '24px' } }} />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => setEdit(true)}
+                    sx={{
+                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      '&:hover': { backgroundColor: 'rgba(0,0,0,0.8)' },
+                      width: { xs: '36px', sm: '44px', md: '48px' },
+                      height: { xs: '36px', sm: '44px', md: '48px' }
+                    }}
+                  >
+                    <EditIcon sx={{ color: "#FF9800", fontSize: { xs: '18px', sm: '22px', md: '24px' } }} />
+                  </IconButton>
+                </Box>
+
+                {/* School Info */}
+                <Box sx={{
+                  position: 'absolute',
+                  bottom: { xs: '8px', sm: '12px', md: '16px' },
+                  left: { xs: '8px', sm: '12px', md: '16px' },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  backgroundColor: 'rgba(0,0,0,0.6)',
+                  padding: { xs: '6px', sm: '10px', md: '12px' },
+                  borderRadius: '8px',
+                  maxWidth: { xs: '70%', sm: '50%', md: '40%' }
+                }}>
+                  <Typography variant={isSmallScreen ? "caption" : "body2"} sx={{ color: '#fff', wordBreak: 'break-word' }}>
+                    <strong>Owner:</strong> {schoolData.ownerName}
+                  </Typography>
+                  <Typography variant={isSmallScreen ? "caption" : "body2"} sx={{ color: '#fff', wordBreak: 'break-all' }}>
+                    <strong>Email:</strong> {schoolData.email}
+                  </Typography>
+                </Box>
               </Box>
             </Box>
-          </Box>
-        </>
-      )}
+          </>
+        )}
 
-      <div className='min-h-100 flex flex-col md:flex-row flex-wrap w-full '>
-        <div className='flex flex-col gap-20  w-[60%] p-10 h-[120%]'>
-          <div className='flex gap-10 justify-center w-[100%]'>
-            <div className="w-1/4 ">
-              <Paper sx={dashboardStyles.statsCard}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                  <Box sx={dashboardStyles.statIcon}>
-                    <GroupIcon />
+        {/* Main Content Grid */}
+        <Grid className="flex flex-col lg:flex-row justify-center items-center gap-5 lg:gap-10" >
+          {/* Left Section - Stats and Notices */}
+          <Grid className="md:w-1/2">
+            {/* Stats Cards */}
+            <Grid className="flex flex-wrap gap-5 md:gap-10 justify-center items-center" spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
+              <Grid item xs={6} sm={6} md={3}>
+                <Paper sx={dashboardStyles.statsCard}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                    <Box sx={dashboardStyles.statIcon}>
+                      <GroupIcon />
+                    </Box>
+                    <Typography variant={isSmallScreen ? "h6" : "h5"} sx={{ color: '#FF9800', fontWeight: 'bold', mb: 1 }}>
+                      {loading.students ? '...' : stats.students}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#AAA' }}>
+                      Students
+                    </Typography>
                   </Box>
-                  <Typography variant="h3" sx={{ color: '#FF9800', fontWeight: 'bold' }}>
-                    {loading.students ? '...' : stats.students}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: '#ccc' }}>
-                    Total Students
-                  </Typography>
-                </Box>
-              </Paper>
-            </div>
-            <div className="w-1/4">
-              <Paper sx={dashboardStyles.statsCard}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                  <Box sx={dashboardStyles.statIcon}>
-                    <PersonIcon />
+                </Paper>
+              </Grid>
+
+              <Grid item xs={6} sm={6} md={3}>
+                <Paper sx={dashboardStyles.statsCard}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                    <Box sx={dashboardStyles.statIcon}>
+                      <PersonIcon />
+                    </Box>
+                    <Typography variant={isSmallScreen ? "h6" : "h5"} sx={{ color: '#FF9800', fontWeight: 'bold', mb: 1 }}>
+                      {loading.teachers ? '...' : stats.teachers}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#AAA' }}>
+                      Teachers
+                    </Typography>
                   </Box>
-                  <Typography variant="h3" sx={{ color: '#FF9800', fontWeight: 'bold' }}>
-                    {loading.teachers ? '...' : stats.teachers}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: '#ccc' }}>
-                    Total Teachers
-                  </Typography>
-                </Box>
-              </Paper>
-            </div>
-            <div className="w-1/4">
-              <Paper sx={dashboardStyles.statsCard}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                  <Box sx={dashboardStyles.statIcon}>
-                    <ClassIcon />
+                </Paper>
+              </Grid>
+
+              <Grid item xs={6} sm={6} md={3}>
+                <Paper sx={dashboardStyles.statsCard}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                    <Box sx={dashboardStyles.statIcon}>
+                      <ClassIcon />
+                    </Box>
+                    <Typography variant={isSmallScreen ? "h6" : "h5"} sx={{ color: '#FF9800', fontWeight: 'bold', mb: 1 }}>
+                      {loading.classes ? '...' : stats.classes}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#AAA' }}>
+                      Classes
+                    </Typography>
                   </Box>
-                  <Typography variant="h3" sx={{ color: '#FF9800', fontWeight: 'bold' }}>
-                    {loading.classes ? '...' : stats.classes}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: '#ccc' }}>
-                    Total Classes
-                  </Typography>
-                </Box>
-              </Paper>
-            </div>
-          </div>
-          <div>
-            <Paper sx={dashboardStyles.calendarCard}>
+                </Paper>
+              </Grid>
+
+              <Grid item xs={6} sm={6} md={3}>
+                <Paper sx={dashboardStyles.statsCard}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                    <Box sx={dashboardStyles.statIcon}>
+                      <SubjectIcon />
+                    </Box>
+                    <Typography variant={isSmallScreen ? "h6" : "h5"} sx={{ color: '#FF9800', fontWeight: 'bold', mb: 1 }}>
+                      {loading.subjects ? '...' : stats.subjects}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#AAA' }}>
+                      Subjects
+                    </Typography>
+                  </Box>
+                </Paper>
+              </Grid>
+            </Grid>
+
+            {/* Recent Notices Section */}
+            <Paper sx={dashboardStyles.noticeCard}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <NotificationsIcon sx={{ color: '#FF9800', mr: 1 }} />
-                <Typography variant="h6" sx={{ color: '#fff' }}>
-                  Important Notices
+                <Typography variant={isSmallScreen ? "h6" : "h5"} sx={{ color: '#fff', fontWeight: 'bold' }}>
+                  Recent Notices
                 </Typography>
               </Box>
-              <Divider sx={{ backgroundColor: '#333', mb: 2 }} />
-              <Box sx={{ maxHeight: '300px', overflow: 'auto' }}>
-                {loading.notices ? (
-                  <Box sx={{ textAlign: 'center', py: 2 }}>
-                    <Typography variant="body1" sx={{ color: '#aaa' }}>Loading notices...</Typography>
-                  </Box>
-                ) : notices.length > 0 ? (
-                  notices.map(notice => (
-                    <Box key={notice.id} sx={{
-                      ...dashboardStyles.noticeItem,
-                      borderLeft: notice.important ? '4px solid #f44336' : '4px solid #00FFFF'
-                    }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: notice.important ? '#f44336' : '#00FFFF' }}>
-                          {notice.title}
+              <Divider sx={{ borderColor: '#333', mb: 2 }} />
+
+              {loading.notices ? (
+                <Typography sx={{ color: '#AAA', textAlign: 'center', py: 2 }}>
+                  Loading notices...
+                </Typography>
+              ) : notices.length === 0 ? (
+                <Typography sx={{ color: '#AAA', textAlign: 'center', py: 2 }}>
+                  No active notices
+                </Typography>
+              ) : (
+                <Box sx={{ maxHeight: '300px', overflow: 'auto' }}>
+                  {notices.slice(0, 5).map((notice) => (
+                    <Box key={notice.id} className={notice.important ? "border-2 border-red-400" : ""} sx={dashboardStyles.noticeItem}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                        <Typography variant="subtitle2"  sx={{ color: '#fff', fontWeight: 'bold', flex: 1 }}>
+                          <div>
+                            {notice.title}
+                          </div>
                         </Typography>
-                        {notice.important && (
-                          <Badge color="error" variant="dot" />
-                        )}
+                        <Typography variant="caption" sx={{ color: '#AAA', ml: 1 }}>
+                          {new Date(notice.date).toLocaleDateString()}
+                        </Typography>
                       </Box>
-                      <Typography variant="caption" sx={{ color: '#aaa' }}>
-                        {new Date(notice.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                      <Typography variant="body2" sx={{ color: '#CCC' }}>
+                        {notice.content}
                       </Typography>
                     </Box>
-                  ))
-                ) : (
-                  <Box sx={{ textAlign: 'center', py: 2 }}>
-                    <Typography variant="body1" sx={{ color: '#aaa' }}>No notices available</Typography>
-                  </Box>
-                )}
+                  ))}
+                </Box>
+              )}
+            </Paper>
+          </Grid>
+
+          {/* Right Section - Calendar */}
+          <Grid className='w-[90%] lg:w-1/2'>
+            <Paper sx={dashboardStyles.calendarCard}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <CalendarTodayIcon sx={{ color: '#FF9800', mr: 1 }} />
+                  <Typography variant={isSmallScreen ? "h6" : "h5"} sx={{ color: '#fff', fontWeight: 'bold' }}>
+                    Calendar
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Divider sx={{ borderColor: '#333', mb: 2 }} />
+
+              {/* Month Navigation */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <IconButton
+                  onClick={() => {
+                    const newDate = new Date(currentDate);
+                    newDate.setMonth(newDate.getMonth() - 1);
+                    setCurrentDate(newDate);
+                  }}
+                  sx={{ color: '#FF9800' }}
+                >
+                  <Typography>{'<'}</Typography>
+                </IconButton>
+
+                <Typography variant="h6" sx={{ color: '#fff', fontWeight: 'bold' }}>
+                  {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                </Typography>
+
+                <IconButton
+                  onClick={() => {
+                    const newDate = new Date(currentDate);
+                    newDate.setMonth(newDate.getMonth() + 1);
+                    setCurrentDate(newDate);
+                  }}
+                  sx={{ color: '#FF9800' }}
+                >
+                  <Typography>{'>'}</Typography>
+                </IconButton>
+              </Box>
+
+              {/* Calendar Grid */}
+              <Box sx={{ mb: 2 }}>
+                {renderCalendar()}
               </Box>
             </Paper>
-          </div>
-        </div>
-        <div className='w-[40%] h-[200%] p-10'>
-          <Paper sx={dashboardStyles.calendarCard}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <CalendarTodayIcon sx={{ color: '#FF9800', mr: 1 }} />
-                <Typography variant="h6" sx={{ color: '#fff' }}>
-                  Calendar
-                </Typography>
-              </Box>
-              <Typography variant="body1" sx={{ color: '#FF9800' }}>
-                {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-              </Typography>
-            </Box>
-            <Divider sx={{ backgroundColor: '#333', mb: 2 }} />
-            <Box sx={{ mb: 2 }}>
-              {renderCalendar()}
-            </Box>
-          </Paper>
-        </div>
-      </div>
+          </Grid>
+        </Grid>
 
-      {/* Preview Modal */}
-      {preview && (
-        <Box sx={{
-          position: 'fixed',
-          top: "100px",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
-        }}>
+        {/* Preview Modal */}
+        {preview && schoolData && (
           <Box sx={{
-            backgroundColor: '#1E1E1E',
-            borderRadius: '12px',
-            padding: '20px',
-            maxWidth: '800px',
-            width: '90%',
-            maxHeight: '90vh',
-            overflow: 'auto',
-            border: '1px solid #333'
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.9)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            padding: { xs: '8px', sm: '20px' }
           }}>
-<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h5" sx={{ color: '#fff' }}>
-                School Information Preview
-              </Typography>
-              <IconButton onClick={() => setPreview(false)} sx={{ color: '#fff' }}>
+            <Box sx={{
+              backgroundColor: '#1E1E1E',
+              borderRadius: '12px',
+              padding: { xs: '16px', sm: '24px', md: '30px' },
+              maxWidth: { xs: '95%', sm: '80%', md: '70%', lg: '60%' },
+              maxHeight: '90vh',
+              overflow: 'auto',
+              border: '1px solid #333',
+              position: 'relative'
+            }}>
+              <IconButton
+                onClick={() => setPreview(false)}
+                sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  color: '#fff',
+                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  '&:hover': { backgroundColor: 'rgba(0,0,0,0.7)' }
+                }}
+              >
                 <CloseIcon />
               </IconButton>
-            </Box>
-            <Divider sx={{ backgroundColor: '#333', mb: 2 }} />
-            
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {schoolData.schoolImg && (
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
+
+              <Box sx={{ textAlign: 'center', mb: 3 }}>
+                <Typography variant={isSmallScreen ? "h5" : "h4"} sx={{ color: '#FF9800', fontWeight: 'bold', mb: 2 }}>
+                  {schoolData.schoolName}
+                </Typography>
+
+                {schoolData.schoolImg && (
                   <CardMedia
                     component="img"
                     image={getSchoolImageUrl(schoolData.schoolImg)}
-                    alt="School image"
+                    alt="School"
                     sx={{
-                      maxWidth: '300px',
-                      maxHeight: '200px',
+                      borderRadius: '12px',
+                      maxHeight: { xs: '200px', sm: '300px', md: '400px' },
+                      maxWidth: '100%',
                       objectFit: 'contain',
-                      borderRadius: '8px',
                       border: '1px solid #444',
-                      margin: '0 auto'
+                      mb: 2
                     }}
                     onError={(e) => {
                       e.target.style.display = 'none';
-                      console.error('Failed to load school image');
                     }}
                   />
+                )}
+
+                <Box sx={{ textAlign: 'left', mt: 2 }}>
+                  <Typography variant="h6" sx={{ color: '#fff', mb: 2 }}>
+                    School Information
+                  </Typography>
+                  <Divider sx={{ borderColor: '#333', mb: 2 }} />
+
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body1" sx={{ color: '#AAA', mb: 0.5 }}>
+                      <strong>Owner:</strong>
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: '#fff' }}>
+                      {schoolData.ownerName}
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body1" sx={{ color: '#AAA', mb: 0.5 }}>
+                      <strong>Email:</strong>
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: '#fff', wordBreak: 'break-all' }}>
+                      {schoolData.email}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="body1" sx={{ color: '#AAA', mb: 0.5 }}>
+                      <strong>Registered:</strong>
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: '#fff' }}>
+                      {new Date(schoolData.createdAt || Date.now()).toLocaleDateString()}
+                    </Typography>
+                  </Box>
                 </Box>
-              )}
-              
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography variant="body1" sx={{ color: '#fff' }}>
-                  <strong style={{ color: '#FF9800' }}>School Name:</strong> {schoolData.schoolName}
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#fff' }}>
-                  <strong style={{ color: '#FF9800' }}>Owner Name:</strong> {schoolData.ownerName}
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#fff' }}>
-                  <strong style={{ color: '#FF9800' }}>Email:</strong> {schoolData.email}
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#fff' }}>
-                  <strong style={{ color: '#FF9800' }}>Created:</strong> {new Date(schoolData.createdAt).toLocaleDateString()}
-                </Typography>
               </Box>
             </Box>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-              <Button
-                variant="contained"
-                onClick={() => setPreview(false)}
-                sx={{
-                  backgroundColor: '#FF9800',
-                  color: '#000',
-                  '&:hover': {
-                    backgroundColor: '#FF6B00'
-                  }
-                }}
-              >
-                Close Preview
-              </Button>
-            </Box>
           </Box>
-        </Box>
-      )}
+        )}
+      </Container>
     </Box>
   );
 };

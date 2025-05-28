@@ -40,27 +40,29 @@ const RoleSelection = () => {
         <div className="min-h-screen bg-gray-900 text-gray-100">
             {/* Header */}
             <header className="bg-gray-800 shadow-md">
-                <nav className="container px-5 py-4 flex gap-10 items-center">
+                <nav className="container px-5 py-4 flex gap-15  items-center">
                     <div className="flex items-center">
                         <button
                             onClick={() => navigate('/')}
-                            className="cursor-pointer flex items-center text-gray-300 hover:text-orange-500 transition-colors mr-4"
+                            className="cursor-pointer flex justify-between  items-center text-gray-300 hover:text-orange-500 transition-colors mr-4"
                         >
                             <ArrowLeft className="w-5 h-5 mr-2" />
-                            Back to Home
+                            <span className='hidden lg:block'>
+                                Back to Home
+                            </span>
                         </button>
                     </div>
-                    <div className=" text-2xl md:text-3xl font-bold text-white">Beacon <span className='text-orange-500'>Port</span></div>
+                    <div className="lg:hidden text-2xl md:text-3xl font-bold text-white">Beacon <span className='text-orange-500'>Port</span></div>
                 </nav>
             </header>
 
             {/* Main Content */}
-            <div className="container mx-auto px-6 py-16">
-                <div className="text-center mb-16">
+            <div className="container mx-auto px-6 py-10 lg:py-5">
+                <div className="text-center mb-5">
                     <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
                         Choose Your Role
                     </h1>
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+                    <p className="text-sm lg:text-xl text-gray-400 max-w-2xl mx-auto">
                         Select your role to access the appropriate dashboard and features tailored for your needs.
                     </p>
                 </div>

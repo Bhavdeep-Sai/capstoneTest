@@ -12,6 +12,8 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  useMediaQuery,
+  Backdrop,
 } from "@mui/material";
 import MuiDrawer from "@mui/material/Drawer";
 import MuiAppBar from "@mui/material/AppBar";
@@ -90,6 +92,8 @@ const AppBar = styled(MuiAppBar)(({ theme }) => ({
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.standard,
   }),
+  width: '100%',
+  marginLeft: 0,
 }));
 
 const Drawer = styled(MuiDrawer, {
@@ -111,16 +115,46 @@ const Drawer = styled(MuiDrawer, {
     ...closedMixin(theme),
     "& .MuiDrawer-paper": closedMixin(theme),
   }),
+  [theme.breakpoints.down('md')]: {
+    display: 'none',
+  },
+}));
+
+const MobileDrawer = styled(MuiDrawer)(({ theme }) => ({
+  display: 'none',
+  [theme.breakpoints.down('md')]: {
+    display: 'block',
+    "& .MuiDrawer-paper": {
+      width: drawerWidth,
+      backgroundColor: theme.palette.background.paper,
+      color: theme.palette.text.primary,
+    },
+  },
 }));
 
 export default function School() {
   const [open, setOpen] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
   const navigate = useNavigate();
-  const location = useLocation(); // <-- get current route
+  const location = useLocation();
 
-  const handleDrawerToggle = () => setOpen(!open);
+  // Check if mobile/tablet
+  const isMobile = useMediaQuery(darkTheme.breakpoints.down('md'));
 
-  const handleNavigation = (link) => navigate(link);
+  const handleDrawerToggle = () => {
+    if (isMobile) {
+      setMobileOpen(!mobileOpen);
+    } else {
+      setOpen(!open);
+    }
+  };
+
+  const handleNavigation = (link) => {
+    navigate(link);
+    if (isMobile) {
+      setMobileOpen(false);
+    }
+  };
 
   const navArr = [
     { link: "/", component: "Home", icon: HomeIcon },
@@ -141,113 +175,23 @@ export default function School() {
   // Function to check if a route is active
   const isActive = (path) => location.pathname === path;
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <Box sx={{ display: "flex", bgcolor: "background.default", color: "text.primary" }}>
-        <CssBaseline />
-        <AppBar position="fixed">
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="toggle drawer"
-              onClick={handleDrawerToggle}
-              edge="start"
-              sx={{ marginRight: 5 }}
-            >
-              {open ? <CloseIcon /> : <MenuIcon />}
-            </IconButton>
-            <Typography variant="h6" noWrap>
-              School Management System
-            </Typography>
-          </Toolbar>
-        </AppBar>
-
-        <Drawer variant="permanent" open={open}>
-          <DrawerHeader />
-          <Divider />
-          <List>
-            {navArr.map((item, index) => {
-              const isCurrent = isActive(item.link);
-              return (
-                <ListItem key={index} disablePadding sx={{ display: "block" }}>
-                  <ListItemButton
-                    onClick={() => handleNavigation(item.link)}
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
-                      borderLeft: isCurrent ? `4px solid ${darkTheme.palette.primary.main}` : "4px solid transparent",
-                      backgroundColor: isCurrent ? "#333" : "transparent",
-                      "&:hover": {
-                        backgroundColor: darkTheme.palette.primary.main,
-                        color: "#000",
-                      },
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                        color: "inherit",
-                      }}
-                    >
-                      <item.icon />
-                    </ListItemIcon>
-                    <ListItemText primary={item.component} sx={{ opacity: open ? 1 : 0 }} />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
-
-          <Divider />
-          <List>
-            {SubnavArr.map((item, index) => {
-              const isCurrent = isActive(item.link);
-              return (
-                <ListItem key={index} disablePadding sx={{ display: "block" }}>
-                  <ListItemButton
-                    onClick={() => handleNavigation(item.link)}
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
-                      borderLeft: isCurrent ? `4px solid ${darkTheme.palette.primary.main}` : "4px solid transparent",
-                      backgroundColor: isCurrent ? "#333" : "transparent",
-                      "&:hover": {
-                        backgroundColor: darkTheme.palette.primary.main,
-                        color: "#000",
-                      },
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                        color: "inherit",
-                      }}
-                    >
-                      <item.icon />
-                    </ListItemIcon>
-                    <ListItemText primary={item.component} sx={{ opacity: open ? 1 : 0 }} />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
-
-          <Divider />
-          <List>
-
-            <ListItem disablePadding sx={{ display: "block" }}>
+  const renderDrawerContent = () => (
+    <>
+      <DrawerHeader />
+      <Divider />
+      <List>
+        {navArr.map((item, index) => {
+          const isCurrent = isActive(item.link);
+          return (
+            <ListItem key={index} disablePadding sx={{ display: "block" }}>
               <ListItemButton
-                onClick={() => handleNavigation('/logout')}
+                onClick={() => handleNavigation(item.link)}
                 sx={{
                   minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
+                  justifyContent: (open || isMobile) ? "initial" : "center",
                   px: 2.5,
+                  borderLeft: isCurrent ? `4px solid ${darkTheme.palette.primary.main}` : "4px solid transparent",
+                  backgroundColor: isCurrent ? "#333" : "transparent",
                   "&:hover": {
                     backgroundColor: darkTheme.palette.primary.main,
                     color: "#000",
@@ -257,23 +201,166 @@ export default function School() {
                 <ListItemIcon
                   sx={{
                     minWidth: 0,
-                    mr: open ? 3 : "auto",
+                    mr: (open || isMobile) ? 3 : "auto",
                     justifyContent: "center",
                     color: "inherit",
                   }}
                 >
-                  <LogoutIcon />
+                  <item.icon />
                 </ListItemIcon>
-                <ListItemText primary="LogOut" sx={{ opacity: open ? 1 : 0 }} />
+                <ListItemText primary={item.component} sx={{ opacity: (open || isMobile) ? 1 : 0 }} />
               </ListItemButton>
             </ListItem>
+          );
+        })}
+      </List>
 
-          </List>
+      <Divider />
+      <List>
+        {SubnavArr.map((item, index) => {
+          const isCurrent = isActive(item.link);
+          return (
+            <ListItem key={index} disablePadding sx={{ display: "block" }}>
+              <ListItemButton
+                onClick={() => handleNavigation(item.link)}
+                sx={{
+                  minHeight: 48,
+                  justifyContent: (open || isMobile) ? "initial" : "center",
+                  px: 2.5,
+                  borderLeft: isCurrent ? `4px solid ${darkTheme.palette.primary.main}` : "4px solid transparent",
+                  backgroundColor: isCurrent ? "#333" : "transparent",
+                  "&:hover": {
+                    backgroundColor: darkTheme.palette.primary.main,
+                    color: "#000",
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: (open || isMobile) ? 3 : "auto",
+                    justifyContent: "center",
+                    color: "inherit",
+                  }}
+                >
+                  <item.icon />
+                </ListItemIcon>
+                <ListItemText primary={item.component} sx={{ opacity: (open || isMobile) ? 1 : 0 }} />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
+      </List>
+
+      <Divider />
+      <List>
+        <ListItem disablePadding sx={{ display: "block" }}>
+          <ListItemButton
+            onClick={() => handleNavigation('/logout')}
+            sx={{
+              minHeight: 48,
+              justifyContent: (open || isMobile) ? "initial" : "center",
+              px: 2.5,
+              "&:hover": {
+                backgroundColor: darkTheme.palette.primary.main,
+                color: "#000",
+              },
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                minWidth: 0,
+                mr: (open || isMobile) ? 3 : "auto",
+                justifyContent: "center",
+                color: "inherit",
+              }}
+            >
+              <LogoutIcon />
+            </ListItemIcon>
+            <ListItemText primary="LogOut" sx={{ opacity: (open || isMobile) ? 1 : 0 }} />
+          </ListItemButton>
+        </ListItem>
+      </List>
+    </>
+  );
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <Box sx={{ display: "flex", bgcolor: "background.default", color: "text.primary" }}>
+        <CssBaseline />
+
+        <AppBar position="fixed">
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="toggle drawer"
+              onClick={handleDrawerToggle}
+              edge="start"
+              sx={{ marginRight: 5 }}
+            >
+              {(open || mobileOpen) ? <CloseIcon /> : <MenuIcon />}
+            </IconButton>
+            <Typography
+              variant="h6"
+              noWrap
+              sx={{
+                fontSize: { xs: "1rem", sm: "1.25rem" },
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              School Management System
+            </Typography>
+          </Toolbar>
+        </AppBar>
+
+        {/* Desktop Drawer */}
+        <Drawer variant="permanent" open={open}>
+          {renderDrawerContent()}
         </Drawer>
 
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        {/* Mobile Drawer */}
+        <MobileDrawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile
+          }}
+        >
+          {renderDrawerContent()}
+        </MobileDrawer>
+
+        {/* Mobile backdrop */}
+        {isMobile && mobileOpen && (
+          <Backdrop
+            open={mobileOpen}
+            onClick={() => setMobileOpen(false)}
+            sx={{ zIndex: darkTheme.zIndex.drawer - 1 }}
+          />
+        )}
+
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            minHeight: "100vh",
+            width: {
+              xs: "100%",
+              md: open ? `calc(100% - ${drawerWidth}px)` : `calc(100% - ${darkTheme.spacing(8)} - 1px)`
+            },
+          }}
+        >
           <DrawerHeader />
-          <Outlet />
+
+          <Box sx={{
+            width: "100%",
+            maxWidth: "100%",
+            padding: { xs: "8px", sm: "16px", md: "24px" },
+          }}>
+            <Outlet />
+          </Box>
         </Box>
       </Box>
     </ThemeProvider>

@@ -1,6 +1,20 @@
 @import "tailwindcss";
-/* *{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-} */
+
+.scroll-container::-webkit-scrollbar {
+  width: 8px;
+  height: 4px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: theme('colors.gray.200');
+  border-radius: theme('borderRadius.lg');
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background: theme('colors.blue.500');
+  border-radius: theme('borderRadius.sm');
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.blue.700');
+}

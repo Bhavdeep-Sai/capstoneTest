@@ -48,9 +48,6 @@ const darkTheme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: '#444444',
-            },
             '&:hover fieldset': {
               borderColor: '#FF9800',
             },
@@ -70,7 +67,7 @@ const darkTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         contained: {
-          background: 'linear-gradient(45deg, #FF9800 30%, #FF5722 90%)',
+          background: 'linear-gradient(45deg, #FF9800 30%, #FF5722 100%)',
           boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
         },
       },
@@ -87,7 +84,7 @@ export default function Login() {
   const [success, setSuccess] = React.useState(null);
   const [rememberMe, setRememberMe] = React.useState(false);
   const [oauthLoading, setOauthLoading] = React.useState(false);
-  
+
   // Forgot Password states
   const [forgotPasswordOpen, setForgotPasswordOpen] = React.useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = React.useState('');
@@ -104,19 +101,19 @@ export default function Login() {
   const roleConfig = {
     school: {
       title: 'School Admin',
-      icon: <School className="w-8 h-8 text-orange-500" />,
+      icon: <School className="w-12 h-12 text-orange-500" />,
       color: 'from-orange-500 to-red-500',
       description: 'Administrative Dashboard'
     },
     teacher: {
       title: 'Teacher',
-      icon: <Users className="w-8 h-8 text-blue-500" />,
+      icon: <Users className="w-12 h-12 text-blue-500" />,
       color: 'from-blue-500 to-indigo-500',
       description: 'Teaching Dashboard'
     },
     student: {
       title: 'Student',
-      icon: <GraduationCap className="w-8 h-8 text-green-500" />,
+      icon: <GraduationCap className="w-12 h-12 text-green-500" />,
       color: 'from-green-500 to-teal-500',
       description: 'Student Portal'
     }
@@ -137,11 +134,11 @@ export default function Login() {
       setError(null);
 
       let URL;
-      if(role === "student"){
+      if (role === "student") {
         URL = `${baseApi}/student/login`
-      } else if(role === "teacher"){
+      } else if (role === "teacher") {
         URL = `${baseApi}/teacher/login`
-      } else if(role === 'school'){
+      } else if (role === 'school') {
         URL = `${baseApi}/school/login`
       }
 
@@ -254,7 +251,7 @@ export default function Login() {
 
       setForgotPasswordMessage(response.data.message || 'Password reset link sent to your email');
       setForgotPasswordError('');
-      
+
       // Clear the email field and close dialog after successful request
       setTimeout(() => {
         setForgotPasswordEmail('');
@@ -266,7 +263,7 @@ export default function Login() {
     } catch (error) {
       console.error("Forgot password error:", error);
       setForgotPasswordError(
-        error.response?.data?.message || 
+        error.response?.data?.message ||
         'Failed to send reset email. Please try again.'
       );
       setForgotPasswordMessage('');
@@ -286,7 +283,7 @@ export default function Login() {
   // Google OAuth login
   const handleGoogleLogin = async (e) => {
     e.preventDefault();
-    
+
     if (role !== 'school') {
       setError('OAuth login is currently only available for School Admin accounts');
       return;
@@ -321,7 +318,7 @@ export default function Login() {
                   if (loginResponse.data.token) {
                     localStorage.setItem('token', loginResponse.data.token);
                     localStorage.setItem('user', JSON.stringify(loginResponse.data.user));
-                    
+
                     login({
                       token: loginResponse.data.token,
                       user: loginResponse.data.user
@@ -337,10 +334,10 @@ export default function Login() {
                   if (loginError.response?.status === 404) {
                     setError("No account found with this Google email. Please register first.");
                     setTimeout(() => {
-                      navigate('/register', { 
-                        state: { 
+                      navigate('/register', {
+                        state: {
                           googleToken: response.access_token,
-                          userInfo: userInfoResponse.data 
+                          userInfo: userInfoResponse.data
                         }
                       });
                     }, 2000);
@@ -396,7 +393,7 @@ export default function Login() {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center py-5 px-4 sm:px-6 lg:px-8">
         <Box
           component="form"
           sx={{
@@ -408,18 +405,17 @@ export default function Login() {
             width: "80vw",
             minWidth: '320px',
             maxWidth: '500px',
-            padding: '30px',
-            borderRadius: '12px',
+            borderRadius: { xs: '5px', lg: '12px' },
             boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
             bgcolor: 'background.paper',
           }}
-          className="bg-gray-800 border border-gray-700"
+          className="bg-gray-800 p-2 lg:p-8 border border-gray-700"
           noValidate
           autoComplete="off"
           onSubmit={formik.handleSubmit}
         >
           {/* Role Header */}
-          <div className="flex items-center justify-center mb-2">
+          <div className="flex flex-col gap-5 items-center justify-center">
             {currentRole.icon}
             <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', m: 0, ml: 2 }}>
               {currentRole.title} Login
@@ -430,7 +426,7 @@ export default function Login() {
           </Typography>
 
           {/* Role Selection Link */}
-          <div className="text-center mb-4">
+          <div className="text-center mb-6">
             <button
               type="button"
               onClick={() => navigate('/select-role')}
@@ -475,7 +471,7 @@ export default function Login() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={handleRememberMeChange}
-                className="h-4 w-4 text-orange-500 bg-gray-700 border-gray-600 rounded focus:ring-orange-500"
+                className="h-4 w-4 text-orange-500  accent-amber-500 rounded focus:ring-orange-500"
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
                 Remember me
@@ -499,24 +495,26 @@ export default function Login() {
             variant="contained"
             disabled={loading || oauthLoading}
             sx={{
-              mt: 1,
-              py: 1.5,
+              mt: { xs: 1, sm: 2, md: 3, lg: 4 },
+              py: { xs: 1, sm: 1.2, md: 1.2 },
               textTransform: 'uppercase',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
             }}
             className="bg-gradient-to-r from-amber-500 to-orange-600"
           >
             {loading ? <CircularProgress size={24} /> : `Sign In as ${currentRole.title}`}
           </Button>
 
-          <div className="mt-4 text-center">
-            <Typography variant="body2" className="text-gray-400">
-              Don't have an account?{' '}
-              <span onClick={() => navigate('/register')} className="text-orange-500 cursor-pointer hover:underline">
-                Register
-              </span>
-            </Typography>
-          </div>
+          {role === 'school' && (
+            <div className="mt-4 text-center">
+              <Typography variant="body2" className="text-gray-400">
+                Don't have an account?{' '}
+                <span onClick={() => navigate('/register')} className="text-orange-500 cursor-pointer hover:underline">
+                  Register
+                </span>
+              </Typography>
+            </div>
+          )}
 
           {/* Only show Google OAuth section when School Admin is selected */}
           {role === 'school' && (
@@ -554,8 +552,8 @@ export default function Login() {
         </Box>
 
         {/* Forgot Password Dialog */}
-        <Dialog 
-          open={forgotPasswordOpen} 
+        <Dialog
+          open={forgotPasswordOpen}
           onClose={() => {
             setForgotPasswordOpen(false);
             setForgotPasswordMessage('');
@@ -565,7 +563,7 @@ export default function Login() {
             sx: {
               bgcolor: 'background.paper',
               color: 'text.primary',
-              minWidth: '400px'
+              minWidth: { xs: '90vw', sm: '400px' }
             }
           }}
         >
@@ -600,7 +598,7 @@ export default function Login() {
             )}
           </DialogContent>
           <DialogActions>
-            <Button 
+            <Button
               onClick={() => {
                 setForgotPasswordOpen(false);
                 setForgotPasswordMessage('');
@@ -611,7 +609,7 @@ export default function Login() {
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleForgotPassword}
               disabled={forgotPasswordLoading}
               variant="contained"

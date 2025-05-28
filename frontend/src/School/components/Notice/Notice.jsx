@@ -709,7 +709,7 @@ const Notice = () => {
                 {/* Expiry Date */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Expiry Date (Optional)
+                    Select the date for which this notice applies
                   </label>
                   <input
                     type="date"
@@ -718,9 +718,6 @@ const Notice = () => {
                     min={new Date().toISOString().split('T')[0]}
                     className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   />
-                  <div className="text-xs text-gray-400 mt-1">
-                    Leave empty for automatic 30-day expiry from creation date
-                  </div>
                 </div>
 
                 {/* Important checkbox */}
