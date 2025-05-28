@@ -4,7 +4,8 @@ const schoolSchema = new mongoose.Schema({
     schoolName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     ownerName: { type: String, required: true },
-    schoolImg: { type: String, required: true },
+    schoolImg: { type: String, required: true }, // Now stores Cloudinary URL
+    schoolImgPublicId: { type: String }, // Stores Cloudinary public ID for deletion
     password: { type: String, required: true },
         
     isOAuthUser: { type: Boolean, default: false },
@@ -22,7 +23,6 @@ const schoolSchema = new mongoose.Schema({
 });
 
 schoolSchema.index({ email: 1, oauthProvider: 1 });
-
 schoolSchema.index({ resetPasswordToken: 1 });
 
 module.exports = mongoose.model("School", schoolSchema);

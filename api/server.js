@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -7,7 +6,6 @@ const cookieParser = require('cookie-parser');
 const cron = require('node-cron');
 const path = require('path');
 const Schedule = require('./models/scheduleModel');
-
 
 const schoolRouter = require('./routes/schoolRouter');
 const classRouter = require('./routes/classRouter');
@@ -19,57 +17,39 @@ const attendanceRouter = require('./routes/attendanceRouter');
 const examinationRouter = require('./routes/examinationRouter');
 const noticeRouter = require('./routes/noticeRouter');
 
-
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-
 app.use(cookieParser()); 
 
-
-app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
-
-
+// Note: Since we're using Cloudinary, we no longer need local uploads directory
+// However, keeping this for backward compatibility or other file types
 const fs = require('fs');
 const uploadsDir = path.join(__dirname, 'uploads');
-const schoolDir = path.join(uploadsDir, 'school');
-const studentDir = path.join(uploadsDir, 'student');
-const teacherDir = path.join(uploadsDir, 'teacher');
 
+// Create uploads directory for any temporary files if needed
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
-if (!fs.existsSync(schoolDir)) {
-    fs.mkdirSync(schoolDir, { recursive: true });
-}
-if (!fs.existsSync(studentDir)) {
-    fs.mkdirSync(studentDir, { recursive: true });
-}
-if (!fs.existsSync(teacherDir)) {
-    fs.mkdirSync(teacherDir, { recursive: true });
-}
 
-
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log("MongoDB connected");
-        
         setupScheduleCleanupJob();
     })
     .catch((err) => {
         console.log("Connection error", err);
     });
 
-
+// Schedule cleanup job
 function setupScheduleCleanupJob() {
-    
     cron.schedule('0 0 * * *', async () => {
         try {
             console.log('Running schedule cleanup job...');
             const now = new Date();
 
-            
             const updateResult = await Schedule.updateMany(
                 {
                     status: 'active',
@@ -82,7 +62,6 @@ function setupScheduleCleanupJob() {
 
             console.log(`Marked ${updateResult.modifiedCount} schedules as completed`);
 
-            
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -101,7 +80,7 @@ function setupScheduleCleanupJob() {
     });
 }
 
-
+// Routes
 app.use('/api/school', schoolRouter);
 app.use('/api/class', classRouter);
 app.use('/api/subject', subjectRouter);
@@ -112,9 +91,8 @@ app.use('/api/attendance', attendanceRouter);
 app.use('/api/examination', examinationRouter);
 app.use('/api/notice', noticeRouter);
 
-
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
-    console.log(`Uploads directory: ${uploadsDir}`);
+    console.log('Images are now stored on Cloudinary cloud storage');
 });

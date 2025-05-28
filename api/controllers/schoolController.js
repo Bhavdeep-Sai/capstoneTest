@@ -8,10 +8,58 @@ const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const cloudinary = require("cloudinary").v2;
 
-// Email configuration - Fixed function name
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Helper function to upload image to Cloudinary
+const uploadToCloudinary = async (filePath, folder = 'school_management') => {
+  try {
+    const result = await cloudinary.uploader.upload(filePath, {
+      folder: folder,
+      use_filename: true,
+      unique_filename: true,
+      resource_type: 'image',
+      transformation: [
+        { width: 800, height: 600, crop: 'limit' },
+        { quality: 'auto', fetch_format: 'auto' }
+      ]
+    });
+    return {
+      success: true,
+      url: result.secure_url,
+      public_id: result.public_id,
+    };
+  } catch (error) {
+    console.error('Cloudinary upload error:', error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+};
+
+// Helper function to delete image from Cloudinary
+const deleteFromCloudinary = async (public_id) => {
+  try {
+    if (!public_id) return { result: 'ok' };
+    
+    const result = await cloudinary.uploader.destroy(public_id);
+    return result;
+  } catch (error) {
+    console.error('Cloudinary delete error:', error);
+    return { result: 'error', error: error.message };
+  }
+};
+
+// Email configuration
 const createTransporter = () => {
-  return nodemailer.createTransport({
+  return nodemailer.createTransporter({
     service: "Gmail",
     auth: {
       user: process.env.EMAIL_USER,
@@ -20,168 +68,263 @@ const createTransporter = () => {
   });
 };
 
+// Helper function to clean up temporary files
+const cleanupTempFile = (filePath) => {
+  try {
+    if (filePath && fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  } catch (error) {
+    console.error('Error cleaning up temp file:', error);
+  }
+};
+
 module.exports = {
   registerSchool: async (req, res) => {
+    let tempFilePath = null;
+    
     try {
-      const form = new formidable.IncomingForm();
-      form.parse(req, async (err, fields, files) => {
-        if (err) {
-          return res
-            .status(400)
-            .json({ success: false, message: "Form parsing error" });
-        }
-
-        if (!files.image || !files.image[0]) {
-          return res
-            .status(400)
-            .json({ success: false, message: "School image is required" });
-        }
-
-        // Check if school with email already exists
-        const existingSchool = await School.findOne({ email: fields.email[0] });
-        if (existingSchool) {
-          return res.status(400).json({
-            success: false,
-            message: "School with this email already exists",
-          });
-        }
-
-        const photo = files.image[0];
-        let filepath = photo.filepath;
-
-        // Generate unique filename to avoid conflicts
-        const timestamp = Date.now();
-        const fileExtension = path.extname(photo.originalFilename);
-        const originalName = path
-          .basename(photo.originalFilename, fileExtension)
-          .replace(/\s+/g, "_");
-        const uniqueFilename = `${originalName}_${timestamp}${fileExtension}`;
-
-        // Save to backend uploads directory
-        let newPath = path.join(
-          __dirname,
-          "../uploads/school/",
-          uniqueFilename
-        );
-
-        // Create directory if it doesn't exist
-        const dir = path.dirname(newPath);
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
-        }
-
-        let photoData = fs.readFileSync(filepath);
-        fs.writeFileSync(newPath, photoData);
-
-        const salt = bcrypt.genSaltSync(10);
-        const hashPassword = bcrypt.hashSync(fields.password[0], salt);
-
-        const newSchool = new School({
-          schoolName: fields.schoolName[0],
-          email: fields.email[0],
-          ownerName: fields.ownerName[0],
-          schoolImg: uniqueFilename,
-          password: hashPassword,
-        });
-
-        const savedSchool = await newSchool.save();
-        res.status(200).json({
-          success: true,
-          data: savedSchool,
-          message: "School is registered Successfully",
-        });
+      const form = new formidable.IncomingForm({
+        maxFileSize: 10 * 1024 * 1024, // 10MB limit
+        allowEmptyFiles: false,
+        filter: ({ name, originalFilename, mimetype }) => {
+          return name === 'image' && mimetype && mimetype.includes('image');
+        },
       });
-    } catch (error) {
-      console.error("Register school error:", error);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal Server Error" });
-    }
-  },
 
-  // Google OAuth Registration - Modified to handle manual image upload
-  registerSchoolGoogle: async (req, res) => {
-    try {
-      const form = new formidable.IncomingForm();
       form.parse(req, async (err, fields, files) => {
         if (err) {
-          return res
-            .status(400)
-            .json({ success: false, message: "Form parsing error" });
-        }
-
-        const { token, schoolName, ownerName } = fields;
-
-        if (!token || !schoolName || !ownerName) {
-          return res.status(400).json({
-            success: false,
-            message: "Google token, school name, and owner name are required",
-          });
-        }
-
-        // Check if image is uploaded manually
-        if (!files.image || !files.image[0]) {
-          return res.status(400).json({
-            success: false,
-            message: "School image is required",
+          return res.status(400).json({ 
+            success: false, 
+            message: "Form parsing error: " + err.message 
           });
         }
 
         try {
-          // Verify Google token
-          const googleResponse = await axios.get(
-            `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${token[0]}`
-          );
+          // Validate required fields
+          const requiredFields = ['schoolName', 'email', 'ownerName', 'password'];
+          for (const field of requiredFields) {
+            if (!fields[field] || !fields[field][0]) {
+              return res.status(400).json({
+                success: false,
+                message: `${field} is required`
+              });
+            }
+          }
 
-          const { email, id: googleId, name } = googleResponse.data;
+          // Validate image
+          if (!files.image || !files.image[0]) {
+            return res.status(400).json({ 
+              success: false, 
+              message: "School image is required" 
+            });
+          }
 
-          // Check if school already exists
-          const existingSchool = await School.findOne({ email });
+          const photo = files.image[0];
+          tempFilePath = photo.filepath;
+
+          // Validate image file
+          if (!photo.mimetype || !photo.mimetype.startsWith('image/')) {
+            cleanupTempFile(tempFilePath);
+            return res.status(400).json({
+              success: false,
+              message: "Please upload a valid image file"
+            });
+          }
+
+          // Check if school with email already exists
+          const existingSchool = await School.findOne({ email: fields.email[0] });
           if (existingSchool) {
+            cleanupTempFile(tempFilePath);
             return res.status(400).json({
               success: false,
               message: "School with this email already exists",
             });
           }
 
-          // Handle manually uploaded image
-          const photo = files.image[0];
-          let filepath = photo.filepath;
-
-          // Generate unique filename to avoid conflicts
-          const timestamp = Date.now();
-          const fileExtension = path.extname(photo.originalFilename);
-          const originalName = path
-            .basename(photo.originalFilename, fileExtension)
-            .replace(/\s+/g, "_");
-          const uniqueFilename = `google_manual_${originalName}_${timestamp}${fileExtension}`;
-
-          // Save to backend uploads directory
-          let newPath = path.join(
-            __dirname,
-            "../uploads/school/",
-            uniqueFilename
+          // Upload image to Cloudinary
+          const uploadResult = await uploadToCloudinary(
+            photo.filepath, 
+            'school_management/schools'
           );
-
-          // Create directory if it doesn't exist
-          const dir = path.dirname(newPath);
-          if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
+          
+          if (!uploadResult.success) {
+            cleanupTempFile(tempFilePath);
+            return res.status(500).json({
+              success: false,
+              message: "Failed to upload image to cloud storage",
+              error: uploadResult.error,
+            });
           }
 
-          let photoData = fs.readFileSync(filepath);
-          fs.writeFileSync(newPath, photoData);
+          // Clean up temporary file
+          cleanupTempFile(tempFilePath);
+
+          // Hash password
+          const salt = bcrypt.genSaltSync(10);
+          const hashPassword = bcrypt.hashSync(fields.password[0], salt);
+
+          // Create new school
+          const newSchool = new School({
+            schoolName: fields.schoolName[0].trim(),
+            email: fields.email[0].toLowerCase().trim(),
+            ownerName: fields.ownerName[0].trim(),
+            schoolImg: uploadResult.url,
+            schoolImgPublicId: uploadResult.public_id,
+            password: hashPassword,
+          });
+
+          const savedSchool = await newSchool.save();
+          
+          // Remove password from response
+          const schoolData = savedSchool.toObject();
+          delete schoolData.password;
+          delete schoolData.resetPasswordToken;
+          delete schoolData.resetPasswordExpires;
+
+          res.status(201).json({
+            success: true,
+            data: schoolData,
+            message: "School registered successfully",
+          });
+
+        } catch (innerError) {
+          cleanupTempFile(tempFilePath);
+          console.error("Inner registration error:", innerError);
+          
+          if (innerError.code === 11000) {
+            return res.status(400).json({
+              success: false,
+              message: "School with this email already exists"
+            });
+          }
+          
+          throw innerError;
+        }
+      });
+    } catch (error) {
+      cleanupTempFile(tempFilePath);
+      console.error("Register school error:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Internal Server Error" 
+      });
+    }
+  },
+
+  registerSchoolGoogle: async (req, res) => {
+    let tempFilePath = null;
+    
+    try {
+      const form = new formidable.IncomingForm({
+        maxFileSize: 10 * 1024 * 1024, // 10MB limit
+        allowEmptyFiles: false,
+        filter: ({ name, originalFilename, mimetype }) => {
+          return name === 'image' && mimetype && mimetype.includes('image');
+        },
+      });
+
+      form.parse(req, async (err, fields, files) => {
+        if (err) {
+          return res.status(400).json({ 
+            success: false, 
+            message: "Form parsing error: " + err.message 
+          });
+        }
+
+        try {
+          const { token, schoolName, ownerName } = fields;
+
+          // Validate required fields
+          if (!token || !token[0] || !schoolName || !schoolName[0] || !ownerName || !ownerName[0]) {
+            return res.status(400).json({
+              success: false,
+              message: "Google token, school name, and owner name are required",
+            });
+          }
+
+          // Validate image
+          if (!files.image || !files.image[0]) {
+            return res.status(400).json({
+              success: false,
+              message: "School image is required",
+            });
+          }
+
+          const photo = files.image[0];
+          tempFilePath = photo.filepath;
+
+          // Validate image file
+          if (!photo.mimetype || !photo.mimetype.startsWith('image/')) {
+            cleanupTempFile(tempFilePath);
+            return res.status(400).json({
+              success: false,
+              message: "Please upload a valid image file"
+            });
+          }
+
+          // Verify Google token
+          const googleResponse = await axios.get(
+            `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${token[0]}`,
+            { timeout: 10000 }
+          );
+
+          const { email, id: googleId, name } = googleResponse.data;
+
+          if (!email || !googleId) {
+            cleanupTempFile(tempFilePath);
+            return res.status(400).json({
+              success: false,
+              message: "Invalid Google token - missing user data"
+            });
+          }
+
+          // Check if school already exists
+          const existingSchool = await School.findOne({ 
+            $or: [
+              { email: email },
+              { oauthId: googleId, oauthProvider: 'google' }
+            ]
+          });
+
+          if (existingSchool) {
+            cleanupTempFile(tempFilePath);
+            return res.status(400).json({
+              success: false,
+              message: "School with this email or Google account already exists",
+            });
+          }
+
+          // Upload image to Cloudinary
+          const uploadResult = await uploadToCloudinary(
+            photo.filepath, 
+            'school_management/schools/google'
+          );
+          
+          if (!uploadResult.success) {
+            cleanupTempFile(tempFilePath);
+            return res.status(500).json({
+              success: false,
+              message: "Failed to upload image to cloud storage",
+              error: uploadResult.error,
+            });
+          }
+
+          // Clean up temporary file
+          cleanupTempFile(tempFilePath);
 
           // Generate a random password for OAuth users
-          const randomPassword = Math.random().toString(36).slice(-12);
+          const randomPassword = crypto.randomBytes(16).toString('hex');
           const salt = bcrypt.genSaltSync(10);
           const hashPassword = bcrypt.hashSync(randomPassword, salt);
 
+          // Create new school
           const newSchool = new School({
-            schoolName: schoolName[0],
-            email,
-            ownerName: ownerName[0],
-            schoolImg: uniqueFilename,
+            schoolName: schoolName[0].trim(),
+            email: email.toLowerCase().trim(),
+            ownerName: ownerName[0].trim(),
+            schoolImg: uploadResult.url,
+            schoolImgPublicId: uploadResult.public_id,
             password: hashPassword,
             oauthProvider: "google",
             oauthId: googleId,
@@ -190,29 +333,37 @@ module.exports = {
 
           const savedSchool = await newSchool.save();
 
-          res.status(200).json({
+          // Remove sensitive data from response
+          const schoolData = savedSchool.toObject();
+          delete schoolData.password;
+          delete schoolData.resetPasswordToken;
+          delete schoolData.resetPasswordExpires;
+
+          res.status(201).json({
             success: true,
             message: "School registered successfully with Google",
-            data: {
-              id: savedSchool._id,
-              ownerName: savedSchool.ownerName,
-              schoolName: savedSchool.schoolName,
-              schoolImg: savedSchool.schoolImg,
-              email: savedSchool.email,
-              isOAuthUser: true,
-              oauthProvider: "google"
-            },
+            data: schoolData,
           });
 
         } catch (googleError) {
+          cleanupTempFile(tempFilePath);
           console.error("Google OAuth verification error:", googleError);
+          
+          if (googleError.response?.status === 401) {
+            return res.status(400).json({
+              success: false,
+              message: "Invalid or expired Google token",
+            });
+          }
+          
           return res.status(400).json({
             success: false,
-            message: "Invalid Google token or verification failed",
+            message: "Google token verification failed",
           });
         }
       });
     } catch (error) {
+      cleanupTempFile(tempFilePath);
       console.error("Google OAuth registration error:", error);
       res.status(500).json({
         success: false,
@@ -223,68 +374,86 @@ module.exports = {
 
   loginSchool: async (req, res) => {
     try {
-      const school = await School.findOne({ email: req.body.email });
+      const { email, password } = req.body;
 
-      if (school) {
-        // Check if it's an OAuth user trying to login with password
-        if (school.isOAuthUser) {
-          return res.status(400).json({
-            success: false,
-            message: `This account was created with ${school.oauthProvider}. Please use ${school.oauthProvider} login.`,
-          });
-        }
-
-        const isAuth = await bcrypt.compare(req.body.password, school.password);
-
-        if (isAuth) {
-          const jwtSecret = process.env.JWT_SECRET;
-          const token = jwt.sign(
-            {
-              id: school._id,
-              schoolId: school._id,
-              ownerName: school.ownerName,
-              schoolName: school.schoolName,
-              schoolImg: school.schoolImg,
-              role: "SCHOOL",
-            },
-            jwtSecret
-          );
-          res.header("Authorization", token);
-
-          return res.status(200).json({
-            success: true,
-            message: "Success Login.",
-            user: {
-              id: school._id,
-              ownerName: school.ownerName,
-              schoolName: school.schoolName,
-              schoolImg: school.schoolImg,
-              role: "SCHOOL",
-            },
-            token: token,
-          });
-        } else {
-          return res
-            .status(401)
-            .json({ success: false, message: "Password is Incorrect" });
-        }
-      } else {
-        return res
-          .status(404)
-          .json({ success: false, message: "Email not found" });
+      if (!email || !password) {
+        return res.status(400).json({
+          success: false,
+          message: "Email and password are required"
+        });
       }
+
+      const school = await School.findOne({ 
+        email: email.toLowerCase().trim() 
+      });
+
+      if (!school) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Email not found" 
+        });
+      }
+
+      // Check if it's an OAuth user trying to login with password
+      if (school.isOAuthUser) {
+        return res.status(400).json({
+          success: false,
+          message: `This account was created with ${school.oauthProvider}. Please use ${school.oauthProvider} login.`,
+        });
+      }
+
+      const isAuth = await bcrypt.compare(password, school.password);
+
+      if (!isAuth) {
+        return res.status(401).json({ 
+          success: false, 
+          message: "Password is incorrect" 
+        });
+      }
+
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        throw new Error("JWT_SECRET not configured");
+      }
+
+      const token = jwt.sign(
+        {
+          id: school._id,
+          schoolId: school._id,
+          ownerName: school.ownerName,
+          schoolName: school.schoolName,
+          schoolImg: school.schoolImg,
+          role: "SCHOOL",
+        },
+        jwtSecret,
+        { expiresIn: '7d' }
+      );
+
+      res.header("Authorization", token);
+
+      return res.status(200).json({
+        success: true,
+        message: "Login successful",
+        user: {
+          id: school._id,
+          ownerName: school.ownerName,
+          schoolName: school.schoolName,
+          schoolImg: school.schoolImg,
+          email: school.email,
+          role: "SCHOOL",
+        },
+        token: token,
+      });
+
     } catch (error) {
       console.error("Login school error:", error);
-      res
-        .status(500)
-        .json({
-          success: false,
-          message: "Internal server error [SCHOOL LOGIN]",
-        });
+      res.status(500).json({
+        success: false,
+        message: "Internal server error during login",
+      });
     }
   },
 
-  // Google OAuth Login
   loginSchoolGoogle: async (req, res) => {
     try {
       const { email } = req.body;
@@ -298,45 +467,51 @@ module.exports = {
 
       // Find school with Google OAuth
       const school = await School.findOne({
-        email: email,
+        email: email.toLowerCase().trim(),
         oauthProvider: "google",
         isOAuthUser: true,
       });
 
-      if (school) {
-        const jwtSecret = process.env.JWT_SECRET;
-        const token = jwt.sign(
-          {
-            id: school._id,
-            schoolId: school._id,
-            ownerName: school.ownerName,
-            schoolName: school.schoolName,
-            schoolImg: school.schoolImg,
-            role: "SCHOOL",
-          },
-          jwtSecret
-        );
-
-        res.header("Authorization", token);
-
-        return res.status(200).json({
-          success: true,
-          message: "Google Login Successful",
-          user: {
-            id: school._id,
-            ownerName: school.ownerName,
-            schoolName: school.schoolName,
-            schoolImg: school.schoolImg,
-            role: "SCHOOL",
-          },
-          token: token,
-        });
-      } else {
+      if (!school) {
         return res.status(404).json({
           success: false,
           message: "No account found with this Google account",
         });
       }
+
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        throw new Error("JWT_SECRET not configured");
+      }
+
+      const token = jwt.sign(
+        {
+          id: school._id,
+          schoolId: school._id,
+          ownerName: school.ownerName,
+          schoolName: school.schoolName,
+          schoolImg: school.schoolImg,
+          role: "SCHOOL",
+        },
+        jwtSecret,
+        { expiresIn: '7d' }
+      );
+
+      res.header("Authorization", token);
+
+      return res.status(200).json({
+        success: true,
+        message: "Google login successful",
+        user: {
+          id: school._id,
+          ownerName: school.ownerName,
+          schoolName: school.schoolName,
+          schoolImg: school.schoolImg,
+          email: school.email,
+          role: "SCHOOL",
+        },
+        token: token,
+      });
     } catch (error) {
       console.error("Google OAuth login error:", error);
       res.status(500).json({
@@ -346,7 +521,6 @@ module.exports = {
     }
   },
 
-  // Forgot Password
   forgotPassword: async (req, res) => {
     try {
       const { email } = req.body;
@@ -359,7 +533,9 @@ module.exports = {
       }
 
       // Find the school by email
-      const school = await School.findOne({ email });
+      const school = await School.findOne({ 
+        email: email.toLowerCase().trim() 
+      });
 
       if (!school) {
         return res.status(404).json({
@@ -422,7 +598,7 @@ module.exports = {
         `,
       };
 
-      // Send email - Fixed function call
+      // Send email
       const transporter = createTransporter();
       await transporter.sendMail(mailOptions);
 
@@ -439,7 +615,6 @@ module.exports = {
     }
   },
 
-  // Reset Password
   resetPassword: async (req, res) => {
     try {
       const { token, newPassword } = req.body;
@@ -448,6 +623,13 @@ module.exports = {
         return res.status(400).json({
           success: false,
           message: "Reset token and new password are required",
+        });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: "Password must be at least 6 characters long",
         });
       }
 
@@ -487,10 +669,16 @@ module.exports = {
     }
   },
 
-  // Verify Reset Token
   verifyResetToken: async (req, res) => {
     try {
       const { token } = req.params;
+
+      if (!token) {
+        return res.status(400).json({
+          success: false,
+          message: "Reset token is required",
+        });
+      }
 
       const school = await School.findOne({
         resetPasswordToken: token,
@@ -520,133 +708,252 @@ module.exports = {
 
   getAllSchools: async (req, res) => {
     try {
-      const schools = await School.find().select(
-        "-password -__v -createdAt -resetPasswordToken -resetPasswordExpires"
-      );
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      const schools = await School.find()
+        .select("-password -__v -resetPasswordToken -resetPasswordExpires")
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 });
+
+      const total = await School.countDocuments();
 
       if (!schools || schools.length === 0) {
-        return res
-          .status(404)
-          .json({ success: false, message: "No School data found" });
+        return res.status(404).json({ 
+          success: false, 
+          message: "No schools found" 
+        });
       }
 
-      res.status(200).json({ success: true, message: "Data Found", schools });
+      res.status(200).json({ 
+        success: true, 
+        message: "Schools retrieved successfully", 
+        schools,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalSchools: total,
+          hasNextPage: skip + schools.length < total,
+          hasPrevPage: page > 1
+        }
+      });
     } catch (error) {
       console.error("Get all schools error:", error);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal Server Error" });
+      res.status(500).json({ 
+        success: false, 
+        message: "Internal Server Error" 
+      });
     }
   },
 
   getSchoolOwnData: async (req, res) => {
     try {
       const id = req.user.id;
+      
       const school = await School.findOne({ _id: id }).select(
-        "-password -resetPasswordToken -resetPasswordExpires"
+        "-password -resetPasswordToken -resetPasswordExpires -__v"
       );
 
       if (!school) {
-        return res
-          .status(404)
-          .json({ success: false, message: "School Not Found" });
+        return res.status(404).json({ 
+          success: false, 
+          message: "School not found" 
+        });
       }
 
-      res.status(200).json({ success: true, school });
+      res.status(200).json({ 
+        success: true, 
+        message: "School data retrieved successfully",
+        school 
+      });
     } catch (error) {
       console.error("Get school own data error:", error);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal Server Error" });
+      res.status(500).json({ 
+        success: false, 
+        message: "Internal Server Error" 
+      });
     }
   },
 
   updateSchool: async (req, res) => {
+    let tempFilePath = null;
+    
     try {
       const id = req.user.id;
-      const form = new formidable.IncomingForm();
+      
+      const form = new formidable.IncomingForm({
+        maxFileSize: 10 * 1024 * 1024, // 10MB limit
+        allowEmptyFiles: true,
+        filter: ({ name, originalFilename, mimetype }) => {
+          // Allow all fields, but validate image if provided
+          if (name === 'image' && originalFilename) {
+            return mimetype && mimetype.includes('image');
+          }
+          return true;
+        },
+      });
 
       form.parse(req, async (err, fields, files) => {
         if (err) {
-          return res
-            .status(400)
-            .json({ success: false, message: "Form parsing error" });
+          return res.status(400).json({ 
+            success: false, 
+            message: "Form parsing error: " + err.message 
+          });
         }
 
-        const school = await School.findOne({ _id: id });
+        try {
+          const school = await School.findOne({ _id: id });
 
-        if (!school) {
-          return res
-            .status(404)
-            .json({ success: false, message: "School not found" });
-        }
+          if (!school) {
+            return res.status(404).json({ 
+              success: false, 
+              message: "School not found" 
+            });
+          }
 
-        // Update fields
-        Object.keys(fields).forEach((field) => {
-          school[field] = fields[field][0];
-        });
+          // Update basic fields
+          const allowedFields = ['schoolName', 'ownerName'];
+          allowedFields.forEach((field) => {
+            if (fields[field] && fields[field][0]) {
+              school[field] = fields[field][0].trim();
+            }
+          });
 
-        // Handle image update if provided
-        if (files.image && files.image[0]) {
-          const photo = files.image[0];
-          let filepath = photo.filepath;
-
-          // Generate unique filename
-          const timestamp = Date.now();
-          const fileExtension = path.extname(photo.originalFilename);
-          const originalName = path
-            .basename(photo.originalFilename, fileExtension)
-            .replace(/\s+/g, "_");
-          const uniqueFilename = `${originalName}_${timestamp}${fileExtension}`;
-
-          // Delete old image if exists and it's not from Google OAuth
-          if (school.schoolImg && !school.schoolImg.includes("google_")) {
-            let oldImagePath = path.join(
-              __dirname,
-              "../uploads/school/",
-              school.schoolImg
-            );
-            if (fs.existsSync(oldImagePath)) {
-              fs.unlinkSync(oldImagePath);
+          // Handle email update (check for uniqueness)
+          if (fields.email && fields.email[0]) {
+            const newEmail = fields.email[0].toLowerCase().trim();
+            if (newEmail !== school.email) {
+              const existingSchool = await School.findOne({ 
+                email: newEmail,
+                _id: { $ne: id }
+              });
+              
+              if (existingSchool) {
+                return res.status(400).json({
+                  success: false,
+                  message: "Email already exists"
+                });
+              }
+              
+              school.email = newEmail;
             }
           }
 
-          let newPath = path.join(
-            __dirname,
-            "../uploads/school/",
-            uniqueFilename
-          );
+          // Handle image update if provided
+          if (files.image && files.image[0]) {
+            const photo = files.image[0];
+            tempFilePath = photo.filepath;
+            
+            // Validate image file
+            if (!photo.mimetype || !photo.mimetype.startsWith('image/')) {
+              cleanupTempFile(tempFilePath);
+              return res.status(400).json({
+                success: false,
+                message: "Please upload a valid image file"
+              });
+            }
+            
+            // Upload new image to Cloudinary
+            const uploadResult = await uploadToCloudinary(
+              photo.filepath, 
+              'school_management/schools/updated'
+            );
+            
+            if (!uploadResult.success) {
+              cleanupTempFile(tempFilePath);
+              return res.status(500).json({
+                success: false,
+                message: "Failed to upload new image to cloud storage",
+                error: uploadResult.error,
+              });
+            }
 
-          // Create directory if it doesn't exist
-          const dir = path.dirname(newPath);
-          if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
+            // Delete old image from Cloudinary if it exists
+            if (school.schoolImgPublicId) {
+              await deleteFromCloudinary(school.schoolImgPublicId);
+            }
+
+            // Clean up temporary file
+            cleanupTempFile(tempFilePath);
+
+            // Update school image references
+            school.schoolImg = uploadResult.url;
+            school.schoolImgPublicId = uploadResult.public_id;
           }
 
-          let photoData = fs.readFileSync(filepath);
-          fs.writeFileSync(newPath, photoData);
+          await school.save();
+          
+          // Return updated school data without sensitive information
+          const updatedSchool = school.toObject();
+          delete updatedSchool.password;
+          delete updatedSchool.resetPasswordToken;
+          delete updatedSchool.resetPasswordExpires;
+          delete updatedSchool.__v;
 
-          school.schoolImg = uniqueFilename;
+          res.status(200).json({
+            success: true,
+            message: "School data updated successfully",
+            school: updatedSchool,
+          });
+
+        } catch (innerError) {
+          cleanupTempFile(tempFilePath);
+          console.error("Inner update error:", innerError);
+          
+          if (innerError.code === 11000) {
+            return res.status(400).json({
+              success: false,
+              message: "Email already exists"
+            });
+          }
+          
+          throw innerError;
         }
-
-        await school.save();
-        res.status(200).json({
-          success: true,
-          message: "School data Updated",
-          school: {
-            id: school._id,
-            schoolName: school.schoolName,
-            ownerName: school.ownerName,
-            email: school.email,
-            schoolImg: school.schoolImg,
-          },
-        });
       });
     } catch (error) {
+      cleanupTempFile(tempFilePath);
       console.error("Update school error:", error);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal Server Error" });
+      res.status(500).json({ 
+        success: false, 
+        message: "Internal Server Error" 
+      });
+    }
+  },
+
+  deleteSchool: async (req, res) => {
+    try {
+      const id = req.user.id;
+      
+      const school = await School.findOne({ _id: id });
+
+      if (!school) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "School not found" 
+        });
+      }
+
+      // Delete image from Cloudinary if exists
+      if (school.schoolImgPublicId) {
+        await deleteFromCloudinary(school.schoolImgPublicId);
+      }
+
+      // Delete school from database
+      await School.findByIdAndDelete(id);
+
+      res.status(200).json({
+        success: true,
+        message: "School account deleted successfully"
+      });
+
+    } catch (error) {
+      console.error("Delete school error:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Internal Server Error" 
+      });
     }
   },
 };
