@@ -59,7 +59,7 @@ const deleteFromCloudinary = async (public_id) => {
 
 // Email configuration
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     service: "Gmail",
     auth: {
       user: process.env.EMAIL_USER,
@@ -777,183 +777,162 @@ module.exports = {
     }
   },
 
-  updateSchool: async (req, res) => {
-    let tempFilePath = null;
-    
-    try {
-      const id = req.user.id;
-      
-      const form = new formidable.IncomingForm({
-        maxFileSize: 10 * 1024 * 1024, // 10MB limit
-        allowEmptyFiles: true,
-        filter: ({ name, originalFilename, mimetype }) => {
-          // Allow all fields, but validate image if provided
-          if (name === 'image' && originalFilename) {
-            return mimetype && mimetype.includes('image');
-          }
-          return true;
-        },
-      });
+// Update School
+updateSchool: async (req, res) => {
+  let tempFilePath = null;
 
-      form.parse(req, async (err, fields, files) => {
-        if (err) {
-          return res.status(400).json({ 
-            success: false, 
-            message: "Form parsing error: " + err.message 
-          });
+  try {
+    const id = req.user.id;
+
+    const form = new formidable.IncomingForm({
+      maxFileSize: 10 * 1024 * 1024, // 10MB limit
+      allowEmptyFiles: true,
+      filter: ({ name, originalFilename, mimetype }) => {
+        if (name === 'image' && originalFilename) {
+          return mimetype && mimetype.includes('image');
         }
+        return true;
+      },
+    });
 
-        try {
-          const school = await School.findOne({ _id: id });
-
-          if (!school) {
-            return res.status(404).json({ 
-              success: false, 
-              message: "School not found" 
-            });
-          }
-
-          // Update basic fields
-          const allowedFields = ['schoolName', 'ownerName'];
-          allowedFields.forEach((field) => {
-            if (fields[field] && fields[field][0]) {
-              school[field] = fields[field][0].trim();
-            }
-          });
-
-          // Handle email update (check for uniqueness)
-          if (fields.email && fields.email[0]) {
-            const newEmail = fields.email[0].toLowerCase().trim();
-            if (newEmail !== school.email) {
-              const existingSchool = await School.findOne({ 
-                email: newEmail,
-                _id: { $ne: id }
-              });
-              
-              if (existingSchool) {
-                return res.status(400).json({
-                  success: false,
-                  message: "Email already exists"
-                });
-              }
-              
-              school.email = newEmail;
-            }
-          }
-
-          // Handle image update if provided
-          if (files.image && files.image[0]) {
-            const photo = files.image[0];
-            tempFilePath = photo.filepath;
-            
-            // Validate image file
-            if (!photo.mimetype || !photo.mimetype.startsWith('image/')) {
-              cleanupTempFile(tempFilePath);
-              return res.status(400).json({
-                success: false,
-                message: "Please upload a valid image file"
-              });
-            }
-            
-            // Upload new image to Cloudinary
-            const uploadResult = await uploadToCloudinary(
-              photo.filepath, 
-              'school_management/schools/updated'
-            );
-            
-            if (!uploadResult.success) {
-              cleanupTempFile(tempFilePath);
-              return res.status(500).json({
-                success: false,
-                message: "Failed to upload new image to cloud storage",
-                error: uploadResult.error,
-              });
-            }
-
-            // Delete old image from Cloudinary if it exists
-            if (school.schoolImgPublicId) {
-              await deleteFromCloudinary(school.schoolImgPublicId);
-            }
-
-            // Clean up temporary file
-            cleanupTempFile(tempFilePath);
-
-            // Update school image references
-            school.schoolImg = uploadResult.url;
-            school.schoolImgPublicId = uploadResult.public_id;
-          }
-
-          await school.save();
-          
-          // Return updated school data without sensitive information
-          const updatedSchool = school.toObject();
-          delete updatedSchool.password;
-          delete updatedSchool.resetPasswordToken;
-          delete updatedSchool.resetPasswordExpires;
-          delete updatedSchool.__v;
-
-          res.status(200).json({
-            success: true,
-            message: "School data updated successfully",
-            school: updatedSchool,
-          });
-
-        } catch (innerError) {
-          cleanupTempFile(tempFilePath);
-          console.error("Inner update error:", innerError);
-          
-          if (innerError.code === 11000) {
-            return res.status(400).json({
-              success: false,
-              message: "Email already exists"
-            });
-          }
-          
-          throw innerError;
-        }
-      });
-    } catch (error) {
-      cleanupTempFile(tempFilePath);
-      console.error("Update school error:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Internal Server Error" 
-      });
-    }
-  },
-
-  deleteSchool: async (req, res) => {
-    try {
-      const id = req.user.id;
-      
-      const school = await School.findOne({ _id: id });
-
-      if (!school) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "School not found" 
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Form parsing error: " + err.message
         });
       }
 
-      // Delete image from Cloudinary if exists
-      if (school.schoolImgPublicId) {
-        await deleteFromCloudinary(school.schoolImgPublicId);
+      try {
+        const school = await School.findOne({ _id: id });
+
+        if (!school) {
+          return res.status(404).json({
+            success: false,
+            message: "School not found"
+          });
+        }
+
+        // Update basic fields
+        const allowedFields = ['schoolName', 'ownerName', 'email'];
+        allowedFields.forEach((field) => {
+          if (fields[field] && fields[field][0]) {
+            school[field] = fields[field][0].trim();
+          }
+        });
+
+        // Handle image update if provided
+        if (files.image && files.image[0]) {
+          const photo = files.image[0];
+          tempFilePath = photo.filepath;
+
+          // Validate image file
+          if (!photo.mimetype || !photo.mimetype.startsWith('image/')) {
+            cleanupTempFile(tempFilePath);
+            return res.status(400).json({
+              success: false,
+              message: "Please upload a valid image file"
+            });
+          }
+
+          // Upload new image to Cloudinary
+          const uploadResult = await uploadToCloudinary(photo.filepath, 'school_management/schools/updated');
+
+          if (!uploadResult.success) {
+            cleanupTempFile(tempFilePath);
+            return res.status(500).json({
+              success: false,
+              message: "Failed to upload new image to cloud storage",
+              error: uploadResult.error,
+            });
+          }
+
+          // Delete old image from Cloudinary if it exists
+          if (school.schoolImgPublicId) {
+            await deleteFromCloudinary(school.schoolImgPublicId);
+          }
+
+          // Clean up temporary file
+          cleanupTempFile(tempFilePath);
+
+          // Update school image references
+          school.schoolImg = uploadResult.url;
+          school.schoolImgPublicId = uploadResult.public_id;
+        }
+
+        await school.save();
+
+        // Return updated school data without sensitive information
+        const updatedSchool = school.toObject();
+        delete updatedSchool.password;
+        delete updatedSchool.resetPasswordToken;
+        delete updatedSchool.resetPasswordExpires;
+        delete updatedSchool.__v;
+
+        res.status(200).json({
+          success: true,
+          message: "School data updated successfully",
+          school: updatedSchool,
+        });
+
+      } catch (innerError) {
+        cleanupTempFile(tempFilePath);
+        console.error("Inner update error:", innerError);
+
+        if (innerError.code === 11000) {
+          return res.status(400).json({
+            success: false,
+            message: "Email already exists"
+          });
+        }
+
+        throw innerError;
       }
+    });
+  } catch (error) {
+    cleanupTempFile(tempFilePath);
+    console.error("Update school error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
+  }
+},
 
-      // Delete school from database
-      await School.findByIdAndDelete(id);
+// Delete School
+deleteSchool: async (req, res) => {
+  try {
+    const id = req.user.id;
 
-      res.status(200).json({
-        success: true,
-        message: "School account deleted successfully"
-      });
+    const school = await School.findOne({ _id: id });
 
-    } catch (error) {
-      console.error("Delete school error:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Internal Server Error" 
+    if (!school) {
+      return res.status(404).json({
+        success: false,
+        message: "School not found"
       });
     }
-  },
+
+    // Delete image from Cloudinary if exists
+    if (school.schoolImgPublicId) {
+      await deleteFromCloudinary(school.schoolImgPublicId);
+    }
+
+    // Delete school from database
+    await School.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "School account deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Delete school error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
+  }
+},
+
 };
