@@ -574,7 +574,8 @@ module.exports = {
       await school.save();
 
       // Create password reset URL
-      const resetURL = `https://capstone-test-a7fl.vercel.app/reset-password/${resetToken}`;
+      const frontedURL = process.env.FRONTEND_URL;
+      const resetURL = `${frontedURL}/reset-password/${resetToken}`;
 
       // Email content
       const mailOptions = {
