@@ -18,17 +18,17 @@ cloudinary.config({
 });
 
 // Helper function to upload image to Cloudinary
-const uploadToCloudinary = async (filePath, folder = 'school_management') => {
+const uploadToCloudinary = async (filePath, folder = "school_management") => {
   try {
     const result = await cloudinary.uploader.upload(filePath, {
       folder: folder,
       use_filename: true,
       unique_filename: true,
-      resource_type: 'image',
+      resource_type: "image",
       transformation: [
-        { width: 800, height: 600, crop: 'limit' },
-        { quality: 'auto', fetch_format: 'auto' }
-      ]
+        { width: 800, height: 600, crop: "limit" },
+        { quality: "auto", fetch_format: "auto" },
+      ],
     });
     return {
       success: true,
@@ -36,7 +36,7 @@ const uploadToCloudinary = async (filePath, folder = 'school_management') => {
       public_id: result.public_id,
     };
   } catch (error) {
-    console.error('Cloudinary upload error:', error);
+    console.error("Cloudinary upload error:", error);
     return {
       success: false,
       error: error.message,
@@ -47,13 +47,13 @@ const uploadToCloudinary = async (filePath, folder = 'school_management') => {
 // Helper function to delete image from Cloudinary
 const deleteFromCloudinary = async (public_id) => {
   try {
-    if (!public_id) return { result: 'ok' };
-    
+    if (!public_id) return { result: "ok" };
+
     const result = await cloudinary.uploader.destroy(public_id);
     return result;
   } catch (error) {
-    console.error('Cloudinary delete error:', error);
-    return { result: 'error', error: error.message };
+    console.error("Cloudinary delete error:", error);
+    return { result: "error", error: error.message };
   }
 };
 
@@ -75,48 +75,53 @@ const cleanupTempFile = (filePath) => {
       fs.unlinkSync(filePath);
     }
   } catch (error) {
-    console.error('Error cleaning up temp file:', error);
+    console.error("Error cleaning up temp file:", error);
   }
 };
 
 module.exports = {
   registerSchool: async (req, res) => {
     let tempFilePath = null;
-    
+
     try {
       const form = new formidable.IncomingForm({
         maxFileSize: 10 * 1024 * 1024, // 10MB limit
         allowEmptyFiles: false,
         filter: ({ name, originalFilename, mimetype }) => {
-          return name === 'image' && mimetype && mimetype.includes('image');
+          return name === "image" && mimetype && mimetype.includes("image");
         },
       });
 
       form.parse(req, async (err, fields, files) => {
         if (err) {
-          return res.status(400).json({ 
-            success: false, 
-            message: "Form parsing error: " + err.message 
+          return res.status(400).json({
+            success: false,
+            message: "Form parsing error: " + err.message,
           });
         }
 
         try {
           // Validate required fields
-          const requiredFields = ['schoolName', 'email', 'ownerName', 'password'];
+          const requiredFields = [
+            "schoolName",
+            "email",
+            "ownerName",
+            "password",
+          ];
           for (const field of requiredFields) {
             if (!fields[field] || !fields[field][0]) {
               return res.status(400).json({
                 success: false,
-                message: `${field} is required`
+                message: `${field} is required`,
               });
             }
           }
 
           // Validate image
           if (!files.image || !files.image[0]) {
-            return res.status(400).json({ 
-              success: false, 
-              message: "School image is required" 
+            return res.status(400).json({
+              success: false,
+              message: "School image is required",
             });
           }
 
@@ -124,16 +129,18 @@ module.exports = {
           tempFilePath = photo.filepath;
 
           // Validate image file
-          if (!photo.mimetype || !photo.mimetype.startsWith('image/')) {
+          if (!photo.mimetype || !photo.mimetype.startsWith("image/")) {
             cleanupTempFile(tempFilePath);
             return res.status(400).json({
               success: false,
-              message: "Please upload a valid image file"
+              message: "Please upload a valid image file",
             });
           }
 
           // Check if school with email already exists
-          const existingSchool = await School.findOne({ email: fields.email[0] });
+          const existingSchool = await School.findOne({
+            email: fields.email[0],
+          });
           if (existingSchool) {
             cleanupTempFile(tempFilePath);
             return res.status(400).json({
@@ -144,10 +151,10 @@ module.exports = {
 
           // Upload image to Cloudinary
           const uploadResult = await uploadToCloudinary(
-            photo.filepath, 
-            'school_management/schools'
+            photo.filepath,
+            "school_management/schools"
           );
-          
+
           if (!uploadResult.success) {
             cleanupTempFile(tempFilePath);
             return res.status(500).json({
@@ -175,7 +182,7 @@ module.exports = {
           });
 
           const savedSchool = await newSchool.save();
-          
+
           // Remove password from response
           const schoolData = savedSchool.toObject();
           delete schoolData.password;
@@ -187,48 +194,47 @@ module.exports = {
             data: schoolData,
             message: "School registered successfully",
           });
-
         } catch (innerError) {
           cleanupTempFile(tempFilePath);
           console.error("Inner registration error:", innerError);
-          
+
           if (innerError.code === 11000) {
             return res.status(400).json({
               success: false,
-              message: "School with this email already exists"
+              message: "School with this email already exists",
             });
           }
-          
+
           throw innerError;
         }
       });
     } catch (error) {
       cleanupTempFile(tempFilePath);
       console.error("Register school error:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Internal Server Error" 
+      res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
       });
     }
   },
 
   registerSchoolGoogle: async (req, res) => {
     let tempFilePath = null;
-    
+
     try {
       const form = new formidable.IncomingForm({
         maxFileSize: 10 * 1024 * 1024, // 10MB limit
         allowEmptyFiles: false,
         filter: ({ name, originalFilename, mimetype }) => {
-          return name === 'image' && mimetype && mimetype.includes('image');
+          return name === "image" && mimetype && mimetype.includes("image");
         },
       });
 
       form.parse(req, async (err, fields, files) => {
         if (err) {
-          return res.status(400).json({ 
-            success: false, 
-            message: "Form parsing error: " + err.message 
+          return res.status(400).json({
+            success: false,
+            message: "Form parsing error: " + err.message,
           });
         }
 
@@ -236,7 +242,14 @@ module.exports = {
           const { token, schoolName, ownerName } = fields;
 
           // Validate required fields
-          if (!token || !token[0] || !schoolName || !schoolName[0] || !ownerName || !ownerName[0]) {
+          if (
+            !token ||
+            !token[0] ||
+            !schoolName ||
+            !schoolName[0] ||
+            !ownerName ||
+            !ownerName[0]
+          ) {
             return res.status(400).json({
               success: false,
               message: "Google token, school name, and owner name are required",
@@ -255,11 +268,11 @@ module.exports = {
           tempFilePath = photo.filepath;
 
           // Validate image file
-          if (!photo.mimetype || !photo.mimetype.startsWith('image/')) {
+          if (!photo.mimetype || !photo.mimetype.startsWith("image/")) {
             cleanupTempFile(tempFilePath);
             return res.status(400).json({
               success: false,
-              message: "Please upload a valid image file"
+              message: "Please upload a valid image file",
             });
           }
 
@@ -275,32 +288,33 @@ module.exports = {
             cleanupTempFile(tempFilePath);
             return res.status(400).json({
               success: false,
-              message: "Invalid Google token - missing user data"
+              message: "Invalid Google token - missing user data",
             });
           }
 
           // Check if school already exists
-          const existingSchool = await School.findOne({ 
+          const existingSchool = await School.findOne({
             $or: [
               { email: email },
-              { oauthId: googleId, oauthProvider: 'google' }
-            ]
+              { oauthId: googleId, oauthProvider: "google" },
+            ],
           });
 
           if (existingSchool) {
             cleanupTempFile(tempFilePath);
             return res.status(400).json({
               success: false,
-              message: "School with this email or Google account already exists",
+              message:
+                "School with this email or Google account already exists",
             });
           }
 
           // Upload image to Cloudinary
           const uploadResult = await uploadToCloudinary(
-            photo.filepath, 
-            'school_management/schools/google'
+            photo.filepath,
+            "school_management/schools/google"
           );
-          
+
           if (!uploadResult.success) {
             cleanupTempFile(tempFilePath);
             return res.status(500).json({
@@ -314,7 +328,7 @@ module.exports = {
           cleanupTempFile(tempFilePath);
 
           // Generate a random password for OAuth users
-          const randomPassword = crypto.randomBytes(16).toString('hex');
+          const randomPassword = crypto.randomBytes(16).toString("hex");
           const salt = bcrypt.genSaltSync(10);
           const hashPassword = bcrypt.hashSync(randomPassword, salt);
 
@@ -344,18 +358,17 @@ module.exports = {
             message: "School registered successfully with Google",
             data: schoolData,
           });
-
         } catch (googleError) {
           cleanupTempFile(tempFilePath);
           console.error("Google OAuth verification error:", googleError);
-          
+
           if (googleError.response?.status === 401) {
             return res.status(400).json({
               success: false,
               message: "Invalid or expired Google token",
             });
           }
-          
+
           return res.status(400).json({
             success: false,
             message: "Google token verification failed",
@@ -379,18 +392,18 @@ module.exports = {
       if (!email || !password) {
         return res.status(400).json({
           success: false,
-          message: "Email and password are required"
+          message: "Email and password are required",
         });
       }
 
-      const school = await School.findOne({ 
-        email: email.toLowerCase().trim() 
+      const school = await School.findOne({
+        email: email.toLowerCase().trim(),
       });
 
       if (!school) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "Email not found" 
+        return res.status(404).json({
+          success: false,
+          message: "Email not found",
         });
       }
 
@@ -405,9 +418,9 @@ module.exports = {
       const isAuth = await bcrypt.compare(password, school.password);
 
       if (!isAuth) {
-        return res.status(401).json({ 
-          success: false, 
-          message: "Password is incorrect" 
+        return res.status(401).json({
+          success: false,
+          message: "Password is incorrect",
         });
       }
 
@@ -426,7 +439,7 @@ module.exports = {
           role: "SCHOOL",
         },
         jwtSecret,
-        { expiresIn: '7d' }
+        { expiresIn: "7d" }
       );
 
       res.header("Authorization", token);
@@ -444,7 +457,6 @@ module.exports = {
         },
         token: token,
       });
-
     } catch (error) {
       console.error("Login school error:", error);
       res.status(500).json({
@@ -494,7 +506,7 @@ module.exports = {
           role: "SCHOOL",
         },
         jwtSecret,
-        { expiresIn: '7d' }
+        { expiresIn: "7d" }
       );
 
       res.header("Authorization", token);
@@ -533,8 +545,8 @@ module.exports = {
       }
 
       // Find the school by email
-      const school = await School.findOne({ 
-        email: email.toLowerCase().trim() 
+      const school = await School.findOne({
+        email: email.toLowerCase().trim(),
       });
 
       if (!school) {
@@ -562,9 +574,7 @@ module.exports = {
       await school.save();
 
       // Create password reset URL
-      const resetURL = `${
-        process.env.FRONTEND_URL
-      }/reset-password/${resetToken}`;
+      const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
       // Email content
       const mailOptions = {
@@ -721,29 +731,29 @@ module.exports = {
       const total = await School.countDocuments();
 
       if (!schools || schools.length === 0) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "No schools found" 
+        return res.status(404).json({
+          success: false,
+          message: "No schools found",
         });
       }
 
-      res.status(200).json({ 
-        success: true, 
-        message: "Schools retrieved successfully", 
+      res.status(200).json({
+        success: true,
+        message: "Schools retrieved successfully",
         schools,
         pagination: {
           currentPage: page,
           totalPages: Math.ceil(total / limit),
           totalSchools: total,
           hasNextPage: skip + schools.length < total,
-          hasPrevPage: page > 1
-        }
+          hasPrevPage: page > 1,
+        },
       });
     } catch (error) {
       console.error("Get all schools error:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Internal Server Error" 
+      res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
       });
     }
   },
@@ -751,188 +761,188 @@ module.exports = {
   getSchoolOwnData: async (req, res) => {
     try {
       const id = req.user.id;
-      
+
       const school = await School.findOne({ _id: id }).select(
         "-password -resetPasswordToken -resetPasswordExpires -__v"
       );
 
       if (!school) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "School not found" 
+        return res.status(404).json({
+          success: false,
+          message: "School not found",
         });
       }
 
-      res.status(200).json({ 
-        success: true, 
+      res.status(200).json({
+        success: true,
         message: "School data retrieved successfully",
-        school 
+        school,
       });
     } catch (error) {
       console.error("Get school own data error:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Internal Server Error" 
+      res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
       });
     }
   },
 
-// Update School
-updateSchool: async (req, res) => {
-  let tempFilePath = null;
+  // Update School
+  updateSchool: async (req, res) => {
+    let tempFilePath = null;
 
-  try {
-    const id = req.user.id;
+    try {
+      const id = req.user.id;
 
-    const form = new formidable.IncomingForm({
-      maxFileSize: 10 * 1024 * 1024, // 10MB limit
-      allowEmptyFiles: true,
-      filter: ({ name, originalFilename, mimetype }) => {
-        if (name === 'image' && originalFilename) {
-          return mimetype && mimetype.includes('image');
-        }
-        return true;
-      },
-    });
-
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        return res.status(400).json({
-          success: false,
-          message: "Form parsing error: " + err.message
-        });
-      }
-
-      try {
-        const school = await School.findOne({ _id: id });
-
-        if (!school) {
-          return res.status(404).json({
-            success: false,
-            message: "School not found"
-          });
-        }
-
-        // Update basic fields
-        const allowedFields = ['schoolName', 'ownerName', 'email'];
-        allowedFields.forEach((field) => {
-          if (fields[field] && fields[field][0]) {
-            school[field] = fields[field][0].trim();
+      const form = new formidable.IncomingForm({
+        maxFileSize: 10 * 1024 * 1024, // 10MB limit
+        allowEmptyFiles: true,
+        filter: ({ name, originalFilename, mimetype }) => {
+          if (name === "image" && originalFilename) {
+            return mimetype && mimetype.includes("image");
           }
-        });
+          return true;
+        },
+      });
 
-        // Handle image update if provided
-        if (files.image && files.image[0]) {
-          const photo = files.image[0];
-          tempFilePath = photo.filepath;
-
-          // Validate image file
-          if (!photo.mimetype || !photo.mimetype.startsWith('image/')) {
-            cleanupTempFile(tempFilePath);
-            return res.status(400).json({
-              success: false,
-              message: "Please upload a valid image file"
-            });
-          }
-
-          // Upload new image to Cloudinary
-          const uploadResult = await uploadToCloudinary(photo.filepath, 'school_management/schools/updated');
-
-          if (!uploadResult.success) {
-            cleanupTempFile(tempFilePath);
-            return res.status(500).json({
-              success: false,
-              message: "Failed to upload new image to cloud storage",
-              error: uploadResult.error,
-            });
-          }
-
-          // Delete old image from Cloudinary if it exists
-          if (school.schoolImgPublicId) {
-            await deleteFromCloudinary(school.schoolImgPublicId);
-          }
-
-          // Clean up temporary file
-          cleanupTempFile(tempFilePath);
-
-          // Update school image references
-          school.schoolImg = uploadResult.url;
-          school.schoolImgPublicId = uploadResult.public_id;
-        }
-
-        await school.save();
-
-        // Return updated school data without sensitive information
-        const updatedSchool = school.toObject();
-        delete updatedSchool.password;
-        delete updatedSchool.resetPasswordToken;
-        delete updatedSchool.resetPasswordExpires;
-        delete updatedSchool.__v;
-
-        res.status(200).json({
-          success: true,
-          message: "School data updated successfully",
-          school: updatedSchool,
-        });
-
-      } catch (innerError) {
-        cleanupTempFile(tempFilePath);
-        console.error("Inner update error:", innerError);
-
-        if (innerError.code === 11000) {
+      form.parse(req, async (err, fields, files) => {
+        if (err) {
           return res.status(400).json({
             success: false,
-            message: "Email already exists"
+            message: "Form parsing error: " + err.message,
           });
         }
 
-        throw innerError;
-      }
-    });
-  } catch (error) {
-    cleanupTempFile(tempFilePath);
-    console.error("Update school error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error"
-    });
-  }
-},
+        try {
+          const school = await School.findOne({ _id: id });
 
-// Delete School
-deleteSchool: async (req, res) => {
-  try {
-    const id = req.user.id;
+          if (!school) {
+            return res.status(404).json({
+              success: false,
+              message: "School not found",
+            });
+          }
 
-    const school = await School.findOne({ _id: id });
+          // Update basic fields
+          const allowedFields = ["schoolName", "ownerName", "email"];
+          allowedFields.forEach((field) => {
+            if (fields[field] && fields[field][0]) {
+              school[field] = fields[field][0].trim();
+            }
+          });
 
-    if (!school) {
-      return res.status(404).json({
+          // Handle image update if provided
+          if (files.image && files.image[0]) {
+            const photo = files.image[0];
+            tempFilePath = photo.filepath;
+
+            // Validate image file
+            if (!photo.mimetype || !photo.mimetype.startsWith("image/")) {
+              cleanupTempFile(tempFilePath);
+              return res.status(400).json({
+                success: false,
+                message: "Please upload a valid image file",
+              });
+            }
+
+            // Upload new image to Cloudinary
+            const uploadResult = await uploadToCloudinary(
+              photo.filepath,
+              "school_management/schools/updated"
+            );
+
+            if (!uploadResult.success) {
+              cleanupTempFile(tempFilePath);
+              return res.status(500).json({
+                success: false,
+                message: "Failed to upload new image to cloud storage",
+                error: uploadResult.error,
+              });
+            }
+
+            // Delete old image from Cloudinary if it exists
+            if (school.schoolImgPublicId) {
+              await deleteFromCloudinary(school.schoolImgPublicId);
+            }
+
+            // Clean up temporary file
+            cleanupTempFile(tempFilePath);
+
+            // Update school image references
+            school.schoolImg = uploadResult.url;
+            school.schoolImgPublicId = uploadResult.public_id;
+          }
+
+          await school.save();
+
+          // Return updated school data without sensitive information
+          const updatedSchool = school.toObject();
+          delete updatedSchool.password;
+          delete updatedSchool.resetPasswordToken;
+          delete updatedSchool.resetPasswordExpires;
+          delete updatedSchool.__v;
+
+          res.status(200).json({
+            success: true,
+            message: "School data updated successfully",
+            school: updatedSchool,
+          });
+        } catch (innerError) {
+          cleanupTempFile(tempFilePath);
+          console.error("Inner update error:", innerError);
+
+          if (innerError.code === 11000) {
+            return res.status(400).json({
+              success: false,
+              message: "Email already exists",
+            });
+          }
+
+          throw innerError;
+        }
+      });
+    } catch (error) {
+      cleanupTempFile(tempFilePath);
+      console.error("Update school error:", error);
+      res.status(500).json({
         success: false,
-        message: "School not found"
+        message: "Internal Server Error",
       });
     }
+  },
 
-    // Delete image from Cloudinary if exists
-    if (school.schoolImgPublicId) {
-      await deleteFromCloudinary(school.schoolImgPublicId);
+  // Delete School
+  deleteSchool: async (req, res) => {
+    try {
+      const id = req.user.id;
+
+      const school = await School.findOne({ _id: id });
+
+      if (!school) {
+        return res.status(404).json({
+          success: false,
+          message: "School not found",
+        });
+      }
+
+      // Delete image from Cloudinary if exists
+      if (school.schoolImgPublicId) {
+        await deleteFromCloudinary(school.schoolImgPublicId);
+      }
+
+      // Delete school from database
+      await School.findByIdAndDelete(id);
+
+      res.status(200).json({
+        success: true,
+        message: "School account deleted successfully",
+      });
+    } catch (error) {
+      console.error("Delete school error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
+      });
     }
-
-    // Delete school from database
-    await School.findByIdAndDelete(id);
-
-    res.status(200).json({
-      success: true,
-      message: "School account deleted successfully"
-    });
-
-  } catch (error) {
-    console.error("Delete school error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error"
-    });
-  }
-},
-
+  },
 };

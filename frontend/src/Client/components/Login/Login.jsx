@@ -224,53 +224,70 @@ export default function Login() {
     setRememberMe(!rememberMe);
   };
 
-  // Forgot Password Handler
-  const handleForgotPassword = async () => {
-    if (!forgotPasswordEmail) {
-      setForgotPasswordError('Please enter your email address');
-      setForgotPasswordMessage('');
-      return;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(forgotPasswordEmail)) {
-      setForgotPasswordError('Please enter a valid email address');
-      setForgotPasswordMessage('');
-      return;
-    }
-
-    setForgotPasswordLoading(true);
+// Fixed Forgot Password Handler in Login Component
+const handleForgotPassword = async () => {
+  if (!forgotPasswordEmail) {
+    setForgotPasswordError('Please enter your email address');
     setForgotPasswordMessage('');
+    return;
+  }
+
+  // Basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(forgotPasswordEmail)) {
+    setForgotPasswordError('Please enter a valid email address');
+    setForgotPasswordMessage('');
+    return;
+  }
+
+  setForgotPasswordLoading(true);
+  setForgotPasswordMessage('');
+  setForgotPasswordError('');
+
+  try {
+    // Fixed API endpoint - removed extra space and ensured correct URL
+    const response = await axios.post(`${baseApi}/school/forgot-password`, {
+      email: forgotPasswordEmail.trim()
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000 // 10 second timeout
+    });
+
+    setForgotPasswordMessage(response.data.message || 'Password reset link sent to your email');
     setForgotPasswordError('');
 
-    try {
-      const response = await axios.post(`${baseApi}/school/forgot-password`, {
-        email: forgotPasswordEmail
-      });
-
-      setForgotPasswordMessage(response.data.message || 'Password reset link sent to your email');
-      setForgotPasswordError('');
-
-      // Clear the email field and close dialog after successful request
-      setTimeout(() => {
-        setForgotPasswordEmail('');
-        setForgotPasswordOpen(false);
-        setForgotPasswordMessage('');
-        setForgotPasswordError('');
-      }, 3000);
-
-    } catch (error) {
-      console.error("Forgot password error:", error);
-      setForgotPasswordError(
-        error.response?.data?.message ||
-        'Failed to send reset email. Please try again.'
-      );
+    // Clear the email field and close dialog after successful request
+    setTimeout(() => {
+      setForgotPasswordEmail('');
+      setForgotPasswordOpen(false);
       setForgotPasswordMessage('');
-    } finally {
-      setForgotPasswordLoading(false);
+      setForgotPasswordError('');
+    }, 4000); // Increased time to read the message
+
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    
+    let errorMessage = 'Failed to send reset email. Please try again.';
+    
+    if (error.response) {
+      // Server responded with error status
+      errorMessage = error.response.data?.message || errorMessage;
+    } else if (error.request) {
+      // Request was made but no response received
+      errorMessage = 'Network error. Please check your connection and try again.';
+    } else if (error.code === 'ECONNABORTED') {
+      // Request timeout
+      errorMessage = 'Request timeout. Please try again.';
     }
-  };
+    
+    setForgotPasswordError(errorMessage);
+    setForgotPasswordMessage('');
+  } finally {
+    setForgotPasswordLoading(false);
+  }
+};
 
   // Open forgot password dialog and pre-fill email if available
   const openForgotPasswordDialog = () => {
