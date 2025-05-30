@@ -563,7 +563,7 @@ module.exports = {
 
       // Create password reset URL
       const resetURL = `${
-        process.env.FRONTEND_URL"
+        process.env.FRONTEND_URL
       }/reset-password/${resetToken}`;
 
       // Email content
