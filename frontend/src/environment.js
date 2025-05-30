@@ -1,3 +1,3 @@
-const baseApi = 'https://s86-bhavdeep-capstone-beaconport.onrender.com/api';
+const baseApi = 'http://localhost:5000/api';
 
 export {baseApi}
