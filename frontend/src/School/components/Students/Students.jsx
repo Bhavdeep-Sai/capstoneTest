@@ -8,8 +8,8 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useFormik } from 'formik';
-import { Button, CardMedia, Typography, Alert, CircularProgress, Card, CardActionArea, CardContent, IconButton, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { Button, CardMedia, Typography, Alert, CircularProgress, Card, CardActionArea, CardContent, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Container, Grid, Paper, Chip, Avatar, Fade, Slide, useMediaQuery } from '@mui/material';
+import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import BookIcon from '@mui/icons-material/MenuBook';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -18,54 +18,238 @@ import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import SchoolIcon from '@mui/icons-material/School';
+import PhoneIcon from '@mui/icons-material/Phone';
+import EmailIcon from '@mui/icons-material/Email';
+import CakeIcon from '@mui/icons-material/Cake';
+import WcIcon from '@mui/icons-material/Wc';
+import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
 import { studentSchema } from '../../../yupSchema/studentSchema';
 import { baseApi } from '../../../environment';
+import MaleIcon from '@mui/icons-material/Male';
+import FemaleIcon from '@mui/icons-material/Female';
+import LockIcon from '@mui/icons-material/Lock';
 
-// Create a custom dark theme with orange/yellow/red accents
+// Enhanced dark theme with better responsive design
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#FF9800', // Orange
+      main: '#FF9800',
+      light: '#FFB74D',
+      male: '#1ca3f0',
+      female: "#ef598e",
+      dark: '#F57C00',
+      contrastText: '#000000',
     },
     secondary: {
-      main: '#FF5722', // Deep Orange
+      main: '#FF5722',
+      light: '#FF8A65',
+      dark: '#E64A19',
     },
     background: {
-      default: '#121212',
-      paper: '#1E1E2E',
+      default: '#0a0a0a',
+      paper: '#1a1a2e',
     },
     text: {
-      primary: '#FFFFFF',
-      secondary: '#E0E0E0',
+      primary: '#ffffff',
+      secondary: '#b0b0b0',
     },
     error: {
-      main: '#F44336',
+      main: '#f44336',
     },
     success: {
-      main: '#66BB6A',
+      main: '#4caf50',
+    },
+    info: {
+      main: '#2196f3',
+    },
+    warning: {
+      main: '#ff9800',
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h4: {
+      fontWeight: 700,
+      fontSize: '2.125rem',
+      lineHeight: 1.2,
+    },
     h5: {
       fontWeight: 600,
+      fontSize: '1.5rem',
+      lineHeight: 1.3,
+    },
+    h6: {
+      fontWeight: 600,
+      fontSize: '1.25rem',
+      lineHeight: 1.4,
+    },
+    body1: {
+      fontSize: '1rem',
+      lineHeight: 1.5,
+    },
+    body2: {
+      fontSize: '0.875rem',
+      lineHeight: 1.4,
+    },
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 152, 0, 0.12)',
+          borderRadius: '16px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            border: '1px solid rgba(255, 152, 0, 0.3)',
+          },
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 600,
+          borderRadius: '5px',
+          padding: '10px 24px',
+          fontSize: '0.875rem',
+          transition: 'all 0.2s ease-in-out',
+        },
+        contained: {
+          boxShadow: '0 4px 14px 0 rgba(255, 152, 0, 0.3)',
+          '&:hover': {
+            boxShadow: '0 6px 20px 0 rgba(255, 152, 0, 0.4)',
+            transform: 'translateY(-2px)',
+          },
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '3px',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'rgba(255, 152, 0, 0.5)',
+              },
+            },
+            '&.Mui-focused': {
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#FF9800',
+                borderWidth: '2px',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 900,
+      lg: 1200,
+      xl: 1536,
     },
   },
 });
 
-// Custom styled file input button
-const UploadButton = styled(Button)(({ theme }) => ({
-  background: 'linear-gradient(45deg, #FF9800 30%, #FF5722 90%)',
-  borderRadius: 3,
-  boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
+// Enhanced styled components
+const GradientButton = styled(Button)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #FF9800 0%, #FF5722 80%)',
+  borderRadius: '5px',
+  boxShadow: '0 4px 15px rgba(255, 152, 0, 0.4)',
   color: 'white',
-  height: 36,
-  padding: '0 16px',
-  margin: '10px 0',
+  fontWeight: 400,
+  padding: '12px 28px',
+  fontSize: '0.875rem',
+  textTransform: 'none',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #F57C00 0%, #E64A19 100%)',
+    boxShadow: '0 6px 20px rgba(255, 152, 0, 0.5)',
+    transform: 'translateY(-3px)',
+  },
+  '&:active': {
+    transform: 'translateY(-1px)',
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: '10px 20px',
+    fontSize: '0.8rem',
+  },
+}));
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 152, 0, 0.12)',
+  borderRadius: '20px',
+  padding: theme.spacing(4),
+  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(3),
+    borderRadius: '16px',
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(2),
+    borderRadius: '12px',
+    margin: theme.spacing(1),
+  },
+}));
+
+const HeaderContainer = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(3, 0),
+  marginBottom: theme.spacing(4),
+  borderBottom: '1px solid rgba(255, 152, 0, 0.12)',
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(2, 0),
+    marginBottom: theme.spacing(2),
+  },
+}));
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #FF9800, #FF5722)',
+  },
+}));
+
+const InfoRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(0.5),
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '0.8rem',
+  },
 }));
 
 export default function Students() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+
   const [form, setForm] = React.useState(false);
   const [file, setFile] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
@@ -81,10 +265,16 @@ export default function Students() {
   const [filterClass, setFilterClass] = React.useState("");
   const [search, setSearch] = React.useState("");
   const [students, setStudents] = React.useState([]);
+  const [deleteLoading, setDeleteLoading] = React.useState({});
 
   const fetchClasses = async () => {
     try {
-      const response = await axios.get(`${baseApi}/class/all`);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${baseApi}/class/all`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setClasses(response.data.data);
     } catch (err) {
       console.log(err);
@@ -109,12 +299,7 @@ export default function Students() {
   };
 
   const handleClearFilter = () => {
-    setParams((prevParams) => ({
-      ...prevParams,
-      search: null,
-      studentClass: null
-    }));
-
+    setParams({});
     setSearch("");
     setFilterClass("");
   };
@@ -128,20 +313,33 @@ export default function Students() {
           'Authorization': `Bearer ${token}`
         }
       });
-      setStudents(response.data.students);
 
-      const initialVisibility = {};
-      response.data.students.forEach(student => {
-        initialVisibility[student._id] = false;
-      });
-      setPasswordVisibility(initialVisibility);
+      if (response.data.success) {
+        setStudents(response.data.students);
+
+        const initialVisibility = {};
+        response.data.students.forEach(student => {
+          initialVisibility[student._id] = false;
+        });
+        setPasswordVisibility(initialVisibility);
+      } else {
+        setStudents([]);
+      }
     } catch (err) {
       console.log(err);
+      if (err.response?.status === 404) {
+        setStudents([]);
+      } else {
+        setError("Failed to fetch students");
+      }
     }
   };
 
   React.useEffect(() => {
     fetchClasses();
+  }, []);
+
+  React.useEffect(() => {
     fetchStudents();
   }, [params, message]);
 
@@ -156,6 +354,7 @@ export default function Students() {
   const hiddenFileInputRef = React.useRef(null);
   const editFileInputRef = React.useRef(null);
   const [editImageUrl, setEditImageUrl] = React.useState(null);
+  const [originalEditImageUrl, setOriginalEditImageUrl] = React.useState(null);
 
   const handleClearFile = () => {
     if (fileInputRef.current) {
@@ -169,7 +368,7 @@ export default function Students() {
       editFileInputRef.current.value = '';
     }
     setEditFile(null);
-    setEditImageUrl(null);
+    setEditImageUrl(originalEditImageUrl);
   };
 
   const handleUploadClick = () => {
@@ -226,7 +425,7 @@ export default function Students() {
         fd.append("password", values.password);
 
         const token = localStorage.getItem('token');
-        await axios.post(
+        const response = await axios.post(
           `${baseApi}/student/register`,
           fd,
           {
@@ -237,13 +436,20 @@ export default function Students() {
           }
         );
 
-        setSuccess("Student registered successfully!");
-        formik.resetForm();
-        handleClearFile();
-        setForm(false);
+        if (response.data.success) {
+          setSuccess("Student registered successfully!");
+          formik.resetForm();
+          handleClearFile();
+          setForm(false);
+          setMessage(`Student ${values.name} registered at ${new Date().toLocaleString()}`);
+        }
       } catch (error) {
         console.error("Registration error:", error);
-        setError(error.response?.data?.message || "Registration failed");
+        if (error.response?.status === 409) {
+          setError("A student with this email already exists.");
+        } else {
+          setError(error.response?.data?.message || "Registration failed");
+        }
       } finally {
         setLoading(false);
       }
@@ -254,9 +460,10 @@ export default function Students() {
     formik.resetForm();
     handleClearFile();
     setForm(false);
+    setError(null);
+    setSuccess(null);
   };
 
-  // Edit form setup
   const editFormik = useFormik({
     initialValues: {
       email: "",
@@ -288,7 +495,7 @@ export default function Students() {
         fd.append("parentNum", values.parentNum);
 
         const token = localStorage.getItem('token');
-        await axios.put(
+        const response = await axios.put(
           `${baseApi}/student/update/${currentStudent._id}`,
           fd,
           {
@@ -299,13 +506,24 @@ export default function Students() {
           }
         );
 
-        setSuccess("Student updated successfully!");
-        setEditDialogOpen(false);
-        setMessage(`Student ${values.name} updated at ${new Date().toLocaleString()}`);
-        handleClearEditFile();
+        if (response.data.success) {
+          setSuccess(editFile ?
+            "Student updated successfully! Previous image has been removed from cloud storage." :
+            "Student updated successfully!"
+          );
+          setEditDialogOpen(false);
+          setMessage(`Student ${values.name} updated at ${new Date().toLocaleString()}`);
+          handleClearEditFile();
+          setCurrentStudent(null);
+          setOriginalEditImageUrl(null);
+        }
       } catch (error) {
         console.error("Update error:", error);
-        setError(error.response?.data?.message || "Update failed");
+        if (error.response?.status === 404) {
+          setError("Student not found");
+        } else {
+          setError(error.response?.data?.message || "Update failed");
+        }
       } finally {
         setLoading(false);
       }
@@ -329,8 +547,10 @@ export default function Students() {
     });
 
     if (studentToEdit.studentImg) {
-      setEditImageUrl(`${baseApi}/uploads/student/${studentToEdit.studentImg}`);
+      setOriginalEditImageUrl(studentToEdit.studentImg);
+      setEditImageUrl(studentToEdit.studentImg);
     } else {
+      setOriginalEditImageUrl(null);
       setEditImageUrl(null);
     }
 
@@ -338,6 +558,15 @@ export default function Students() {
   };
 
   const handleDelete = async (id) => {
+    const studentToDelete = students.find(student => student._id === id);
+    const studentName = studentToDelete?.name || 'this student';
+
+    if (!window.confirm(`Are you sure you want to delete ${studentName}? This will also permanently remove their image from cloud storage.`)) {
+      return;
+    }
+
+    setDeleteLoading(prev => ({ ...prev, [id]: true }));
+
     try {
       const token = localStorage.getItem('token');
       const response = await axios.delete(
@@ -348,531 +577,869 @@ export default function Students() {
           }
         }
       );
-      setSuccess("Student deleted Successfully");
-      setMessage(response.data.message);
+
+      if (response.data.success) {
+        setSuccess("Student and associated image deleted successfully from both database and cloud storage");
+        setMessage(`Student ${studentName} deleted at ${new Date().toLocaleString()}`);
+      }
     } catch (err) {
-      setError("Student is not Deleted");
       console.log(err);
+      if (err.response?.status === 404) {
+        setError("Student not found or already deleted");
+      } else {
+        setError(err.response?.data?.message || "Failed to delete student");
+      }
+    } finally {
+      setDeleteLoading(prev => ({ ...prev, [id]: false }));
+    }
+  };
+
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+    setEditFile(null);
+    setEditImageUrl(null);
+    setOriginalEditImageUrl(null);
+    setCurrentStudent(null);
+    if (editFileInputRef.current) {
+      editFileInputRef.current.value = '';
     }
   };
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <div className='min-h-screen pt-25 bg-gray-900 relative'>
-        {message && <Alert severity="success" sx={{ m: 2 }}>{message}</Alert>}
+      <Box sx={{
+        minHeight: '100vh',
+        pb: 4
+      }}>
+        {/* Alert Messages */}
+        <Container maxWidth="xl" sx={{ pt: 2 }}>
+          <Fade in={!!success}>
+            <Box>
+              {success && (
+                <Alert
+                  severity="success"
+                  sx={{ mb: 2, borderRadius: 2 }}
+                  onClose={() => setSuccess(null)}
+                >
+                  {success}
+                </Alert>
+              )}
+            </Box>
+          </Fade>
+          <Fade in={!!error}>
+            <Box>
+              {error && (
+                <Alert
+                  severity="error"
+                  sx={{ mb: 2, borderRadius: 2 }}
+                  onClose={() => setError(null)}
+                >
+                  {error}
+                </Alert>
+              )}
+            </Box>
+          </Fade>
+        </Container>
 
-        {!form && <Button onClick={() => setForm(true)}
-          sx={{
-            mt: 1,
-            py: 1.5,
-            textTransform: 'uppercase',
-            fontWeight: 'bold',
-            color: "black",
-            position: "absolute",
-            right: "30px",
-            top: "80px"
+        {/* Header Section */}
+        {!form && <HeaderContainer>
+          <Container maxWidth="xl">
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 2
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Avatar sx={{
+                  bgcolor: 'primary.main',
+                  width: isMobile ? 40 : 56,
+                  height: isMobile ? 40 : 56
+                }}>
+                  <SchoolIcon sx={{ fontSize: isMobile ? 20 : 28 }} />
+                </Avatar>
+                <Box>
+                  <Typography
+                    variant={isMobile ? "h5" : "h4"}
+                    sx={{
+                      fontWeight: 700,
+                      background: 'linear-gradient(135deg, #FF9800 0%, #FF5722 100%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    Student Management
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Manage and organize student records
+                  </Typography>
+                </Box>
+              </Box>
+
+              {!form && (
+                isMobile ? (
+                  <div className="flex justify-end w-full">
+                    <Button
+                      onClick={() => setForm(true)}
+                      startIcon={<PersonAddIcon />}
+                      size="small"
+                      variant="outlined"
+                    >
+                      Add Student
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={() => setForm(true)}
+                    startIcon={<PersonAddIcon />}
+                    size="medium"
+                    variant="outlined"
+                  >
+                    Add Student
+                  </Button>
+                )
+              )}
+            </Box>
+          </Container>
+        </HeaderContainer>
+        }
+
+        {/* Add Student Form */}
+        {form && (
+          <Slide direction="up" in={form} mountOnEnter unmountOnExit>
+            <Container maxWidth="md" sx={{ mb: 4 }}>
+              <StyledPaper>
+                <Box
+                  component="form"
+                  onSubmit={formik.handleSubmit}
+                  sx={{ width: '100%' }}
+                >
+                  <Box sx={{ textAlign: 'center', mb: 4 }}>
+                    <Avatar sx={{
+                      bgcolor: 'primary.main',
+                      width: 56,
+                      height: 56,
+                      mx: 'auto',
+                      mb: 2
+                    }}>
+                      <PersonAddIcon sx={{ fontSize: 28 }} />
+                    </Avatar>
+                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+                      Add New Student
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Register a student in the School Management System
+                    </Typography>
+                  </Box>
+
+                  <Grid sx={{ width: { xs: '95%', lg: '70%' } }} className="flex flex-col gap-5 justify-center m-auto" spacing={3}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        name="name"
+                        label="Student Name"
+                        value={formik.values.name}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.name && Boolean(formik.errors.name)}
+                        helperText={formik.touched.name && formik.errors.name}
+                        fullWidth
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        name="email"
+                        label="Email address"
+                        type="email"
+                        value={formik.values.email}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.email && Boolean(formik.errors.email)}
+                        helperText={formik.touched.email && formik.errors.email}
+                        fullWidth
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Class</InputLabel>
+                        <Select
+                          value={formik.values.studentClass}
+                          label="Class"
+                          name="studentClass"
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                          error={formik.touched.studentClass && Boolean(formik.errors.studentClass)}
+                        >
+                          {classes && classes.map((cls) => (
+                            <MenuItem key={cls._id} value={cls._id}>{cls.classText}</MenuItem>
+                          ))}
+                        </Select>
+                        {formik.touched.studentClass && formik.errors.studentClass && (
+                          <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                            {formik.errors.studentClass}
+                          </Typography>
+                        )}
+                      </FormControl>
+                    </Grid>
+                    <div className='flex flex-row justify-between  w-[100%]'>
+                      <Grid item width={1 / 3} xs={12} sm={6}>
+                        <TextField
+                          name="age"
+                          label="Age"
+                          value={formik.values.age}
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                          error={formik.touched.age && Boolean(formik.errors.age)}
+                          helperText={formik.touched.age && formik.errors.age}
+                        />
+                      </Grid>
+
+                      <Grid item width={1 / 2} xs={12} sm={6}>
+                        <FormControl fullWidth>
+                          <InputLabel>Gender</InputLabel>
+                          <Select
+                            value={formik.values.gender}
+                            label="Gender"
+                            name="gender"
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={formik.touched.gender && Boolean(formik.errors.gender)}
+                          >
+                            <MenuItem value="Male">Male</MenuItem>
+                            <MenuItem value="Female">Female</MenuItem>
+                            <MenuItem value="Other">Other</MenuItem>
+                          </Select>
+                          {formik.touched.gender && formik.errors.gender && (
+                            <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                              {formik.errors.gender}
+                            </Typography>
+                          )}
+                        </FormControl>
+                      </Grid>
+
+                    </div>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        name="parent"
+                        label="Parent/Guardian Name"
+                        value={formik.values.parent}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.parent && Boolean(formik.errors.parent)}
+                        helperText={formik.touched.parent && formik.errors.parent}
+                        fullWidth
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        name="parentNum"
+                        label="Parent Phone Number"
+                        value={formik.values.parentNum}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.parentNum && Boolean(formik.errors.parentNum)}
+                        helperText={formik.touched.parentNum && formik.errors.parentNum}
+                        fullWidth
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        name="password"
+                        label="Password"
+                        type="password"
+                        value={formik.values.password}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.password && Boolean(formik.errors.password)}
+                        helperText={formik.touched.password && formik.errors.password}
+                        fullWidth
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        name="confirmPassword"
+                        label="Confirm Password"
+                        type="password"
+                        value={formik.values.confirmPassword}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
+                        helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
+                        fullWidth
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box>
+                        <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                          Student Image *
+                        </Typography>
+                        <input
+                          type="file"
+                          ref={hiddenFileInputRef}
+                          style={{ display: 'none' }}
+                          accept="image/*"
+                          onChange={addImage}
+                        />
+                        <Button
+                          onClick={handleUploadClick}
+                          startIcon={<CloudUploadIcon />}
+                          fullWidth={isMobile}
+                          variant={file?'outlined':"contained"}
+                          sx={{ mb: 1 }}
+                        >
+                          {file ? 'Change Image' : 'Upload Student Image'}
+                        </Button>
+                        {file && (
+                          <div className='w-[100%]'>
+                            <Box sx={{ mt: 2, display: 'flex', flexDirection: "column", alignItems: 'flex-start', gap: 2 }}>
+                              <Chip
+                                label={file.name}
+                                onDelete={handleClearFile}
+                                color="primary"
+                                variant="outlined"
+                                sx={{ borderRadius: "5px" }}
+                              />
+                              <Typography variant="body2" className='flex justify-center lg:w-[45%]' color="success.main">
+                                Image selected successfully
+                              </Typography>
+                            </Box>
+                          </div>
+                        )}
+                      </Box>
+                    </Grid>
+                  </Grid>
+
+                  <Box sx={{
+                    display: 'flex',
+                    gap: 2,
+                    mt: 4,
+                    flexDirection: isMobile ? 'column' : 'row',
+                    justifyContent: 'flex-end'
+                  }}>
+                    <Button
+                      onClick={handleCancel}
+                      variant="outlined"
+                      size="large"
+                      fullWidth={isMobile}
+                      sx={{ minWidth: 120 }}
+                    >
+                      Cancel
+                    </Button>
+                    <GradientButton
+                      type="submit"
+                      disabled={loading}
+                      size="large"
+                      fullWidth={isMobile}
+                      sx={{ minWidth: 120 }}
+                    >
+                      {loading ? <CircularProgress size={24} /> : 'Register Student'}
+                    </GradientButton>
+                  </Box>
+                </Box>
+              </StyledPaper>
+            </Container>
+          </Slide>
+        )}
+
+        {/* Search and Filter Section */}
+        {!form && (
+          <Container maxWidth="xl" sx={{ mb: 4, }}>
+            <div sx={{ p: 3 }} className='flex flex-col lg:flex-row justify-center  lg:justify-end items-center gap-3 lg:gap-10'>
+              <Grid item xs={12} md={2}>
+                <Typography variant="body2" color="text.secondary" textAlign="center">
+                  {students.length} student{students.length !== 1 ? 's' : ''} found
+                </Typography>
+              </Grid>
+              <Grid className="flex justify-center lg:justify-end gap-5" spacing={3} alignItems="center">
+                <Grid width={1 / 2} xs={12} sm={6} md={4}>
+                  <TextField
+                    fullWidth
+                    placeholder="Search students..."
+                    value={search}
+                    onChange={handleSearch}
+                    InputProps={{
+                      startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                    }}
+                  />
+                </Grid>
+                <Grid width={1 / 2} xs={12} sm={6} md={3}>
+                  <FormControl>
+                    <InputLabel>Filter by Class</InputLabel>
+                    <Select
+                      value={filterClass}
+                      label="Filter by Class"
+                      onChange={handleClass}
+                      sx={{ width: { xs: "150px", lg: "200px" } }}
+                    >
+                      <MenuItem value="">All Classes</MenuItem>
+                      {classes && classes.map((cls) => (
+                        <MenuItem key={cls._id} value={cls._id}>{cls.classText}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                {filterClass && <Grid item xs={12} sm={12} md={3}>
+                  <Button
+                    onClick={handleClearFilter}
+                    variant="outlined"
+                    fullWidth
+                    sx={{ height: "50px" }}
+
+                  >
+                    <CloseIcon />
+
+                  </Button>
+                </Grid>}
+              </Grid>
+            </div>
+          </Container>
+        )}
+
+        {/* Students Grid */}
+        {!form && (
+          <Container maxWidth="xl">
+            {students.length === 0 ? (
+              <StyledPaper sx={{ textAlign: 'center', py: 8 }}>
+                <SchoolIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2, opacity: 0.5 }} />
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No students found
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {search || filterClass ? 'Try adjusting your search or filter criteria' : 'Start by adding your first student'}
+                </Typography>
+              </StyledPaper>
+            ) : (
+              <Grid className="flex gap-5 flex-wrap justify-evenly" spacing={3}>
+                {students.map((student) => (
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={student._id}>
+                    <StyledCard sx={{width:{lg:"400px"}}}>
+                      <Box sx={{ position: 'relative' }}>
+                        <CardMedia
+                          component="img"
+                          height={isMobile ? "200" : "240"}
+                          image={student.studentImg}
+                          alt={student.name}
+                          sx={{
+                            objectFit: 'cover',
+                            borderRadius: 2,
+                            boxShadow: 2,
+                            filter: 'brightness(0.95) contrast(1.1)',
+                            transition: '0.3s ease-in-out',
+                            '&:hover': {
+                              transform: 'scale(1.03)',
+                            }
+                          }}
+                        />
+                        <div className="absolute top-2 right-2 flex gap-1">
+                          <Chip
+                            label={student.studentClass?.classText || 'No Class'}
+                            size="small"
+                            sx={{
+                              bgcolor: '#181e37',
+                              color: 'white',
+                              fontWeight: 400,
+                              borderRadius: '5px',
+                            }}
+                          />
+                        </div>
+                      </Box>
+
+                      <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                        <Typography variant="h6" gutterBottom sx={{
+                          fontWeight: 600,
+                          mb: 2,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 1,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}>
+                          {student.name}
+                        </Typography>
+
+                        <Box sx={{ mb: 2 }}>
+                          <InfoRow>
+                            <EmailIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                            <Typography variant="body2" color="text.secondary" sx={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}>
+                              {student.email}
+                            </Typography>
+                          </InfoRow>
+
+                          <InfoRow>
+                            <CakeIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                            <Typography variant="body2" color="text.secondary">
+                              {student.age} years old
+                            </Typography>
+                          </InfoRow>
+
+                          <InfoRow>
+                            {student.gender == "male" ? <MaleIcon sx={{ fontSize: 16, color: 'primary.male' }} /> : <FemaleIcon sx={{ fontSize: 16, color: 'primary.female' }} />}
+                            <Typography variant="body2" color="text.secondary">
+                              {student.gender}
+                            </Typography>
+                          </InfoRow>
+
+                          <InfoRow>
+                            <FamilyRestroomIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                            <Typography variant="body2" color="text.secondary" sx={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}>
+                              {student.parent}
+                            </Typography>
+                          </InfoRow>
+
+                          <InfoRow>
+                            <PhoneIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                            <Typography variant="body2" color="text.secondary">
+                              {student.parentNum}
+                            </Typography>
+                          </InfoRow>
+                          <InfoRow>
+                            <Box sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              borderRadius: 2,
+                              mb: 2
+                            }}>
+                              <LockIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                              <Typography variant="body2" sx={{ flexGrow: 1, fontWeight: 500 }}>
+                                Password:
+                              </Typography>
+                              <div className='flex items-center'>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    fontFamily: 'monospace',
+                                    flex: 1,
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  }}
+                                >
+                                  {passwordVisibility[student._id] ? student.password : '••••••••'}
+                                </Typography>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => togglePasswordVisibility(student._id)}
+                                  sx={{ ml: 1 }}
+                                >
+                                  {passwordVisibility[student._id] ?
+                                    <VisibilityOffIcon sx={{ fontSize: 16 }} /> :
+                                    <VisibilityIcon sx={{ fontSize: 16 }} />
+                                  }
+                                </IconButton>
+                              </div>
+                            </Box>
+                          </InfoRow>
+                        </Box>
+
+
+
+                        <Box sx={{
+                          display: 'flex',
+                          gap: 1,
+                          flexDirection: 'row'
+                        }}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={<EditIcon />}
+                            onClick={() => handleEdit(student._id)}
+                            fullWidth={isMobile}
+                            sx={{ flex: 1 }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            startIcon={deleteLoading[student._id] ?
+                              <CircularProgress size={16} /> :
+                              <DeleteIcon />
+                            }
+                            onClick={() => handleDelete(student._id)}
+                            disabled={deleteLoading[student._id]}
+                            fullWidth={isMobile}
+                            sx={{ flex: 1 }}
+                          >
+                            Delete
+                          </Button>
+                        </Box>
+                      </CardContent>
+                    </StyledCard>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </Container>
+        )}
+
+        {/* Edit Student Dialog */}
+        <Dialog
+          open={editDialogOpen}
+          onClose={handleEditDialogClose}
+          maxWidth="md"
+          fullWidth
+          fullScreen={isMobile}
+          PaperProps={{
+            sx: {
+              bgcolor: 'background.paper',
+              backgroundImage: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+              border: '1px solid rgba(255, 152, 0, 0.12)',
+            }
           }}
-          className="bg-gradient-to-r from-amber-500 to-orange-600">
-          <Typography>
-            + Add Student
-          </Typography>
-        </Button>}
-        {form &&
-          <div className="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        >
+          <DialogTitle sx={{
+            borderBottom: '1px solid rgba(255, 152, 0, 0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2
+          }}>
+            <EditIcon color="primary" />
+            <Box sx={{ flexGrow: 1 }}>
+              <Typography variant="h6">Edit Student</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Update student information
+              </Typography>
+            </Box>
+            <IconButton onClick={handleEditDialogClose}>
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+
+          <DialogContent sx={{ pt: 3 }}>
             <Box
               component="form"
-              sx={{
-                '& > :not(style)': { m: 1 },
-                display: "flex",
-                flexDirection: "column",
-                margin: "50px",
-                justifyContent: "center",
-                width: "80vw",
-                minWidth: '320px',
-                maxWidth: '600px',
-                padding: '30px',
-                borderRadius: '12px',
-                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
-                bgcolor: 'background.paper',
-              }}
-              className="bg-gray-800 border border-gray-700"
-              noValidate
-              autoComplete="off"
-              onSubmit={formik.handleSubmit}
+              onSubmit={editFormik.handleSubmit}
+              sx={{ width: '100%' }}
             >
-              <div className="flex items-center justify-center mb-4">
-                <BookIcon sx={{ color: '#FF9800', fontSize: 40, mr: 1 }} />
-                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', m: 0 }}>
-                  Add New Student
-                </Typography>
-              </div>
-              <Typography variant="body2" className="text-gray-400 text-center mb-6">
-                Register a student in the School Management System
-              </Typography>
-
-              {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-              {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-
-              <TextField
-                name="name"
-                label="Student Name"
-                value={formik.values.name}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.name && Boolean(formik.errors.name)}
-                helperText={formik.touched.name && formik.errors.name}
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                name="email"
-                label="Email address"
-                type="email"
-                value={formik.values.email}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.email && Boolean(formik.errors.email)}
-                helperText={formik.touched.email && formik.errors.email}
-                sx={{ mb: 2 }}
-              />
-
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel id="class-select-label">Class</InputLabel>
-                <Select
-                  labelId="class-select-label"
-                  id="class-select"
-                  value={formik.values.studentClass}
-                  label="Class"
-                  name="studentClass"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.studentClass && Boolean(formik.errors.studentClass)}
-                >
-                  {classes && classes.map((cls) => (
-                    <MenuItem key={cls._id} value={cls._id}>{cls.classText}</MenuItem>
-                  ))}
-                </Select>
-                {formik.touched.studentClass && formik.errors.studentClass && (
-                  <Typography color="error" variant="caption" sx={{ mt: 1, ml: 2 }}>
-                    {formik.errors.studentClass}
-                  </Typography>
+              <Grid container spacing={3}>
+                {editImageUrl && (
+                  <Grid item xs={12}>
+                    <Box sx={{ textAlign: 'center', mb: 2 }}>
+                      <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                        Current Student Image
+                      </Typography>
+                      <CardMedia
+                        component="img"
+                        height="200"
+                        image={editImageUrl}
+                        alt="Current student"
+                        sx={{
+                          borderRadius: 2,
+                          maxWidth: 300,
+                          mx: 'auto',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </Box>
+                  </Grid>
                 )}
-              </FormControl>
 
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel id="gender-select-label">Gender</InputLabel>
-                <Select
-                  labelId="gender-select-label"
-                  id="gender-select"
-                  value={formik.values.gender}
-                  label="Gender"
-                  name="gender"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.gender && Boolean(formik.errors.gender)}
-                >
-                  <MenuItem value="male">Male</MenuItem>
-                  <MenuItem value="female">Female</MenuItem>
-                  <MenuItem value="other">Other</MenuItem>
-                </Select>
-                {formik.touched.gender && formik.errors.gender && (
-                  <Typography color="error" variant="caption" sx={{ mt: 1, ml: 2 }}>
-                    {formik.errors.gender}
-                  </Typography>
-                )}
-              </FormControl>
-
-              <TextField
-                name="age"
-                label="Age"
-                value={formik.values.age}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.age && Boolean(formik.errors.age)}
-                helperText={formik.touched.age && formik.errors.age}
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                name="parent"
-                label="Parent Name"
-                type="text"
-                value={formik.values.parent}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.parent && Boolean(formik.errors.parent)}
-                helperText={formik.touched.parent && formik.errors.parent}
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                name="parentNum"
-                label="Parent Number"
-                type="text"
-                value={formik.values.parentNum}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.parentNum && Boolean(formik.errors.parentNum)}
-                helperText={formik.touched.parentNum && formik.errors.parentNum}
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                type="password"
-                name="password"
-                label="Password"
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.password && Boolean(formik.errors.password)}
-                helperText={formik.touched.password && formik.errors.password}
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                type="password"
-                name="confirmPassword"
-                label="Confirm password"
-                value={formik.values.confirmPassword}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
-                helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
-                sx={{ mb: 3 }}
-              />
-
-              <Typography className="text-gray-300 mb-1">Student Image</Typography>
-              <input
-                type="file"
-                ref={hiddenFileInputRef}
-                onChange={addImage}
-                accept="image/*"
-                style={{ display: 'none' }}
-              />
-              <div className="mb-4 flex items-center">
-                <Button
-                  variant="outlined"
-                  onClick={handleUploadClick}
-                  startIcon={<CloudUploadIcon />}
-                  className="bg-amber-500 flex justify-center items-center h-10 gap-5"
-                >
-                  Upload Image
-                </Button>
-                {file && (
-                  <Typography variant="body2" className="ml-2 text-gray-300">
-                    {file.name}
-                  </Typography>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={loading}
-                sx={{
-                  mt: 1,
-                  py: 1.5,
-                  textTransform: 'uppercase',
-                  fontWeight: 'bold'
-                }}
-                className="bg-gradient-to-r from-amber-500 to-orange-600"
-              >
-                {loading ? <CircularProgress size={24} /> : 'Add Student'}
-              </Button>
-              <Button
-                onClick={() => handleCancel()}
-                sx={{
-                  mt: 1,
-                  py: 1.5,
-                  textTransform: 'uppercase',
-                  fontWeight: 'bold',
-                  color: "black"
-                }}
-                className="bg-gradient-to-r from-amber-500 to-orange-600"
-              >
-                Cancel
-              </Button>
-            </Box>
-          </div>
-        }
-        <Box sx={{ margin: "auto", marginTop: "10px" }} className="flex w-[60%] h-15 justify-center items-center gap-3">
-          <TextField
-            label="Search"
-            value={search}
-            onChange={handleSearch}
-            sx={{ mb: 2 }}
-            className='w-3/4'
-          />
-          <FormControl className='w-1/2' sx={{ mb: 2 }}>
-            <InputLabel id="class-select-label">Class</InputLabel>
-            <Select
-              label="Class"
-              value={filterClass}
-              onChange={handleClass}
-            >
-              <MenuItem value="">None</MenuItem>
-              {classes && classes.map((cls) => (
-                <MenuItem key={cls._id} value={cls._id}>{cls.classText}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Button sx={{ mb: 2, border: "2px solid gray", }} className='w-1/4 h-[100%]' onClick={handleClearFilter}>Clear Filter</Button>
-        </Box>
-
-        <Box sx={{ margin: "auto" }} className="flex w-[90%] pt-10 flex-wrap justify-center items-center gap-3">
-          {students && students.map(student => (
-            <Card key={student._id} sx={{ maxWidth: 345 }}>
-              <CardActionArea>
-                <CardMedia
-                  component="img"
-                  height="140"
-                  image={student.studentImg ? `${baseApi}/uploads/student/${student.studentImg}` : ''}
-                  alt={student.name}
-                />
-                <CardContent>
-                  <Typography gutterBottom variant="h5" component="div">
-                    {student.name}
-                  </Typography>
-                  <ul>
-                    <li><b>Email : </b>{student.email}</li>
-                    <li><b>Class : </b>{student.studentClass?.classText || ''}</li>
-                    <li><b>Gender : </b>{student.gender}</li>
-                    <li><b>Age : </b>{student.age}</li>
-                    {student.password && (
-                      <li className="flex items-center">
-                        <b>Password : </b>
-                        <span style={{ marginLeft: '4px' }}>
-                          {passwordVisibility[student._id] ? student.password : '••••••••'}
-                        </span>
-                        <IconButton
-                          size="small"
-                          onClick={() => togglePasswordVisibility(student._id)}
-                          sx={{ ml: 1 }}
+                <Grid item xs={12}>
+                  <Box>
+                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                      Update Student Image (Optional)
+                    </Typography>
+                    <input
+                      type="file"
+                      ref={editFileInputRef}
+                      style={{ display: 'none' }}
+                      accept="image/*"
+                      onChange={(e) => {
+                        const selectedFile = e.target.files[0];
+                        if (selectedFile) {
+                          setEditFile(selectedFile);
+                          const imageUrl = URL.createObjectURL(selectedFile);
+                          setEditImageUrl(imageUrl);
+                        }
+                      }}
+                    />
+                    <Box sx={{ display: 'flex', gap: 2, flexDirection: isMobile ? 'column' : 'row' }}>
+                      <Button
+                        onClick={handleEditUploadClick}
+                        startIcon={<CloudUploadIcon />}
+                        variant={editFile?"outlined":"contained"}
+                        fullWidth={isMobile}
+                      >
+                        {editFile ? 'Change Image' : 'Upload New Image'}
+                      </Button>
+                      {(editFile || editImageUrl !== originalEditImageUrl) && (
+                        <Button
+                          onClick={handleClearEditFile}
+                          variant="outlined"
+                          startIcon={<CloseIcon />}
+                          fullWidth={isMobile}
                         >
-                          {passwordVisibility[student._id] ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
-                        </IconButton>
-                      </li>
+                          Reset Image
+                        </Button>
+                      )}
+                    </Box>
+                    {editFile && (
+                      <Box sx={{ mt: 2 }}>
+                        <Chip
+                          label={editFile.name}
+                          onDelete={() => {
+                            setEditFile(null);
+                            setEditImageUrl(originalEditImageUrl);
+                            if (editFileInputRef.current) {
+                              editFileInputRef.current.value = '';
+                            }
+                          }}
+                          color="primary"
+                          variant="outlined"
+                        />
+                      </Box>
                     )}
-                  </ul>
-                  <p>Parental Details</p>
-                  <ul>
-                    <li><b>Parent Name : </b>{student.parent}</li>
-                    <li><b>Contact no: </b>{student.parentNum}</li>
-                  </ul>
-                  <div className='flex justify-end gap-4'>
-                    <IconButton sx={{ border: "2px solid white" }} onClick={() => handleEdit(student._id)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton onClick={() => handleDelete(student._id)} sx={{ border: "2px solid orange" }}>
-                      <PersonRemoveIcon />
-                    </IconButton>
-                  </div>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          ))}
-        </Box>
-      </div>
+                  </Box>
+                </Grid>
 
-      {/* Edit Student Dialog */}
-      <Dialog
-        open={editDialogOpen}
-        onClose={() => setEditDialogOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div className="flex items-center">
-            <EditIcon sx={{ color: '#FF9800', mr: 1 }} />
-            Edit Student
-          </div>
-          <IconButton onClick={() => setEditDialogOpen(false)}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Box
-            component="form"
-            sx={{
-              '& > :not(style)': { m: 1 },
-              display: "flex",
-              flexDirection: "column",
-              width: "100%",
-              mt: 2
-            }}
-            noValidate
-            onSubmit={editFormik.handleSubmit}
-          >
-            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    name="name"
+                    label="Student Name"
+                    value={editFormik.values.name}
+                    onChange={editFormik.handleChange}
+                    onBlur={editFormik.handleBlur}
+                    error={editFormik.touched.name && Boolean(editFormik.errors.name)}
+                    helperText={editFormik.touched.name && editFormik.errors.name}
+                    fullWidth
+                  />
+                </Grid>
 
-            <TextField
-              name="name"
-              label="Student Name"
-              value={editFormik.values.name}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={editFormik.touched.name && Boolean(editFormik.errors.name)}
-              helperText={editFormik.touched.name && editFormik.errors.name}
-              sx={{ mb: 2 }}
-            />
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    name="email"
+                    label="Email address"
+                    type="email"
+                    value={editFormik.values.email}
+                    onChange={editFormik.handleChange}
+                    onBlur={editFormik.handleBlur}
+                    error={editFormik.touched.email && Boolean(editFormik.errors.email)}
+                    helperText={editFormik.touched.email && editFormik.errors.email}
+                    fullWidth
+                  />
+                </Grid>
 
-            <TextField
-              name="email"
-              label="Email address"
-              type="email"
-              value={editFormik.values.email}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={editFormik.touched.email && Boolean(editFormik.errors.email)}
-              helperText={editFormik.touched.email && editFormik.errors.email}
-              sx={{ mb: 2 }}
-            />
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Class</InputLabel>
+                    <Select
+                      value={editFormik.values.studentClass}
+                      label="Class"
+                      name="studentClass"
+                      onChange={editFormik.handleChange}
+                      onBlur={editFormik.handleBlur}
+                      error={editFormik.touched.studentClass && Boolean(editFormik.errors.studentClass)}
+                    >
+                      {classes && classes.map((cls) => (
+                        <MenuItem key={cls._id} value={cls._id}>{cls.classText}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel id="edit-class-select-label">Class</InputLabel>
-              <Select
-                labelId="edit-class-select-label"
-                id="edit-class-select"
-                value={editFormik.values.studentClass}
-                label="Class"
-                name="studentClass"
-                onChange={editFormik.handleChange}
-                onBlur={editFormik.handleBlur}
-                error={editFormik.touched.studentClass && Boolean(editFormik.errors.studentClass)}
-              >
-                {classes && classes.map((cls) => (
-                  <MenuItem key={cls._id} value={cls._id}>{cls.classText}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    name="age"
+                    label="Age"
+                    type="number"
+                    value={editFormik.values.age}
+                    onChange={editFormik.handleChange}
+                    onBlur={editFormik.handleBlur}
+                    error={editFormik.touched.age && Boolean(editFormik.errors.age)}
+                    helperText={editFormik.touched.age && editFormik.errors.age}
+                    fullWidth
+                  />
+                </Grid>
 
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel id="edit-gender-select-label">Gender</InputLabel>
-              <Select
-                labelId="edit-gender-select-label"
-                id="edit-gender-select"
-                value={editFormik.values.gender}
-                label="Gender"
-                name="gender"
-                onChange={editFormik.handleChange}
-                onBlur={editFormik.handleBlur}
-                error={editFormik.touched.gender && Boolean(editFormik.errors.gender)}
-              >
-                <MenuItem value="male">Male</MenuItem>
-                <MenuItem value="female">Female</MenuItem>
-                <MenuItem value="other">Other</MenuItem>
-              </Select>
-            </FormControl>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Gender</InputLabel>
+                    <Select
+                      value={editFormik.values.gender}
+                      label="Gender"
+                      name="gender"
+                      onChange={editFormik.handleChange}
+                      onBlur={editFormik.handleBlur}
+                      error={editFormik.touched.gender && Boolean(editFormik.errors.gender)}
+                    >
+                      <MenuItem value="Male">Male</MenuItem>
+                      <MenuItem value="Female">Female</MenuItem>
+                      <MenuItem value="Other">Other</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-            <TextField
-              name="age"
-              label="Age"
-              value={editFormik.values.age}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={editFormik.touched.age && Boolean(editFormik.errors.age)}
-              helperText={editFormik.touched.age && editFormik.errors.age}
-              sx={{ mb: 2 }}
-            />
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    name="parent"
+                    label="Parent/Guardian Name"
+                    value={editFormik.values.parent}
+                    onChange={editFormik.handleChange}
+                    onBlur={editFormik.handleBlur}
+                    error={editFormik.touched.parent && Boolean(editFormik.errors.parent)}
+                    helperText={editFormik.touched.parent && editFormik.errors.parent}
+                    fullWidth
+                  />
+                </Grid>
 
-            <TextField
-              name="parent"
-              label="Parent Name"
-              type="text"
-              value={editFormik.values.parent}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={editFormik.touched.parent && Boolean(editFormik.errors.parent)}
-              helperText={editFormik.touched.parent && editFormik.errors.parent}
-              sx={{ mb: 2 }}
-            />
+                <Grid item xs={12}>
+                  <TextField
+                    name="parentNum"
+                    label="Parent Phone Number"
+                    value={editFormik.values.parentNum}
+                    onChange={editFormik.handleChange}
+                    onBlur={editFormik.handleBlur}
+                    error={editFormik.touched.parentNum && Boolean(editFormik.errors.parentNum)}
+                    helperText={editFormik.touched.parentNum && editFormik.errors.parentNum}
+                    fullWidth
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          </DialogContent>
 
-            <TextField
-              name="parentNum"
-              label="Parent Number"
-              type="text"
-              value={editFormik.values.parentNum}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={editFormik.touched.parentNum && Boolean(editFormik.errors.parentNum)}
-              helperText={editFormik.touched.parentNum && editFormik.errors.parentNum}
-              sx={{ mb: 2 }}
-            />
-
-            <Typography className="text-gray-300 mb-1">Student Image (Optional - Leave empty to keep current image)</Typography>
-            <input
-              type="file"
-              ref={editFileInputRef}
-              onChange={(e) => {
-                const selectedFile = e.target.files[0];
-                if (selectedFile) {
-                  setEditFile(selectedFile);
-                  setEditImageUrl(URL.createObjectURL(selectedFile));
-                }
-              }}
-              accept="image/*"
-              style={{ display: 'none' }}
-            />
-            <div className="mb-4 flex items-center">
-              <Button
-                variant="outlined"
-                onClick={handleEditUploadClick}
-                startIcon={<CloudUploadIcon />}
-                className="bg-amber-500 flex justify-center items-center h-10 gap-5"
-              >
-                Upload New Image
-              </Button>
-              {editFile && (
-                <Typography variant="body2" className="ml-2 text-gray-300">
-                  {editFile.name}
-                </Typography>
-              )}
-            </div>
-
-            {editImageUrl && (
-              <Box sx={{ maxWidth: '300px', marginTop: '10px', marginBottom: '20px' }}>
-                <CardMedia
-                  component="img"
-                  image={editImageUrl}
-                  alt="Student preview"
-                  sx={{
-                    borderRadius: '8px',
-                    border: '1px solid #444',
-                    maxHeight: '150px',
-                    objectFit: 'contain'
-                  }}
-                />
-                {editFile && (
-                  <Button
-                    size="small"
-                    color="error"
-                    onClick={handleClearEditFile}
-                    sx={{ mt: 1 }}
-                  >
-                    Clear New Image
-                  </Button>
-                )}
-              </Box>
-            )}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button
-            onClick={editFormik.handleSubmit}
-            variant="contained"
-            disabled={loading}
-            sx={{
-              background: 'linear-gradient(45deg, #FF9800 30%, #FF5722 90%)',
-            }}
-          >
-            {loading ? <CircularProgress size={24} /> : 'Update Student'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </ThemeProvider>
+          <DialogActions sx={{
+            p: 3,
+            borderTop: '1px solid rgba(255, 152, 0, 0.12)',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: 2
+          }}>
+            <Button
+              onClick={handleEditDialogClose}
+              variant="outlined"
+              fullWidth={isMobile}
+              sx={{ minWidth: 120 }}
+            >
+              Cancel
+            </Button>
+            <GradientButton
+              onClick={editFormik.handleSubmit}
+              disabled={loading}
+              fullWidth={isMobile}
+              sx={{ minWidth: 120 }}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Update Student'}
+            </GradientButton>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </ThemeProvider >
   );
 }
-
