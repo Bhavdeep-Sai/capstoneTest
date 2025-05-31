@@ -532,6 +532,7 @@ export default function Students() {
 
   const handleEdit = (id) => {
     const studentToEdit = students.find(student => student._id === id);
+    console.log(studentToEdit);
     if (!studentToEdit) return;
 
     setCurrentStudent(studentToEdit);
@@ -541,7 +542,7 @@ export default function Students() {
       name: studentToEdit.name || "",
       studentClass: studentToEdit.studentClass?._id || "",
       age: studentToEdit.age || "",
-      gender: studentToEdit.gender || "",
+      gender: studentToEdit.gender,
       parent: studentToEdit.parent || "",
       parentNum: studentToEdit.parentNum || "",
     });
@@ -604,7 +605,6 @@ export default function Students() {
       editFileInputRef.current.value = '';
     }
   };
-
   return (
     <ThemeProvider theme={darkTheme}>
       <Box sx={{
@@ -892,7 +892,7 @@ export default function Students() {
                           onClick={handleUploadClick}
                           startIcon={<CloudUploadIcon />}
                           fullWidth={isMobile}
-                          variant={file?'outlined':"contained"}
+                          variant={file ? 'outlined' : "contained"}
                           sx={{ mb: 1 }}
                         >
                           {file ? 'Change Image' : 'Upload Student Image'}
@@ -1021,7 +1021,7 @@ export default function Students() {
               <Grid className="flex gap-5 flex-wrap justify-evenly" spacing={3}>
                 {students.map((student) => (
                   <Grid item xs={12} sm={6} md={4} lg={3} key={student._id}>
-                    <StyledCard sx={{width:{lg:"400px"}}}>
+                    <StyledCard sx={{ width: { lg: "400px" } }}>
                       <Box sx={{ position: 'relative' }}>
                         <CardMedia
                           component="img"
@@ -1222,195 +1222,208 @@ export default function Students() {
             </IconButton>
           </DialogTitle>
 
-          <DialogContent sx={{ pt: 3 }}>
+          <DialogContent sx={{ mt: { xs: 2, lg: 4 } }}>
             <Box
               component="form"
               onSubmit={editFormik.handleSubmit}
               sx={{ width: '100%' }}
             >
               <Grid container spacing={3}>
-                {editImageUrl && (
-                  <Grid item xs={12}>
-                    <Box sx={{ textAlign: 'center', mb: 2 }}>
-                      <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
-                        Current Student Image
-                      </Typography>
-                      <CardMedia
-                        component="img"
-                        height="200"
-                        image={editImageUrl}
-                        alt="Current student"
-                        sx={{
-                          borderRadius: 2,
-                          maxWidth: 300,
-                          mx: 'auto',
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </Box>
-                  </Grid>
-                )}
-
-                <Grid item xs={12}>
-                  <Box>
-                    <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
-                      Update Student Image (Optional)
-                    </Typography>
-                    <input
-                      type="file"
-                      ref={editFileInputRef}
-                      style={{ display: 'none' }}
-                      accept="image/*"
-                      onChange={(e) => {
-                        const selectedFile = e.target.files[0];
-                        if (selectedFile) {
-                          setEditFile(selectedFile);
-                          const imageUrl = URL.createObjectURL(selectedFile);
-                          setEditImageUrl(imageUrl);
-                        }
-                      }}
-                    />
-                    <Box sx={{ display: 'flex', gap: 2, flexDirection: isMobile ? 'column' : 'row' }}>
-                      <Button
-                        onClick={handleEditUploadClick}
-                        startIcon={<CloudUploadIcon />}
-                        variant={editFile?"outlined":"contained"}
-                        fullWidth={isMobile}
-                      >
-                        {editFile ? 'Change Image' : 'Upload New Image'}
-                      </Button>
-                      {(editFile || editImageUrl !== originalEditImageUrl) && (
-                        <Button
-                          onClick={handleClearEditFile}
-                          variant="outlined"
-                          startIcon={<CloseIcon />}
-                          fullWidth={isMobile}
-                        >
-                          Reset Image
-                        </Button>
-                      )}
-                    </Box>
-                    {editFile && (
-                      <Box sx={{ mt: 2 }}>
-                        <Chip
-                          label={editFile.name}
-                          onDelete={() => {
-                            setEditFile(null);
-                            setEditImageUrl(originalEditImageUrl);
-                            if (editFileInputRef.current) {
-                              editFileInputRef.current.value = '';
-                            }
+                <div className='flex flex-col w-full lg:flex-row lg:justify-center items-center gap-10 lg:items-start m-auto'>
+                  {editImageUrl && (
+                    <Grid item xs={12}>
+                      <Box sx={{ textAlign: 'center', mb: 2 }}>
+                        <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                          Current Student Image
+                        </Typography>
+                        <CardMedia
+                          component="img"
+                          height="200"
+                          image={editImageUrl}
+                          alt="Current student"
+                          sx={{
+                            borderRadius: 2,
+                            maxWidth: 300,
+                            mx: 'auto',
+                            objectFit: 'cover',
                           }}
-                          color="primary"
-                          variant="outlined"
                         />
                       </Box>
-                    )}
-                  </Box>
-                </Grid>
+                    </Grid>
+                  )}
 
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    name="name"
-                    label="Student Name"
-                    value={editFormik.values.name}
-                    onChange={editFormik.handleChange}
-                    onBlur={editFormik.handleBlur}
-                    error={editFormik.touched.name && Boolean(editFormik.errors.name)}
-                    helperText={editFormik.touched.name && editFormik.errors.name}
-                    fullWidth
-                  />
-                </Grid>
+                  <Grid item xs={12}>
+                    <Box>
+                      <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                        Update Student Image (Optional)
+                      </Typography>
+                      <input
+                        type="file"
+                        ref={editFileInputRef}
+                        style={{ display: 'none' }}
+                        accept="image/*"
+                        onChange={(e) => {
+                          const selectedFile = e.target.files[0];
+                          if (selectedFile) {
+                            setEditFile(selectedFile);
+                            const imageUrl = URL.createObjectURL(selectedFile);
+                            setEditImageUrl(imageUrl);
+                          }
+                        }}
+                      />
+                      <Box sx={{ display: 'flex', gap: 2, flexDirection: isMobile ? 'column' : 'row' }}>
+                        <Button
+                          onClick={handleEditUploadClick}
+                          startIcon={<CloudUploadIcon />}
+                          variant={editFile ? "outlined" : "contained"}
+                          fullWidth={isMobile}
+                        >
+                          {editFile ? 'Change Image' : 'Upload New Image'}
+                        </Button>
+                        {(editFile || editImageUrl !== originalEditImageUrl) && (
+                          <Button
+                            onClick={handleClearEditFile}
+                            variant="contained"
+                            startIcon={<CloseIcon />}
+                            fullWidth={isMobile}
+                          >
+                            Reset Image
+                          </Button>
+                        )}
+                      </Box>
 
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    name="email"
-                    label="Email address"
-                    type="email"
-                    value={editFormik.values.email}
-                    onChange={editFormik.handleChange}
-                    onBlur={editFormik.handleBlur}
-                    error={editFormik.touched.email && Boolean(editFormik.errors.email)}
-                    helperText={editFormik.touched.email && editFormik.errors.email}
-                    fullWidth
-                  />
-                </Grid>
 
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Class</InputLabel>
-                    <Select
-                      value={editFormik.values.studentClass}
-                      label="Class"
-                      name="studentClass"
+                      {editFile && (
+                        <Box sx={{ mt: 2 }}>
+                          <Chip
+                            label={editFile.name}
+                            onDelete={() => {
+                              setEditFile(null);
+                              setEditImageUrl(originalEditImageUrl);
+                              if (editFileInputRef.current) {
+                                editFileInputRef.current.value = '';
+                              }
+                            }}
+                            color="primary"
+                            variant="outlined"
+                          />
+                        </Box>
+                      )}
+                    </Box>
+                  </Grid>
+                </div>
+                <div className='flex flex-col items-center w-[100%] gap-5'>
+                  <Grid className=" w-[90%] lg:w-1/2" item xs={12} sm={6}>
+                    <TextField
+                      name="name"
+                      label="Student Name"
+                      value={editFormik.values.name}
                       onChange={editFormik.handleChange}
                       onBlur={editFormik.handleBlur}
-                      error={editFormik.touched.studentClass && Boolean(editFormik.errors.studentClass)}
-                    >
-                      {classes && classes.map((cls) => (
-                        <MenuItem key={cls._id} value={cls._id}>{cls.classText}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
+                      error={editFormik.touched.name && Boolean(editFormik.errors.name)}
+                      helperText={editFormik.touched.name && editFormik.errors.name}
+                      fullWidth
+                    />
+                  </Grid>
 
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    name="age"
-                    label="Age"
-                    type="number"
-                    value={editFormik.values.age}
-                    onChange={editFormik.handleChange}
-                    onBlur={editFormik.handleBlur}
-                    error={editFormik.touched.age && Boolean(editFormik.errors.age)}
-                    helperText={editFormik.touched.age && editFormik.errors.age}
-                    fullWidth
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Gender</InputLabel>
-                    <Select
-                      value={editFormik.values.gender}
-                      label="Gender"
-                      name="gender"
+                  <Grid className=" w-[90%] lg:w-1/2" item xs={12} sm={6}>
+                    <TextField
+                      name="email"
+                      label="Email address"
+                      type="email"
+                      value={editFormik.values.email}
                       onChange={editFormik.handleChange}
                       onBlur={editFormik.handleBlur}
-                      error={editFormik.touched.gender && Boolean(editFormik.errors.gender)}
-                    >
-                      <MenuItem value="Male">Male</MenuItem>
-                      <MenuItem value="Female">Female</MenuItem>
-                      <MenuItem value="Other">Other</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
+                      error={editFormik.touched.email && Boolean(editFormik.errors.email)}
+                      helperText={editFormik.touched.email && editFormik.errors.email}
+                      fullWidth
+                    />
+                  </Grid>
 
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    name="parent"
-                    label="Parent/Guardian Name"
-                    value={editFormik.values.parent}
-                    onChange={editFormik.handleChange}
-                    onBlur={editFormik.handleBlur}
-                    error={editFormik.touched.parent && Boolean(editFormik.errors.parent)}
-                    helperText={editFormik.touched.parent && editFormik.errors.parent}
-                    fullWidth
-                  />
-                </Grid>
+                  <Grid className=" w-[90%] lg:w-1/2" item xs={12} sm={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Class</InputLabel>
+                      <Select
+                        value={editFormik.values.studentClass}
+                        label="Class"
+                        name="studentClass"
+                        onChange={editFormik.handleChange}
+                        onBlur={editFormik.handleBlur}
+                        error={editFormik.touched.studentClass && Boolean(editFormik.errors.studentClass)}
+                      >
+                        {classes && classes.map((cls) => (
+                          <MenuItem key={cls._id} value={cls._id}>{cls.classText}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <div className='flex w-[90%] lg:w-1/2 gap-5 justify-between'>
+                    <Grid className="w-1/2" item xs={12} sm={6}>
+                      <TextField
+                        name="age"
+                        label="Age"
+                        value={editFormik.values.age}
+                        onChange={editFormik.handleChange}
+                        onBlur={editFormik.handleBlur}
+                        error={editFormik.touched.age && Boolean(editFormik.errors.age)}
+                        helperText={editFormik.touched.age && editFormik.errors.age}
+                        fullWidth
+                      />
+                    </Grid>
 
-                <Grid item xs={12}>
-                  <TextField
-                    name="parentNum"
-                    label="Parent Phone Number"
-                    value={editFormik.values.parentNum}
-                    onChange={editFormik.handleChange}
-                    onBlur={editFormik.handleBlur}
-                    error={editFormik.touched.parentNum && Boolean(editFormik.errors.parentNum)}
-                    helperText={editFormik.touched.parentNum && editFormik.errors.parentNum}
-                    fullWidth
-                  />
-                </Grid>
+                    <Grid className="w-1/2" item xs={12} sm={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Gender</InputLabel>
+                        <Select
+                          value={editFormik.values.gender}
+                          label="Gender"
+                          name="gender"
+                          onChange={editFormik.handleChange}
+                          onBlur={editFormik.handleBlur}
+                          error={editFormik.touched.gender && Boolean(editFormik.errors.gender)}
+                          displayEmpty
+                          renderValue={(selected) => {
+                            if (!selected) {
+                              return <span style={{ color: '#999' }}>Select Gender</span>;
+                            }
+                            return selected;
+                          }}
+                        >
+                          <MenuItem value="Male">Male</MenuItem>
+                          <MenuItem value="Female">Female</MenuItem>
+                          <MenuItem value="Other">Other</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                  </div>
+
+                  <Grid item className=" w-[90%] lg:w-1/2" xs={12} sm={6}>
+                    <TextField
+                      name="parent"
+                      label="Parent/Guardian Name"
+                      value={editFormik.values.parent}
+                      onChange={editFormik.handleChange}
+                      onBlur={editFormik.handleBlur}
+                      error={editFormik.touched.parent && Boolean(editFormik.errors.parent)}
+                      helperText={editFormik.touched.parent && editFormik.errors.parent}
+                      fullWidth
+                    />
+                  </Grid>
+
+                  <Grid item className=" w-[90%] lg:w-1/2" xs={12}>
+                    <TextField
+                      name="parentNum"
+                      label="Parent Phone Number"
+                      value={editFormik.values.parentNum}
+                      onChange={editFormik.handleChange}
+                      onBlur={editFormik.handleBlur}
+                      error={editFormik.touched.parentNum && Boolean(editFormik.errors.parentNum)}
+                      helperText={editFormik.touched.parentNum && editFormik.errors.parentNum}
+                      fullWidth
+                    />
+                  </Grid>
+                </div>
               </Grid>
             </Box>
           </DialogContent>
@@ -1418,7 +1431,7 @@ export default function Students() {
           <DialogActions sx={{
             p: 3,
             borderTop: '1px solid rgba(255, 152, 0, 0.12)',
-            flexDirection: isMobile ? 'column' : 'row',
+            flexDirection: 'row',
             gap: 2
           }}>
             <Button
