@@ -74,7 +74,7 @@ const Dashboard = () => {
   // Helper function to get school image URL from backend
   const getSchoolImageUrl = (imageName) => {
     if (!imageName) return null;
-    return `${baseApi}/uploads/school/${imageName}`;
+    return imageName; // Directly return the Cloudinary URL
   };
 
   const addImage = (event) => {

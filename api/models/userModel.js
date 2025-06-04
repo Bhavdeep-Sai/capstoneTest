@@ -47,12 +47,22 @@ const userSchema = new mongoose.Schema({
         default: Date.now
     }
 }, {
-    timestamps: true // This will automatically handle createdAt and updatedAt
+    timestamps: true, // This will automatically handle createdAt and updatedAt
+    toJSON: { 
+        virtuals: true,
+        transform: function(doc, ret) {
+            // Remove password from JSON output for security
+            delete ret.password;
+            return ret;
+        }
+    },
+    toObject: { virtuals: true }
 });
 
 // Index for better query performance
 userSchema.index({ email: 1 });
 userSchema.index({ schoolId: 1, role: 1 });
+userSchema.index({ schoolId: 1, isActive: 1 });
 
 // Middleware to update the updatedAt field before saving
 userSchema.pre('save', function(next) {

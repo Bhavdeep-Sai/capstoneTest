@@ -3,125 +3,128 @@ const Teacher = require("../models/teacherModel");
 const path = require("path");
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
+const cloudinary = require("../config/cloudinary"); // Import your cloudinary config
 
 module.exports = {
-registerTeacher: async (req, res) => {
-  try {
-    const form = new formidable.IncomingForm();
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Form parsing error" });
-      }
+  registerTeacher: async (req, res) => {
+    try {
+      const form = new formidable.IncomingForm();
+      form.parse(req, async (err, fields, files) => {
+        if (err) {
+          return res
+            .status(400)
+            .json({ success: false, message: "Form parsing error" });
+        }
 
-      if (!files.image || !files.image[0]) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Teacher image is required" });
-      }
+        if (!files.image || !files.image[0]) {
+          return res
+            .status(400)
+            .json({ success: false, message: "Teacher image is required" });
+        }
 
-      // Check for required fields based on the schema
-      const requiredFields = [
-        "email",
-        "name",
-        "qualification",
-        "age",
-        "gender",
-        "password",
-      ];
-      for (const field of requiredFields) {
-        if (!fields[field] || !fields[field][0]) {
-          return res.status(400).json({
+        // Check for required fields based on the schema
+        const requiredFields = [
+          "email",
+          "name",
+          "qualification",
+          "age",
+          "gender",
+          "password",
+        ];
+        for (const field of requiredFields) {
+          if (!fields[field] || !fields[field][0]) {
+            return res.status(400).json({
+              success: false,
+              message: `${field.charAt(0).toUpperCase() + field.slice(1)} is required`,
+            });
+          }
+        }
+
+        // Check if email already exists
+        const existingTeacher = await Teacher.findOne({
+          email: fields.email[0],
+        });
+
+        if (existingTeacher) {
+          return res.status(409).json({
             success: false,
-            message: `${field.charAt(0).toUpperCase() + field.slice(1)} is required`,
+            message: "Email already exists. Please use a different email.",
           });
         }
-      }
 
-      // Check if email already exists
-      const existingTeacher = await Teacher.findOne({
-        email: fields.email[0],
-      });
+        const photo = files.image[0];
+        let cloudinaryResult;
 
-      if (existingTeacher) {
-        return res.status(409).json({
-          success: false,
-          message: "Email already exists. Please use a different email.",
+        try {
+          // Upload image to Cloudinary
+          cloudinaryResult = await cloudinary.uploader.upload(photo.filepath, {
+            folder: "teachers", // Organize images in a folder
+            resource_type: "image",
+            transformation: [
+              { width: 500, height: 500, crop: "limit" },
+              { quality: "auto" }
+            ]
+          });
+        } catch (cloudinaryError) {
+          console.error("Cloudinary upload error:", cloudinaryError);
+          return res.status(500).json({
+            success: false,
+            message: "Image upload failed"
+          });
+        }
+
+        let teacherClasses = [];
+        if (fields.teacherClasses && fields.teacherClasses[0]) {
+          try {
+            teacherClasses = JSON.parse(fields.teacherClasses[0]);
+          } catch (e) {
+            console.error("Error parsing teacherClasses:", e);
+          }
+        }
+
+        let subjects = [];
+        if (fields.subjects && fields.subjects[0]) {
+          try {
+            subjects = JSON.parse(fields.subjects[0]);
+          } catch (e) {
+            console.error("Error parsing subjects:", e);
+          }
+        } else if (fields.subject && fields.subject[0]) {
+          try {
+            subjects = JSON.parse(fields.subject[0]);
+          } catch (e) {
+            subjects = [fields.subject[0]];
+          }
+        }
+
+        const newTeacher = new Teacher({
+          school: req.user.schoolId,
+          email: fields.email[0],
+          name: fields.name[0],
+          qualification: fields.qualification[0],
+          subjects: subjects,
+          teacherClasses: teacherClasses,
+          age: fields.age[0],
+          gender: fields.gender[0],
+          teacherImg: cloudinaryResult.secure_url, // Store Cloudinary URL
+          teacherImgPublicId: cloudinaryResult.public_id, // Store public_id for deletion
+          password: fields.password[0], // Store password as plain text (as requested)
         });
-      }
 
-      const photo = files.image[0];
-      let filepath = photo.filepath;
-
-      const timestamp = Date.now();
-      const fileExtension = path.extname(photo.originalFilename);
-      const originalName = path
-        .basename(photo.originalFilename, fileExtension)
-        .replace(/\s+/g, "_");
-      const uniqueFilename = `${originalName}_${timestamp}${fileExtension}`;
-
-      let newPath = path.join(__dirname, "../uploads/teacher/", uniqueFilename);
-
-      const dir = path.dirname(newPath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-
-      let photoData = fs.readFileSync(filepath);
-      fs.writeFileSync(newPath, photoData);
-
-      let teacherClasses = [];
-      if (fields.teacherClasses && fields.teacherClasses[0]) {
-        try {
-          teacherClasses = JSON.parse(fields.teacherClasses[0]);
-        } catch (e) {
-          console.error("Error parsing teacherClasses:", e);
-        }
-      }
-
-      let subjects = [];
-      if (fields.subjects && fields.subjects[0]) {
-        try {
-          subjects = JSON.parse(fields.subjects[0]);
-        } catch (e) {
-          console.error("Error parsing subjects:", e);
-        }
-      } else if (fields.subject && fields.subject[0]) {
-        try {
-          subjects = JSON.parse(fields.subject[0]);
-        } catch (e) {
-          subjects = [fields.subject[0]];
-        }
-      }
-
-      const newTeacher = new Teacher({
-        school: req.user.schoolId,
-        email: fields.email[0],
-        name: fields.name[0],
-        qualification: fields.qualification[0],
-        subjects: subjects,
-        teacherClasses: teacherClasses,
-        age: fields.age[0],
-        gender: fields.gender[0],
-        teacherImg: uniqueFilename,
-        password: fields.password[0], // Store password as plain text (as requested)
+        const savedTeacher = await newTeacher.save();
+        res.status(200).json({
+          success: true,
+          data: savedTeacher,
+          message: "Teacher is registered Successfully",
+        });
       });
-
-      const savedTeacher = await newTeacher.save();
-      res.status(200).json({
-        success: true,
-        data: savedTeacher,
-        message: "Teacher is registered Successfully",
-      });
-    });
-  } catch (error) {
-    console.error("Register Teacher error:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Internal Server Error" });
-  }
-},
+    } catch (error) {
+      console.error("Register Teacher error:", error);
+      res
+        .status(500)
+        .json({ success: false, message: "Internal Server Error" });
+    }
+  },
 
   loginTeacher: async (req, res) => {
     try {
@@ -321,41 +324,33 @@ registerTeacher: async (req, res) => {
         // Handle image update if provided
         if (files.image && files.image[0]) {
           const photo = files.image[0];
-          let filepath = photo.filepath;
-          let originalFilename = photo.originalFilename.replace(/\s+/g, "_");
+          let cloudinaryResult;
 
-          // Delete old image if exists
-          if (teacher.teacherImg) {
-            let oldImagePath = path.join(
-              __dirname,
-              "../uploads/teacher/",
-              teacher.teacherImg
-            );
-            if (fs.existsSync(oldImagePath)) {
-              fs.unlinkSync(oldImagePath);
+          try {
+            // Delete old image from Cloudinary if exists
+            if (teacher.teacherImgPublicId) {
+              await cloudinary.uploader.destroy(teacher.teacherImgPublicId);
             }
+
+            // Upload new image to Cloudinary
+            cloudinaryResult = await cloudinary.uploader.upload(photo.filepath, {
+              folder: "teachers",
+              resource_type: "image",
+              transformation: [
+                { width: 500, height: 500, crop: "limit" },
+                { quality: "auto" }
+              ]
+            });
+
+            teacher.teacherImg = cloudinaryResult.secure_url;
+            teacher.teacherImgPublicId = cloudinaryResult.public_id;
+          } catch (cloudinaryError) {
+            console.error("Cloudinary update error:", cloudinaryError);
+            return res.status(500).json({
+              success: false,
+              message: "Image update failed"
+            });
           }
-
-          // Generate unique filename to avoid conflicts
-          const timestamp = Date.now();
-          const fileExtension = path.extname(photo.originalFilename);
-          const originalName = path
-            .basename(photo.originalFilename, fileExtension)
-            .replace(/\s+/g, "_");
-          const uniqueFilename = `${originalName}_${timestamp}${fileExtension}`;
-
-          let newPath = path.join(__dirname, "../uploads/teacher/", uniqueFilename);
-
-          // Create directory if it doesn't exist
-          const dir = path.dirname(newPath);
-          if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-          }
-
-          let photoData = fs.readFileSync(filepath);
-          fs.writeFileSync(newPath, photoData);
-
-          teacher.teacherImg = uniqueFilename;
         }
 
         await teacher.save();
@@ -389,6 +384,7 @@ registerTeacher: async (req, res) => {
         _id: id,
         school: schoolId,
       });
+      
       if (!deletedTeacher) {
         return res.status(404).json({
           success: false,
@@ -396,15 +392,13 @@ registerTeacher: async (req, res) => {
         });
       }
 
-      // Delete teacher image if exists
-      if (deletedTeacher.teacherImg) {
-        let imagePath = path.join(
-          __dirname,
-          "../uploads/teacher/",
-          deletedTeacher.teacherImg
-        );
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
+      // Delete teacher image from Cloudinary if exists
+      if (deletedTeacher.teacherImgPublicId) {
+        try {
+          await cloudinary.uploader.destroy(deletedTeacher.teacherImgPublicId);
+        } catch (cloudinaryError) {
+          console.error("Error deleting image from Cloudinary:", cloudinaryError);
+          // Continue with deletion even if image deletion fails
         }
       }
 
@@ -420,4 +414,3 @@ registerTeacher: async (req, res) => {
     }
   },
 };
-

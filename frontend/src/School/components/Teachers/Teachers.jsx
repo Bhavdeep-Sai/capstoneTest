@@ -8,7 +8,37 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useFormik } from 'formik';
-import { Button, CardMedia, Typography, Alert, CircularProgress, Card, CardActionArea, CardContent, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Chip, OutlinedInput } from '@mui/material';
+import {
+  Button,
+  CardMedia,
+  Typography,
+  Alert,
+  CircularProgress,
+  Card,
+  CardActionArea,
+  CardContent,
+  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Chip,
+  OutlinedInput,
+  Container,
+  Grid,
+  Paper,
+  Fade,
+  Slide,
+  Avatar,
+  Divider,
+  Tooltip,
+  Badge,
+  Stack,
+  useMediaQuery,
+  useTheme,
+  Backdrop,
+  Zoom
+} from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import SchoolIcon from '@mui/icons-material/School';
 import { styled } from '@mui/material/styles';
@@ -21,79 +51,292 @@ import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import AddIcon from '@mui/icons-material/Add';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
+import PersonIcon from '@mui/icons-material/Person';
+import EmailIcon from '@mui/icons-material/Email';
+import WorkIcon from '@mui/icons-material/Work';
+import CakeIcon from '@mui/icons-material/Cake';
+import WcIcon from '@mui/icons-material/Wc';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import ClassIcon from '@mui/icons-material/Class';
+import LockIcon from '@mui/icons-material/Lock';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import MaleIcon from '@mui/icons-material/Male';
+import FemaleIcon from '@mui/icons-material/Female';
+import Groups3Icon from "@mui/icons-material/Groups3";
 
-// Create a custom dark theme with orange/yellow/red accents
+// Enhanced dark theme with modern design
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#FF9800', // Orange
+      main: '#FF6B35',
+      light: '#FF8A65',
+      male: '#1ca3f0',
+      female: "#ef598e",
+      dark: '#E64A19',
+      contrastText: '#FFFFFF',
     },
     secondary: {
-      main: '#FF5722', // Deep Orange
+      main: '#FFC107',
+      light: '#FFD54F',
+      dark: '#FFA000',
     },
     background: {
-      default: '#121212',
-      paper: '#1E1E2E',
+      default: 'linear-gradient(135deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%)',
+      paper: 'rgba(30, 30, 46, 0.95)',
     },
     text: {
       primary: '#FFFFFF',
       secondary: '#E0E0E0',
     },
     error: {
-      main: '#F44336',
+      main: '#FF5252',
     },
     success: {
-      main: '#66BB6A',
+      main: '#4CAF50',
+    },
+    info: {
+      main: '#2196F3',
+    },
+    warning: {
+      main: '#FF9800',
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h4: {
+      fontWeight: 700,
+      fontSize: '2.125rem',
+      letterSpacing: '-0.025em',
+    },
     h5: {
       fontWeight: 600,
+      fontSize: '1.5rem',
+      letterSpacing: '-0.025em',
     },
+    h6: {
+      fontWeight: 600,
+      fontSize: '1.25rem',
+    },
+    body1: {
+      fontSize: '1rem',
+      lineHeight: 1.6,
+    },
+    body2: {
+      fontSize: '0.875rem',
+      lineHeight: 1.5,
+    },
+  },
+  shape: {
+    borderRadius: 12,
   },
   components: {
     MuiTextField: {
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
+            borderRadius: 12,
+            transition: 'all 0.3s ease',
             '&:hover fieldset': {
-              borderColor: '#FF9800',
+              borderColor: '#FF6B35',
+              borderWidth: 2,
             },
             '&.Mui-focused fieldset': {
-              borderColor: '#FF9800',
+              borderColor: '#FF6B35',
+              borderWidth: 2,
+              boxShadow: '0 0 0 3px rgba(255, 107, 53, 0.1)',
             },
           },
           '& .MuiInputLabel-root': {
             color: '#BBBBBB',
-          },
-          '& .MuiInputLabel-root.Mui-focused': {
-            color: '#FF9800',
+            '&.Mui-focused': {
+              color: '#FF6B35',
+            },
           },
         },
       },
     },
     MuiButton: {
       styleOverrides: {
+        root: {
+          borderRadius: 12,
+          textTransform: 'none',
+          fontWeight: 600,
+          fontSize: '0.875rem',
+          padding: '10px 24px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        },
         contained: {
-          background: 'linear-gradient(45deg, #FF9800 30%, #FF5722 90%)',
-          boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
+          background: 'linear-gradient(135deg, #FF6B35 0%, #FF8A65 100%)',
+          boxShadow: '0 4px 14px 0 rgba(255, 107, 53, 0.39)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #E64A19 0%, #FF6B35 100%)',
+            boxShadow: '0 6px 20px 0 rgba(255, 107, 53, 0.5)',
+            transform: 'translateY(-2px)',
+          },
+        },
+        outlined: {
+          borderColor: '#FF6B35',
+          color: '#FF6B35',
+          borderWidth: 2,
+          '&:hover': {
+            borderColor: '#FF8A65',
+            backgroundColor: 'rgba(255, 107, 53, 0.04)',
+            borderWidth: 2,
+          },
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          background: 'rgba(30, 30, 46, 0.95)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: 16,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
+            border: '1px solid rgba(255, 107, 53, 0.3)',
+          },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          fontWeight: 500,
+          fontSize: '0.75rem',
+        },
+        outlined: {
+          '&.MuiChip-colorPrimary': {
+            borderColor: '#FF6B35',
+            color: '#FF6B35',
+            backgroundColor: 'rgba(255, 107, 53, 0.1)',
+          },
+          '&.MuiChip-colorSecondary': {
+            borderColor: '#FFC107',
+            color: '#FFC107',
+            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+          },
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          background: 'rgba(30, 30, 46, 0.98)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: 16,
+        },
+      },
+    },
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 12,
+          },
         },
       },
     },
   },
 });
 
-// Custom styled file input button
-const UploadButton = styled(Button)(({ theme }) => ({
-  background: 'linear-gradient(45deg, #FF9800 30%, #FF5722 90%)',
-  borderRadius: 3,
-  boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
-  color: 'white',
-  height: 36,
-  padding: '0 16px',
-  margin: '10px 0',
+// Enhanced styled components
+const StyledContainer = styled(Container)(({ theme }) => ({
+  minHeight: '100vh',
+  paddingTop: theme.spacing(4),
+  paddingBottom: theme.spacing(4),
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(circle at 50% 50%, rgba(255, 107, 53, 0.05) 0%, transparent 70%)',
+    pointerEvents: 'none',
+  },
+}));
+
+const FloatingActionButton = styled(Button)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(3),
+  right: theme.spacing(3),
+  zIndex: 1000,
+  borderRadius: '10%',
+  minWidth: 64,
+  height: 64,
+  '&:hover': {
+    transform: 'translateY(-2px) scale(1.05)',
+  },
+  [theme.breakpoints.down('sm')]: {
+    top: 'auto',
+    bottom: theme.spacing(3),
+    minWidth: 56,
+    height: 56,
+  },
+}));
+
+const GlassCard = styled(Card)(({ theme }) => ({
+  backdropFilter: 'blur(20px)',
+  borderRadius: 15,
+  overflow: 'hidden',
+  position: 'relative',
+}));
+
+const TeacherCard = styled(Card)(({ theme }) => ({
+  background: 'rgba(30, 30, 46, 0.9)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 10,
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    background: 'linear-gradient(90deg, #FF6B35, #FFC107)',
+  },
+  '&:hover': {
+    transform: 'translateY(-8px) scale(1.02)',
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 107, 53, 0.2)',
+    border: '1px solid rgba(255, 107, 53, 0.3)',
+  },
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    background: 'rgba(255, 255, 255, 0.02)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      background: 'rgba(255, 255, 255, 0.04)',
+    },
+    '&.Mui-focused': {
+      background: 'rgba(255, 255, 255, 0.06)',
+    },
+  },
+}));
+
+const IconBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(1),
+  color: theme.palette.text.secondary,
+  fontSize: '0.875rem',
 }));
 
 // MENU ITEM PROPS
@@ -104,6 +347,9 @@ const MenuProps = {
     style: {
       maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
       width: 250,
+      background: 'rgba(30, 30, 46, 0.95)',
+      backdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
     },
   },
 };
@@ -112,6 +358,10 @@ const MenuProps = {
 import { teacherSchema } from '../../../yupSchema/teacherSchema';
 
 export default function Teachers() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+
   const [form, setForm] = React.useState(false);
   const [file, setFile] = React.useState(null);
   const [imageUrl, setImageUrl] = React.useState(null);
@@ -211,17 +461,14 @@ export default function Teachers() {
         }
       });
 
-      // Store the fetched teachers
       setTeachers(response.data.teachers);
 
-      // Initialize password visibility state for all teachers
       const initialVisibility = {};
       response.data.teachers.forEach(teacher => {
         initialVisibility[teacher._id] = false;
       });
       setPasswordVisibility(initialVisibility);
 
-      // Reset the set of fetched teacher ids
       setFetchedTeacherIds(new Set());
 
     } catch (err) {
@@ -259,6 +506,9 @@ export default function Teachers() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl);
+    }
     setFile(null);
     setImageUrl(null);
   };
@@ -266,6 +516,9 @@ export default function Teachers() {
   const handleClearEditFile = () => {
     if (editFileInputRef.current) {
       editFileInputRef.current.value = '';
+    }
+    if (editImageUrl && editImageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(editImageUrl);
     }
     setEditFile(null);
     setEditImageUrl(null);
@@ -280,13 +533,11 @@ export default function Teachers() {
   };
 
   const togglePasswordVisibility = async (teacherId) => {
-    // If we haven't fetched this teacher's password yet, fetch it first
     if (!fetchedTeacherIds.has(teacherId)) {
       await fetchTeacherWithPassword(teacherId);
       setFetchedTeacherIds(prev => new Set([...prev, teacherId]));
     }
 
-    // Toggle password visibility
     setPasswordVisibility(prev => ({
       ...prev,
       [teacherId]: !prev[teacherId]
@@ -329,12 +580,10 @@ export default function Teachers() {
         fd.append("gender", values.gender);
         fd.append("password", values.password);
 
-        // Add subjects as JSON array if selected
         if (values.subjects && values.subjects.length > 0) {
           fd.append("subjects", JSON.stringify(values.subjects));
         }
 
-        // Add multiple classes if selected
         if (values.teacherClasses && values.teacherClasses.length > 0) {
           fd.append("teacherClasses", JSON.stringify(values.teacherClasses));
         }
@@ -355,8 +604,6 @@ export default function Teachers() {
         formik.resetForm();
         handleClearFile();
         setForm(false);
-
-        // Refresh teacher list
         fetchTeachers();
       } catch (error) {
         console.error("Registration error:", error);
@@ -373,7 +620,6 @@ export default function Teachers() {
     setForm(false);
   }
 
-  // Edit form setup
   const editFormik = useFormik({
     initialValues: {
       email: "",
@@ -392,7 +638,6 @@ export default function Teachers() {
       try {
         const fd = new FormData();
 
-        // Only append the image if a new one is selected
         if (editFile) {
           fd.append("image", editFile);
         }
@@ -403,12 +648,10 @@ export default function Teachers() {
         fd.append("age", values.age);
         fd.append("gender", values.gender);
 
-        // Add subjects as JSON array if selected
         if (values.subjects && values.subjects.length > 0) {
           fd.append("subjects", JSON.stringify(values.subjects));
         }
 
-        // Add multiple classes if selected
         if (values.teacherClasses && values.teacherClasses.length > 0) {
           fd.append("teacherClasses", JSON.stringify(values.teacherClasses));
         }
@@ -429,8 +672,6 @@ export default function Teachers() {
         setEditDialogOpen(false);
         setMessage(`Teacher ${values.name} updated at ${new Date().toLocaleString()}`);
         handleClearEditFile();
-
-        // Refresh teacher list
         fetchTeachers();
       } catch (error) {
         console.error("Update error:", error);
@@ -442,38 +683,31 @@ export default function Teachers() {
   });
 
   const handleEdit = (id) => {
-    // Find the teacher by id
     const teacherToEdit = teachers.find(teacher => teacher._id === id);
     if (!teacherToEdit) return;
 
-    // Set the current teacher
     setCurrentTeacher(teacherToEdit);
 
-    // Set the edit form initial values
     editFormik.setValues({
       email: teacherToEdit.email || "",
       name: teacherToEdit.name || "",
       qualification: teacherToEdit.qualification || "",
       age: teacherToEdit.age || "",
       gender: teacherToEdit.gender || "",
-      // Convert subjects array properly
       subjects: teacherToEdit.subjects?.map(subject =>
         typeof subject === 'object' ? subject._id : subject
       ) || [],
-      // Transform teacherClasses array if it exists
       teacherClasses: teacherToEdit.teacherClasses?.map(cls =>
         typeof cls === 'object' ? cls._id : cls
       ) || [],
     });
 
-    // Set the image preview if available
     if (teacherToEdit.teacherImg) {
-      setEditImageUrl(`${baseApi}/uploads/teacher/${teacherToEdit.teacherImg}`);
+      setEditImageUrl(teacherToEdit.teacherImg);
     } else {
       setEditImageUrl(null);
     }
 
-    // Open the edit dialog
     setEditDialogOpen(true);
   };
 
@@ -490,8 +724,6 @@ export default function Teachers() {
       );
       setSuccess("Teacher deleted Successfully");
       setMessage(response.data.message);
-
-      // Refresh teacher list after deletion
       fetchTeachers();
     } catch (err) {
       setError("Teacher is not Deleted");
@@ -499,7 +731,6 @@ export default function Teachers() {
     }
   };
 
-  // Fetch single teacher with password for display
   const fetchTeacherWithPassword = async (id) => {
     try {
       const token = localStorage.getItem('token');
@@ -509,7 +740,6 @@ export default function Teachers() {
         }
       });
 
-      // Update the teacher in the teachers array
       setTeachers(prevTeachers =>
         prevTeachers.map(teacher =>
           teacher._id === id ? response.data.teacher : teacher
@@ -522,648 +752,962 @@ export default function Teachers() {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <div className='min-h-screen pt-25 bg-gray-900 relative'>
-        {message && <Alert severity="success" sx={{ m: 2 }}>{message}</Alert>}
+      <StyledContainer maxWidth={false} disableGutters>
+        <div className='p-4'>
+          <div className='flex px-0 justify-between flex-col lg:flex-row'>
+            {/* Header */}
+            {!form && (
+              <Fade in={!form}>
+                <Box className="flex gap-[16px] items-center" sx={{ textAlign: 'center', mb: 4 }}>
+                  <Avatar sx={{
+                    bgcolor: 'primary.main',
+                    width: isMobile ? 40 : 56,
+                    height: isMobile ? 40 : 56,
+                    color: 'black'
+                  }}>
+                    <Groups3Icon sx={{ fontSize: isMobile ? 20 : 28 }} />
+                  </Avatar>
+                  <Box>
+                    <Typography
+                      variant={isMobile ? "h5" : "h4"}
+                      sx={{
+                        fontWeight: 700,
+                        background: 'linear-gradient(135deg, #FF9800 0%, #FF5722 100%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      Teacher Management
+                    </Typography>
+                    <Typography variant="body2" sx={{ textAlign: "left", paddingLeft: "7px" }} color="text.secondary">
+                      Manage and organize Teacher Data
+                    </Typography>
+                  </Box>
 
-        {!form && <Button onClick={() => setForm(true)}
-          sx={{
-            mt: 1,
-            py: 1.5,
-            textTransform: 'uppercase',
-            fontWeight: 'bold',
-            color: "black",
-            position: "absolute",
-            right: "30px",
-            top: "80px"
-          }}
-          className="bg-gradient-to-r from-amber-500 to-orange-600">
-          <Typography>
-            + Add Teacher
-          </Typography>
-        </Button>}
-        {form &&
-          <div className="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <Box
-              component="form"
-              sx={{
-                '& > :not(style)': { m: 1 },
-                display: "flex",
-                flexDirection: "column",
-                margin: "50px",
-                justifyContent: "center",
-                width: "80vw",
-                minWidth: '320px',
-                maxWidth: '600px',
-                padding: '30px',
-                borderRadius: '12px',
-                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
-                bgcolor: 'background.paper',
-              }}
-              className="bg-gray-800 border border-gray-700"
-              noValidate
-              autoComplete="off"
-              onSubmit={formik.handleSubmit}
-            >
-              <div className="flex items-center justify-center mb-4">
-                <SchoolIcon sx={{ color: '#FF9800', fontSize: 40, mr: 1 }} />
-                <Typography variant="h5" gutterBottom sx={{ color: 'text.primary', m: 0 }}>
+                </Box>
+              </Fade>
+            )}
+
+            {/* Floating Action Button */}
+            {!form && (
+              isMobile ? (
+                <div className="flex justify-end mb-2 w-full">
+                  <Button
+                    onClick={() => setForm(true)}
+                    startIcon={<PersonAddIcon />}
+                    size="small"
+                    variant="outlined"
+                    sx={{ borderRadius: "10px" }}
+                  >
+                    Add Teacher
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => setForm(true)}
+                  startIcon={<PersonAddIcon />}
+                  size="medium"
+                  variant="outlined"
+                  sx={{ height: "50px" }}
+                >
+                  Add Teacher
+                </Button>
+              )
+            )}
+
+          </div>
+          <Divider sx={{ mb: 2, bgcolor: 'rgba(255, 255, 255, 0.1)' }} />
+
+          {/* Success/Error Messages */}
+          {message && (
+            <Fade in={Boolean(message)}>
+              <Alert
+                severity="success"
+                sx={{
+                  mb: 3,
+                  borderRadius: 2,
+                  '& .MuiAlert-icon': { color: '#4CAF50' }
+                }}
+                onClose={() => setMessage('')}
+              >
+                {message}
+              </Alert>
+            </Fade>
+          )}
+
+
+          {/* Teacher Registration Form */}
+          {form && (
+            <Slide direction="down" in={form} mountOnEnter unmountOnExit>
+              <GlassCard sx={{ maxWidth: 800, mx: 'auto', p: { xs: 2, sm: 4 }, mb: 4 }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    mb: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'linear-gradient(135deg, #FF6B35, #FFC107)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  <SchoolIcon sx={{ mr: 1, color: '#FF6B35' }} />
                   Add New Teacher
                 </Typography>
-              </div>
-              <Typography variant="body2" className="text-gray-400 text-center mb-6">
-                Register a teacher in the School Management System
-              </Typography>
 
-              {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-              {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-
-              <TextField
-                name="name"
-                label="Teacher Name"
-                value={formik.values.name}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.name && Boolean(formik.errors.name)}
-                helperText={formik.touched.name && formik.errors.name}
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                name="email"
-                label="Email address"
-                type="email"
-                value={formik.values.email}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.email && Boolean(formik.errors.email)}
-                helperText={formik.touched.email && formik.errors.email}
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                name="qualification"
-                label="Qualification"
-                value={formik.values.qualification}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.qualification && Boolean(formik.errors.qualification)}
-                helperText={formik.touched.qualification && formik.errors.qualification}
-                sx={{ mb: 2 }}
-              />
-
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel id="subjects-select-label">Subjects (Optional)</InputLabel>
-                <Select
-                  labelId="subjects-select-label"
-                  id="subjects-select"
-                  value={formik.values.subjects}
-                  multiple
-                  input={<OutlinedInput label="Subjects" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map((value) => {
-                        const subjectObj = subjects.find(s => s._id === value);
-                        return (
-                          <Chip key={value} label={subjectObj ? subjectObj.subjectName : value} />
-                        );
-                      })}
-                    </Box>
-                  )}
-                  MenuProps={MenuProps}
-                  name="subjects"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                >
-                  {subjects && subjects.map((subject) => (
-                    <MenuItem key={subject._id} value={subject._id}>{subject.subjectName}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel id="class-select-label">Classes (Optional)</InputLabel>
-                <Select
-                  labelId="class-select-label"
-                  id="class-select"
-                  value={formik.values.teacherClasses}
-                  multiple
-                  input={<OutlinedInput label="Classes" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map((value) => {
-                        const classObj = classes.find(c => c._id === value);
-                        return (
-                          <Chip key={value} label={classObj ? classObj.classText : value} />
-                        );
-                      })}
-                    </Box>
-                  )}
-                  MenuProps={MenuProps}
-                  name="teacherClasses"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                >
-                  {classes && classes.map((cls) => (
-                    <MenuItem key={cls._id} value={cls._id}>
-                      {cls.classText}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel id="gender-select-label">Gender</InputLabel>
-                <Select
-                  labelId="gender-select-label"
-                  id="gender-select"
-                  value={formik.values.gender}
-                  label="Gender"
-                  name="gender"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.gender && Boolean(formik.errors.gender)}
-                >
-                  <MenuItem value="male">Male</MenuItem>
-                  <MenuItem value="female">Female</MenuItem>
-                  <MenuItem value="other">Other</MenuItem>
-                </Select>
-                {formik.touched.gender && formik.errors.gender && (
-                  <Typography color="error" variant="caption" sx={{ mt: 1, ml: 2 }}>
-                    {formik.errors.gender}
-                  </Typography>
+                {error && (
+                  <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+                    {error}
+                  </Alert>
                 )}
-              </FormControl>
-
-              <TextField
-                name="age"
-                label="Age"
-                value={formik.values.age}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.age && Boolean(formik.errors.age)}
-                helperText={formik.touched.age && formik.errors.age}
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                type="password"
-                name="password"
-                label="Password"
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.password && Boolean(formik.errors.password)}
-                helperText={formik.touched.password && formik.errors.password}
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                type="password"
-                name="confirmPassword"
-                label="Confirm password"
-                value={formik.values.confirmPassword}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
-                helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
-                sx={{ mb: 3 }}
-              />
-
-              <Typography className="text-gray-300 mb-1">Teacher Image</Typography>
-              <input
-                type="file"
-                ref={hiddenFileInputRef}
-                onChange={addImage}
-                accept="image/*"
-                style={{ display: 'none' }}
-              />
-              <div className="mb-4 flex items-center">
-                <Button
-                  variant="outlined"
-                  onClick={handleUploadClick}
-                  startIcon={<CloudUploadIcon />}
-                  className="bg-amber-500 flex justify-center items-center h-10 gap-5"
-                >
-                  Upload Image
-                </Button>
-                {file && (
-                  <Typography variant="body2" className="ml-2 text-gray-300">
-                    {file.name}
-                  </Typography>
+                {success && (
+                  <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>
+                    {success}
+                  </Alert>
                 )}
-              </div>
 
-              {imageUrl && (
-                <Box sx={{ maxWidth: '300px', marginTop: '10px', marginBottom: '20px' }}>
-                  <CardMedia
-                    component="img"
-                    image={imageUrl}
-                    alt="Teacher preview"
-                    sx={{
-                      borderRadius: '8px',
-                      border: '1px solid #444',
-                      maxHeight: '150px',
-                      objectFit: 'contain'
-                    }}
-                  />
-                  <Button
-                    size="small"
-                    color="error"
-                    onClick={handleClearFile}
-                    sx={{ mt: 1 }}
-                  >
-                    Clear Image
-                  </Button>
-                </Box>
-              )}
+                <form onSubmit={formik.handleSubmit}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={6}>
+                      <StyledTextField
+                        fullWidth
+                        label="Teacher Name"
+                        name="name"
+                        value={formik.values.name}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.name && Boolean(formik.errors.name)}
+                        helperText={formik.touched.name && formik.errors.name}
+                      />
+                    </Grid>
 
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={loading}
-                sx={{
-                  mt: 1,
-                  py: 1.5,
-                  textTransform: 'uppercase',
-                  fontWeight: 'bold'
-                }}
-                className="bg-gradient-to-r from-amber-500 to-orange-600"
-              >
-                {loading ? <CircularProgress size={24} /> : 'Add Teacher'}
-              </Button>
-              <Button
-                onClick={() => handleCancel()}
-                sx={{
-                  mt: 1,
-                  py: 1.5,
-                  textTransform: 'uppercase',
-                  fontWeight: 'bold',
-                  color: "black"
-                }}
-                className="bg-gradient-to-r from-amber-500 to-orange-600"
-              >
-                Cancel
-              </Button>
-            </Box>
-          </div>
-        }
-        <Box sx={{ margin: "auto", marginTop: "10px" }} className="flex w-[60%] h-15 justify-center items-center gap-3">
-          <TextField
-            label="Search"
-            value={search}
-            onChange={(e) => {
-              handleSearch(e)
-            }}
-            sx={{ mb: 2 }}
-            className='w-2/4'
-          />
+                    <Grid item xs={12} sm={6}>
+                      <StyledTextField
+                        fullWidth
+                        label="Email"
+                        name="email"
+                        type="email"
+                        value={formik.values.email}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.email && Boolean(formik.errors.email)}
+                        helperText={formik.touched.email && formik.errors.email}
+                      />
+                    </Grid>
 
-          <FormControl className='w-1/2' sx={{ mb: 2 }}>
-            <InputLabel id="class-filter-label">Class</InputLabel>
-            <Select
-              labelId="class-filter-label"
-              label="Class"
-              value={filterClass}
-              onChange={(e) => {
-                handleClass(e)
-              }}
-            >
-              <MenuItem value="">None</MenuItem>
+                    <Grid item xs={12} sm={6}>
+                      <StyledTextField
+                        fullWidth
+                        label="Qualification"
+                        name="qualification"
+                        value={formik.values.qualification}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.qualification && Boolean(formik.errors.qualification)}
+                        helperText={formik.touched.qualification && formik.errors.qualification}
+                      />
+                    </Grid>
 
-              {classes && classes.map((cls) => (
-                <MenuItem key={cls._id} value={cls._id}>{cls.classText}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+                    <Grid item xs={12} sm={6}>
+                      <StyledTextField
+                        fullWidth
+                        label="Age"
+                        name="age"
+                        type="number"
+                        value={formik.values.age}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.age && Boolean(formik.errors.age)}
+                        helperText={formik.touched.age && formik.errors.age}
+                      />
+                    </Grid>
 
-          <FormControl className='w-1/2' sx={{ mb: 2 }}>
-            <InputLabel id="subject-filter-label">Subject</InputLabel>
-            <Select
-              labelId="subject-filter-label"
-              label="Subject"
-              value={filterSubject}
-              onChange={(e) => {
-                handleSubject(e)
-              }}
-            >
-              <MenuItem value="">None</MenuItem>
-
-              {subjects && subjects.map((subject) => (
-                <MenuItem key={subject._id} value={subject._id}>{subject.subjectName}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <Button sx={{ mb: 2, border: "2px solid gray", }} className='w-1/4 h-[100%]' onClick={() => handleClearFilter()}>Clear Filter</Button>
-        </Box>
-
-        <Box sx={{ margin: "auto" }} className="flex w-[90%] pt-10 flex-wrap justify-center items-center gap-3">
-          {teachers && teachers.map(teacher => {
-            return (
-              <Card key={teacher._id} sx={{ maxWidth: 345 }}>
-                <CardActionArea>
-                  <CardMedia
-                    component="img"
-                    height="140"
-                    image={`${baseApi}/uploads/teacher/${teacher.teacherImg}`}
-                    alt={teacher.name}
-                  />
-                  <CardContent>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {teacher.name}
-                    </Typography>
-                    <ul>
-                      <li><b>Email : </b>{teacher.email}</li>
-                      <li><b>Qualification : </b>{teacher.qualification}</li>
-                      <li><b>Subjects : </b>
-                        {teacher.subjects && teacher.subjects.length > 0
-                          ? teacher.subjects.map(subject =>
-                            typeof subject === 'object' ? subject.subjectName : 'Loading...'
-                          ).join(', ')
-                          : 'Not assigned'}
-                      </li>
-                      <li><b>Classes : </b>
-                        {teacher.teacherClasses && teacher.teacherClasses.length > 0
-                          ? teacher.teacherClasses.map(cls =>
-                            typeof cls === 'object' ? cls.classText : 'Loading...'
-                          ).join(', ')
-                          : 'Not assigned'}
-                      </li>
-                      <li><b>Age : </b>{teacher.age}</li>
-                      <li><b>Gender : </b>{teacher.gender && teacher.gender.charAt(0).toUpperCase() + teacher.gender.slice(1)}</li>
-                      <li className="flex items-center">
-                        <b>Password : </b>
-                        <span className="ml-1">
-                          {fetchedTeacherIds.has(teacher._id) ?
-                            (passwordVisibility[teacher._id] ? teacher.password : '••••••••') :
-                            '••••••••'}
-                        </span>
-                        <IconButton
-                          size="small"
-                          onClick={() => togglePasswordVisibility(teacher._id)}
-                          sx={{ ml: 1 }}
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth error={formik.touched.gender && Boolean(formik.errors.gender)}>
+                        <InputLabel>Gender</InputLabel>
+                        <Select
+                          value={formik.values.gender}
+                          name="gender"
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                          input={<OutlinedInput label="Gender" />}
+                          sx={{
+                            borderRadius: 3,
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'rgba(255, 255, 255, 0.23)',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#FF6B35',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#FF6B35',
+                            },
+                          }}
                         >
-                          {passwordVisibility[teacher._id] ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                        </IconButton>
-                      </li>
-                    </ul>
-                    <Box className="flex justify-end gap-2 mt-3">
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        startIcon={<EditIcon />}
-                        onClick={() => handleEdit(teacher._id)}
+                          <MenuItem value="Male">Male</MenuItem>
+                          <MenuItem value="Female">Female</MenuItem>
+                          <MenuItem value="Other">Other</MenuItem>
+                        </Select>
+                        {formik.touched.gender && formik.errors.gender && (
+                          <Typography variant="caption" color="error" sx={{ mt: 1, ml: 2 }}>
+                            {formik.errors.gender}
+                          </Typography>
+                        )}
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <StyledTextField
+                        fullWidth
+                        label="Password"
+                        name="password"
+                        type="password"
+                        value={formik.values.password}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.password && Boolean(formik.errors.password)}
+                        helperText={formik.touched.password && formik.errors.password}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <StyledTextField
+                        fullWidth
+                        label="Confirm Password"
+                        name="confirmPassword"
+                        type="password"
+                        value={formik.values.confirmPassword}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
+                        helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth error={formik.touched.subjects && Boolean(formik.errors.subjects)}>
+                        <InputLabel>Subjects</InputLabel>
+                        <Select
+                          multiple
+                          value={formik.values.subjects}
+                          name="subjects"
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                          input={<OutlinedInput label="Subjects" />}
+                          MenuProps={MenuProps}
+                          renderValue={(selected) => (
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                              {selected.map((value) => {
+                                const subject = subjects.find(s => s._id === value);
+                                return (
+                                  <Chip
+                                    key={value}
+                                    label={subject?.name || value}
+                                    size="small"
+                                    variant="outlined"
+                                    color="primary"
+                                  />
+                                );
+                              })}
+                            </Box>
+                          )}
+                          sx={{
+                            borderRadius: 3,
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'rgba(255, 255, 255, 0.23)',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#FF6B35',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#FF6B35',
+                            },
+                          }}
+                        >
+                          {subjects.map((subject) => (
+                            <MenuItem key={subject._id} value={subject._id}>
+                              {subject.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {formik.touched.subjects && formik.errors.subjects && (
+                          <Typography variant="caption" color="error" sx={{ mt: 1, ml: 2 }}>
+                            {formik.errors.subjects}
+                          </Typography>
+                        )}
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth error={formik.touched.teacherClasses && Boolean(formik.errors.teacherClasses)}>
+                        <InputLabel>Classes</InputLabel>
+                        <Select
+                          multiple
+                          value={formik.values.teacherClasses}
+                          name="teacherClasses"
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                          input={<OutlinedInput label="Classes" />}
+                          MenuProps={MenuProps}
+                          renderValue={(selected) => (
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                              {selected.map((value) => {
+                                const cls = classes.find(c => c._id === value);
+                                return (
+                                  <Chip
+                                    key={value}
+                                    label={cls?.name || value}
+                                    size="small"
+                                    variant="outlined"
+                                    color="secondary"
+                                  />
+                                );
+                              })}
+                            </Box>
+                          )}
+                          sx={{
+                            borderRadius: 3,
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'rgba(255, 255, 255, 0.23)',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#FF6B35',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#FF6B35',
+                            },
+                          }}
+                        >
+                          {classes.map((cls) => (
+                            <MenuItem key={cls._id} value={cls._id}>
+                              {cls.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {formik.touched.teacherClasses && formik.errors.teacherClasses && (
+                          <Typography variant="caption" color="error" sx={{ mt: 1, ml: 2 }}>
+                            {formik.errors.teacherClasses}
+                          </Typography>
+                        )}
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box sx={{ textAlign: 'center', mb: 2 }}>
+                        <Typography variant="h6" sx={{ mb: 2, color: 'text.secondary' }}>
+                          Teacher Image
+                        </Typography>
+
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={addImage}
+                          style={{ display: 'none' }}
+                          ref={hiddenFileInputRef}
+                        />
+
+                        {imageUrl ? (
+                          <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                            <Avatar
+                              src={imageUrl}
+                              sx={{
+                                width: 120,
+                                height: 120,
+                                mb: 2,
+                                border: '3px solid #FF6B35',
+                                boxShadow: '0 8px 32px rgba(255, 107, 53, 0.3)'
+                              }}
+                            />
+                            <IconButton
+                              onClick={handleClearFile}
+                              sx={{
+                                position: 'absolute',
+                                top: -5,
+                                right: -5,
+                                bgcolor: 'error.main',
+                                color: 'white',
+                                width: 32,
+                                height: 32,
+                                '&:hover': { bgcolor: 'error.dark' }
+                              }}
+                            >
+                              <CloseIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </Box>
+                        ) : (
+                          <Box
+                            onClick={handleUploadClick}
+                            sx={{
+                              border: '2px dashed #FF6B35',
+                              borderRadius: 2,
+                              p: 4,
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                borderColor: '#FF8A65',
+                                bgcolor: 'rgba(255, 107, 53, 0.05)'
+                              }
+                            }}
+                          >
+                            <CloudUploadIcon sx={{ fontSize: 48, color: '#FF6B35', mb: 1 }} />
+                            <Typography variant="body2" color="text.secondary">
+                              Click to upload teacher image
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Stack direction="row" spacing={2} justifyContent="center">
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          disabled={loading}
+                          startIcon={loading ? <CircularProgress size={20} /> : <SchoolIcon />}
+                          sx={{ minWidth: 140 }}
+                        >
+                          {loading ? 'Adding...' : 'Add Teacher'}
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={handleCancel}
+                          disabled={loading}
+                          sx={{ minWidth: 140 }}
+                        >
+                          Cancel
+                        </Button>
+                      </Stack>
+                    </Grid>
+                  </Grid>
+                </form>
+              </GlassCard>
+            </Slide>
+          )}
+
+          {!form && (
+            <Container maxWidth="xl" sx={{ mb: 4, }}>
+              <div sx={{ p: 3 }} className='flex flex-col lg:flex-row justify-center  lg:justify-end items-center gap-3 lg:gap-10'>
+                <Grid item xs={12} md={2} className="flex items-center justify-center gap-5 w-[80%] m-auto">
+                  <Typography width={3 / 4} variant="body1" color="text.secondary" textAlign="center">
+                    {teachers.length} student{teachers.length !== 1 ? 's' : ''} found
+                  </Typography>
+                  {filterClass && <Grid item xs={12} sm={12} md={3}>
+                    <Button
+                      onClick={handleClearFilter}
+                      variant="outlined"
+                      sx={{ height: "50px" }}
+
+                    >
+                      <CloseIcon />
+
+                    </Button>
+                  </Grid>}
+                </Grid>
+                <Grid className="flex justify-center lg:justify-end gap-5" spacing={3} alignItems="center">
+                  <Grid width={1 / 2} xs={12} sm={6} md={4}>
+                    <TextField
+                      fullWidth
+                      placeholder="Search Teachers..."
+                      value={search}
+                      onChange={handleSearch}
+                      InputProps={{
+                        startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                      }}
+                    />
+                  </Grid>
+                  <Grid width={1 / 2}>
+                    <FormControl fullWidth>
+                      <InputLabel startIcon={<FilterListIcon />}>Filter</InputLabel>
+                      <Select
+                        label="Filter"
                       >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        startIcon={<PersonRemoveIcon />}
-                        onClick={() => handleDelete(teacher._id)}
-                      >
-                        Delete
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            );
-          })}
-        </Box>
-      </div>
+                        <MenuItem>
+                          <FormControl>
+                            <InputLabel>Filter by Class</InputLabel>
+                            <Select
+                              value={filterClass}
+                              label="Filter by Class"
+                              onChange={handleClass}
+                              sx={{ width: { xs: "150px", lg: "200px" } }}
+                            >
+                              <MenuItem value="">All Classes</MenuItem>
+                              {classes && classes.map((cls) => (
+                                <MenuItem key={cls._id} value={cls._id}>{cls.classText}</MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </MenuItem>
+                        <MenuItem>
+                          <FormControl>
+                            <InputLabel>Filter by Subjects</InputLabel>
+                            <Select
+                              value={filterSubject}
+                              label="Filter by Class"
+                              onChange={handleSubject}
+                              sx={{ width: { xs: "150px", lg: "200px" } }}
+                            >
+                              <MenuItem value="">All Subjects</MenuItem>
+                              {subjects && subjects.map((subject) => (
+                                <MenuItem key={subject._id} value={subject._id}>{subject.subjectName}</MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              </div>
+            </Container>
+          )}
 
-      {/* Edit Teacher Dialog */}
-      <Dialog
-        open={editDialogOpen}
-        onClose={() => setEditDialogOpen(false)}
-        maxWidth="md"
-      >
-        <DialogTitle>
-          Edit Teacher
-          <IconButton
-            aria-label="close"
-            onClick={() => setEditDialogOpen(false)}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Box
-            component="form"
-            sx={{
-              '& > :not(style)': { m: 1 },
-              display: "flex",
-              flexDirection: "column",
-              width: "100%",
-              minWidth: '300px',
-            }}
-            noValidate
-            autoComplete="off"
-            onSubmit={editFormik.handleSubmit}
-          >
-            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {/* Teachers Grid */}
+          {!form && (
+            <Fade in={!form}>
+              <Grid container spacing={3}>
+                {teachers.length === 0 ? (
+                  <Grid item xs={12}>
+                    <Paper
+                      sx={{
+                        p: 8,
+                        textAlign: 'center',
+                        background: 'rgba(30, 30, 46, 0.8)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: 4,
+                      }}
+                    >
+                      <SchoolIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+                      <Typography variant="h6" color="text.secondary" gutterBottom>
+                        No Teachers Found
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {search || filterClass || filterSubject
+                          ? "Try adjusting your search or filters"
+                          : "Add your first teacher to get started"
+                        }
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                ) : (
+                  teachers.map((teacher, index) => (
+                    <Grid item xs={12} sm={6} lg={4} key={teacher._id}>
+                      <Zoom in={true} style={{ transitionDelay: `${index * 100}ms` }}>
+                        <TeacherCard>
+                          <div className='p-5'>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                              <Avatar
+                                src={teacher.teacherImg}
+                                sx={{
+                                  width: 100,
+                                  height: 100,
+                                  mr: 2,
+                                  border: '2px solid #FF6B35',
+                                }}
+                              >
+                                <PersonIcon />
+                              </Avatar>
+                              <Box sx={{ flex: 1 }}>
+                                <Typography variant="h6" noWrap>
+                                  {teacher.name}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {teacher.qualification}
+                                </Typography>
+                              </Box>
+                            </Box>
 
-            <TextField
-              name="name"
-              label="Teacher Name"
-              value={editFormik.values.name}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={editFormik.touched.name && Boolean(editFormik.errors.name)}
-              helperText={editFormik.touched.name && editFormik.errors.name}
-              sx={{ mb: 2, mt: 2 }}
-            />
+                            <Divider sx={{ mb: 2, bgcolor: 'rgba(255, 255, 255, 0.1)' }} />
 
-            <TextField
-              name="email"
-              label="Email address"
-              type="email"
-              value={editFormik.values.email}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={editFormik.touched.email && Boolean(editFormik.errors.email)}
-              helperText={editFormik.touched.email && editFormik.errors.email}
-              sx={{ mb: 2 }}
-            />
+                            <Stack spacing={1}>
+                              <IconBox>
+                                <EmailIcon sx={{ fontSize: 16 }} />
+                                <Typography variant="body2" noWrap>
+                                  {teacher.email}
+                                </Typography>
+                              </IconBox>
 
-            <TextField
-              name="qualification"
-              label="Qualification"
-              value={editFormik.values.qualification}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={editFormik.touched.qualification && Boolean(editFormik.errors.qualification)}
-              helperText={editFormik.touched.qualification && editFormik.errors.qualification}
-              sx={{ mb: 2 }}
-            />
+                              <IconBox>
+                                <CakeIcon sx={{ fontSize: 16 }} />
+                                <Typography variant="body2">
+                                  {teacher.age} years old
+                                </Typography>
+                              </IconBox>
 
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel id="edit-subjects-select-label">Subjects</InputLabel>
-              <Select
-                labelId="edit-subjects-select-label"
-                id="edit-subjects-select"
-                value={editFormik.values.subjects}
-                multiple
-                input={<OutlinedInput label="Subjects" />}
-                renderValue={(selected) => (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((value) => {
-                      const subjectObj = subjects.find(s => s._id === value);
-                      return (
-                        <Chip key={value} label={subjectObj ? subjectObj.subjectName : value} />
-                      );
-                    })}
-                  </Box>
+                              <IconBox>
+                                {teacher.gender == "male" ? <MaleIcon sx={{ fontSize: 16, color: 'primary.male' }} /> : <FemaleIcon sx={{ fontSize: 16, color: 'primary.female' }} />}
+                                <Typography variant="body2">
+                                  {teacher.gender}
+                                </Typography>
+                              </IconBox>
+
+                              {teacher.subjects && teacher.subjects.length > 0 && (
+                                <Box>
+                                  <IconBox>
+                                    <MenuBookIcon sx={{ fontSize: 16 }} />
+                                    <Typography variant="body2">Subjects:</Typography>
+                                  </IconBox>
+                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                                    {teacher.subjects.map((subject, idx) => (
+                                      <Chip
+                                        key={idx}
+                                        label={typeof subject === 'object' ? subject.subjectName : subject}
+                                        size="small"
+                                        variant="outlined"
+                                        color="primary"
+                                      />
+                                    ))}
+                                  </Box>
+                                </Box>
+                              )}
+
+                              {teacher.teacherClasses && teacher.teacherClasses.length > 0 && (
+                                <Box>
+                                  <IconBox>
+                                    <ClassIcon sx={{ fontSize: 16 }} />
+                                    <Typography variant="body2">Classes:</Typography>
+                                  </IconBox>
+                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                                    {teacher.teacherClasses.map((cls, idx) => (
+                                      <Chip
+                                        key={idx}
+                                        label={typeof cls === 'object' ? cls.classText : cls}
+                                        size="small"
+                                        variant="outlined"
+                                        color="secondary"
+                                      />
+                                    ))}
+                                  </Box>
+                                </Box>
+                              )}
+
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <LockIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                <Typography variant="body2" sx={{ flex: 1 }}>
+                                  {passwordVisibility[teacher._id] ? teacher.password || 'Not available' : '••••••••'}
+                                </Typography>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => togglePasswordVisibility(teacher._id)}
+                                  sx={{ color: 'text.secondary' }}
+                                >
+                                  {passwordVisibility[teacher._id] ? (
+                                    <VisibilityOffIcon sx={{ fontSize: 16 }} />
+                                  ) : (
+                                    <VisibilityIcon sx={{ fontSize: 16 }} />
+                                  )}
+                                </IconButton>
+                              </Box>
+                            </Stack>
+
+                            <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<EditIcon />}
+                                onClick={() => handleEdit(teacher._id)}
+                                sx={{ flex: 1 }}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                color="error"
+                                startIcon={<PersonRemoveIcon />}
+                                onClick={() => handleDelete(teacher._id)}
+                                sx={{ flex: 1 }}
+                              >
+                                Delete
+                              </Button>
+                            </Stack>
+                          </div>
+                        </TeacherCard>
+                      </Zoom>
+                    </Grid>
+                  ))
                 )}
-                MenuProps={MenuProps}
-                name="subjects"
-                onChange={editFormik.handleChange}
-                onBlur={editFormik.handleBlur}
-              >
-                {subjects && subjects.map((subject) => (
-                  <MenuItem key={subject._id} value={subject._id}>{subject.subjectName}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+              </Grid>
+            </Fade>
+          )}
+        </div>
 
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel id="edit-class-select-label">Classes</InputLabel>
-              <Select
-                labelId="edit-class-select-label"
-                id="edit-class-select"
-                value={editFormik.values.teacherClasses}
-                multiple
-                input={<OutlinedInput label="Classes" />}
-                renderValue={(selected) => (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((value) => {
-                      const classObj = classes.find(c => c._id === value);
-                      return (
-                        <Chip key={value} label={classObj ? classObj.classText : value} />
-                      );
-                    })}
-                  </Box>
-                )}
-                MenuProps={MenuProps}
-                name="teacherClasses"
-                onChange={editFormik.handleChange}
-                onBlur={editFormik.handleBlur}
-              >
-                {classes && classes.map((cls) => (
-                  <MenuItem key={cls._id} value={cls._id}>
-                    {cls.classText}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+        {/* Edit Teacher Dialog */}
+        <Dialog
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{
+            sx: {
+              bgcolor: 'rgba(30, 30, 46, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }
+          }}
+        >
+          <DialogTitle>
+            <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center' }}>
+              <EditIcon sx={{ mr: 1, color: '#FF6B35' }} />
+              Edit Teacher
+            </Typography>
+          </DialogTitle>
 
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel id="edit-gender-select-label">Gender</InputLabel>
-              <Select
-                labelId="edit-gender-select-label"
-                id="edit-gender-select"
-                value={editFormik.values.gender}
-                label="Gender"
-                name="gender"
-                onChange={editFormik.handleChange}
-                onBlur={editFormik.handleBlur}
-                error={editFormik.touched.gender && Boolean(editFormik.errors.gender)}
-              >
-                <MenuItem value="male">Male</MenuItem>
-                <MenuItem value="female">Female</MenuItem>
-                <MenuItem value="other">Other</MenuItem>
-              </Select>
-              {editFormik.touched.gender && editFormik.errors.gender && (
-                <Typography color="error" variant="caption" sx={{ mt: 1, ml: 2 }}>
-                  {editFormik.errors.gender}
-                </Typography>
-              )}
-            </FormControl>
-
-            <TextField
-              name="age"
-              label="Age"
-              value={editFormik.values.age}
-              onChange={editFormik.handleChange}
-              onBlur={editFormik.handleBlur}
-              error={editFormik.touched.age && Boolean(editFormik.errors.age)}
-              helperText={editFormik.touched.age && editFormik.errors.age}
-              sx={{ mb: 2 }}
-            />
-
-            <Typography className="text-gray-300 mb-1">Teacher Image (Optional)</Typography>
-            <input
-              type="file"
-              ref={editFileInputRef}
-              onChange={addEditImage}
-              accept="image/*"
-              style={{ display: 'none' }}
-            />
-            <div className="mb-4 flex items-center">
-              <Button
-                variant="outlined"
-                onClick={handleEditUploadClick}
-                startIcon={<CloudUploadIcon />}
-                className="bg-amber-500 flex justify-center items-center h-10 gap-5"
-              >
-                Update Image
-              </Button>
-              {editFile && (
-                <Typography variant="body2" className="ml-2 text-gray-300">
-                  {editFile.name}
-                </Typography>
-              )}
-            </div>
-
-            {editImageUrl && (
-              <Box sx={{ maxWidth: '300px', marginTop: '10px', marginBottom: '20px' }}>
-                <CardMedia
-                  component="img"
-                  image={editImageUrl}
-                  alt="Teacher preview"
-                  sx={{
-                    borderRadius: '8px',
-                    border: '1px solid #444',
-                    maxHeight: '150px',
-                    objectFit: 'contain'
-                  }}
-                />
-                <Button
-                  size="small"
-                  color="error"
-                  onClick={handleClearEditFile}
-                  sx={{ mt: 1 }}
-                >
-                  Clear Image
-                </Button>
-              </Box>
+          <DialogContent>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+                {error}
+              </Alert>
             )}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setEditDialogOpen(false)}
-            color="primary"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={editFormik.handleSubmit}
-            variant="contained"
-            color="primary"
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : 'Save Changes'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            {success && (
+              <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>
+                {success}
+              </Alert>
+            )}
+
+            <form onSubmit={editFormik.handleSubmit}>
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={6}>
+                  <StyledTextField
+                    fullWidth
+                    label="Teacher Name"
+                    name="name"
+                    value={editFormik.values.name}
+                    onChange={editFormik.handleChange}
+                    onBlur={editFormik.handleBlur}
+                    error={editFormik.touched.name && Boolean(editFormik.errors.name)}
+                    helperText={editFormik.touched.name && editFormik.errors.name}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <StyledTextField
+                    fullWidth
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value={editFormik.values.email}
+                    onChange={editFormik.handleChange}
+                    onBlur={editFormik.handleBlur}
+                    error={editFormik.touched.email && Boolean(editFormik.errors.email)}
+                    helperText={editFormik.touched.email && editFormik.errors.email}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <StyledTextField
+                    fullWidth
+                    label="Qualification"
+                    name="qualification"
+                    value={editFormik.values.qualification}
+                    onChange={editFormik.handleChange}
+                    onBlur={editFormik.handleBlur}
+                    error={editFormik.touched.qualification && Boolean(editFormik.errors.qualification)}
+                    helperText={editFormik.touched.qualification && editFormik.errors.qualification}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <StyledTextField
+                    fullWidth
+                    label="Age"
+                    name="age"
+                    type="number"
+                    value={editFormik.values.age}
+                    onChange={editFormik.handleChange}
+                    onBlur={editFormik.handleBlur}
+                    error={editFormik.touched.age && Boolean(editFormik.errors.age)}
+                    helperText={editFormik.touched.age && editFormik.errors.age}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Gender</InputLabel>
+                    <Select
+                      value={editFormik.values.gender}
+                      name="gender"
+                      onChange={editFormik.handleChange}
+                      onBlur={editFormik.handleBlur}
+                      input={<OutlinedInput label="Gender" />}
+                    >
+                      <MenuItem value="Male">Male</MenuItem>
+                      <MenuItem value="Female">Female</MenuItem>
+                      <MenuItem value="Other">Other</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Subjects</InputLabel>
+                    <Select
+                      multiple
+                      value={editFormik.values.subjects}
+                      name="subjects"
+                      onChange={editFormik.handleChange}
+                      input={<OutlinedInput label="Subjects" />}
+                      MenuProps={MenuProps}
+                      renderValue={(selected) => (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {selected.map((value) => {
+                            const subject = subjects.find(s => s._id === value);
+                            return (
+                              <Chip
+                                key={value}
+                                label={subject?.name || value}
+                                size="small"
+                                variant="outlined"
+                                color="primary"
+                              />
+                            );
+                          })}
+                        </Box>
+                      )}
+                    >
+                      {subjects.map((subject) => (
+                        <MenuItem key={subject._id} value={subject._id}>
+                          {subject.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Classes</InputLabel>
+                    <Select
+                      multiple
+                      value={editFormik.values.teacherClasses}
+                      name="teacherClasses"
+                      onChange={editFormik.handleChange}
+                      input={<OutlinedInput label="Classes" />}
+                      MenuProps={MenuProps}
+                      renderValue={(selected) => (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {selected.map((value) => {
+                            const cls = classes.find(c => c._id === value);
+                            return (
+                              <Chip
+                                key={value}
+                                label={cls?.name || value}
+                                size="small"
+                                variant="outlined"
+                                color="secondary"
+                              />
+                            );
+                          })}
+                        </Box>
+                      )}
+                    >
+                      {classes.map((cls) => (
+                        <MenuItem key={cls._id} value={cls._id}>
+                          {cls.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h6" sx={{ mb: 2, color: 'text.secondary' }}>
+                      Teacher Image
+                    </Typography>
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={addEditImage}
+                      style={{ display: 'none' }}
+                      ref={editFileInputRef}
+                    />
+
+                    {editImageUrl ? (
+                      <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                        <Avatar
+                          src={editImageUrl}
+                          sx={{
+                            width: 120,
+                            height: 120,
+                            mb: 2,
+                            border: '3px solid #FF6B35',
+                            boxShadow: '0 8px 32px rgba(255, 107, 53, 0.3)'
+                          }}
+                        />
+                        <IconButton
+                          onClick={handleClearEditFile}
+                          sx={{
+                            position: 'absolute',
+                            top: -5,
+                            right: -5,
+                            bgcolor: 'error.main',
+                            color: 'white',
+                            width: 32,
+                            height: 32,
+                            '&:hover': { bgcolor: 'error.dark' }
+                          }}
+                        >
+                          <CloseIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Box>
+                    ) : (
+                      <Box
+                        onClick={handleEditUploadClick}
+                        sx={{
+                          border: '2px dashed #FF6B35',
+                          borderRadius: 2,
+                          p: 4,
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            borderColor: '#FF8A65',
+                            bgcolor: 'rgba(255, 107, 53, 0.05)'
+                          }
+                        }}
+                      >
+                        <CloudUploadIcon sx={{ fontSize: 48, color: '#FF6B35', mb: 1 }} />
+                        <Typography variant="body2" color="text.secondary">
+                          Click to upload new image
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                </Grid>
+              </Grid>
+            </form>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 3 }}>
+            <Button
+              onClick={() => setEditDialogOpen(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={editFormik.handleSubmit}
+              variant="contained"
+              disabled={loading}
+              startIcon={loading ? <CircularProgress size={20} /> : <EditIcon />}
+            >
+              {loading ? 'Updating...' : 'Update Teacher'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Loading Backdrop */}
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={loading}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      </StyledContainer>
     </ThemeProvider>
   );
 }

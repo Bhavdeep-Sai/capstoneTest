@@ -91,12 +91,35 @@ export default function Register() {
   const [oauthData, setOauthData] = React.useState(null);
   const [showOauthForm, setShowOauthForm] = React.useState(false);
 
+  // Improved image validation
+  const isValidImageFile = (file) => {
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    
+    if (!validTypes.includes(file.type)) {
+      setError('Please upload a valid image file (JPEG, PNG, GIF, or WebP)');
+      return false;
+    }
+    
+    if (file.size > maxSize) {
+      setError('Image size should be less than 10MB');
+      return false;
+    }
+    
+    return true;
+  };
+
   const addImage = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
-      setImageUrl(URL.createObjectURL(selectedFile));
-      setFile(selectedFile);
-      setError(null);
+      if (isValidImageFile(selectedFile)) {
+        setImageUrl(URL.createObjectURL(selectedFile));
+        setFile(selectedFile);
+        setError(null);
+      } else {
+        // Clear the file input if validation fails
+        event.target.value = '';
+      }
     }
   };
 
@@ -207,7 +230,7 @@ export default function Register() {
     }
   };
 
-  // OAuth form submission
+  // OAuth form submission with proper FormData handling for Cloudinary
   const oauthFormik = useFormik({
     initialValues: oauthFormValues,
     onSubmit: async (values) => {
@@ -235,21 +258,24 @@ export default function Register() {
           return;
         }
 
-        // Create FormData for Google OAuth registration with image
-        const fd = new FormData();
-        fd.append("image", file);
-        fd.append("token", oauthData.token);
-        fd.append("schoolName", values.schoolName.trim());
-        fd.append("ownerName", values.ownerName.trim());
+        // Create FormData for Google OAuth registration with image for Cloudinary
+        const formData = new FormData();
+        formData.append("image", file); // This will be uploaded to Cloudinary by the backend
+        formData.append("token", oauthData.token);
+        formData.append("schoolName", values.schoolName.trim());
+        formData.append("ownerName", values.ownerName.trim());
 
-        const response = await axios.post(`${baseApi}/school/register/google`, fd, {
+        console.log('Sending OAuth registration request with image to Cloudinary...');
+
+        const response = await axios.post(`${baseApi}/school/register/google`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
-          }
+          },
+          timeout: 30000 // 30 second timeout for Cloudinary upload
         });
 
         if (response?.data?.success) {
-          setSuccess(`School registered successfully with Google! Redirecting to login...`);
+          setSuccess(`School registered successfully with Google! Image saved to Cloudinary. Redirecting to login...`);
           
           // Reset forms
           oauthFormik.resetForm();
@@ -267,6 +293,8 @@ export default function Register() {
         console.error('OAuth registration error:', error);
         if (error.response?.data?.message) {
           setError(error.response.data.message);
+        } else if (error.code === 'ECONNABORTED') {
+          setError('Upload timeout. Please try again with a smaller image.');
         } else if (error.response) {
           setError('OAuth registration failed. Please try again.');
         } else {
@@ -278,7 +306,7 @@ export default function Register() {
     }
   });
 
-  // Traditional form submission
+  // Traditional form submission with proper FormData handling for Cloudinary
   const formik = useFormik({
     initialValues,
     validationSchema: registerSchema,
@@ -300,25 +328,29 @@ export default function Register() {
           return;
         }
 
-        const fd = new FormData();
-        fd.append("image", file);
-        fd.append("schoolName", values.schoolName);
-        fd.append("email", values.email);
-        fd.append("ownerName", values.ownerName);
-        fd.append("password", values.password);
+        // Create FormData for traditional registration with image for Cloudinary
+        const formData = new FormData();
+        formData.append("image", file); // This will be uploaded to Cloudinary by the backend
+        formData.append("schoolName", values.schoolName.trim());
+        formData.append("email", values.email.trim().toLowerCase());
+        formData.append("ownerName", values.ownerName.trim());
+        formData.append("password", values.password);
+
+        console.log('Sending registration request with image to Cloudinary...');
 
         const response = await axios.post(
           `${baseApi}/school/register`,
-          fd,
+          formData,
           {
             headers: {
               'Content-Type': 'multipart/form-data'
-            }
+            },
+            timeout: 30000 // 30 second timeout for Cloudinary upload
           }
         );
 
         if (response?.data?.success) {
-          setSuccess("School registered successfully! Redirecting to login...");
+          setSuccess("School registered successfully! Image saved to Cloudinary. Redirecting to login...");
           
           formik.resetForm();
           handleClearFile();
@@ -334,6 +366,8 @@ export default function Register() {
         
         if (error.response?.data?.message) {
           setError(error.response.data.message);
+        } else if (error.code === 'ECONNABORTED') {
+          setError('Upload timeout. Please try again with a smaller image.');
         } else if (error.response) {
           setError("Registration failed. Please try again.");
         } else if (error.request) {
@@ -378,7 +412,7 @@ export default function Register() {
             </Typography>
           </div>
           <Typography variant="body2" className="text-gray-400 text-center mb-6">
-            Join our School Management System
+            Join our School Management System - Images automatically saved to Cloudinary
           </Typography>
 
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -413,13 +447,13 @@ export default function Register() {
                 sx={{ mb: 3 }}
               />
 
-              {/* Image upload for OAuth form */}
-              <Typography className="text-gray-300 mb-1">Institute Image *</Typography>
+              {/* Image upload for OAuth form - will be saved to Cloudinary */}
+              <Typography className="text-gray-300 mb-1">Institute Image * (will be saved to Cloudinary)</Typography>
               <input
                 type="file"
                 ref={oauthFileInputRef}
                 onChange={addImage}
-                accept="image/*"
+                accept="image/jpeg,image/png,image/gif,image/webp"
                 style={{ display: 'none' }}
               />
               <div className="mb-4 flex items-center">
@@ -433,7 +467,7 @@ export default function Register() {
                 </Button>
                 {file && (
                   <Typography variant="body2" className="ml-2 text-gray-300">
-                    {file.name}
+                    {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
                   </Typography>
                 )}
               </div>
@@ -447,10 +481,13 @@ export default function Register() {
                     sx={{
                       borderRadius: '8px',
                       border: '1px solid #444',
-                      maxHeight: '150px',
+                      maxHeight: '200px',
                       objectFit: 'contain'
                     }}
                   />
+                  <Typography variant="caption" className="text-gray-400 mt-1 block">
+                    This image will be uploaded to Cloudinary
+                  </Typography>
                   <Button
                     size="small"
                     color="error"
@@ -564,12 +601,12 @@ export default function Register() {
                 sx={{ mb: 3 }}
               />
 
-              <Typography className="text-gray-300 mb-1">Institute Image</Typography>
+              <Typography className="text-gray-300 mb-1">Institute Image * (will be saved to Cloudinary)</Typography>
               <input
                 type="file"
                 ref={hiddenFileInputRef}
                 onChange={addImage}
-                accept="image/*"
+                accept="image/jpeg,image/png,image/gif,image/webp"
                 style={{ display: 'none' }}
               />
               <div className="mb-4 flex items-center">
@@ -583,7 +620,7 @@ export default function Register() {
                 </Button>
                 {file && (
                   <Typography variant="body2" className="ml-2 text-gray-300">
-                    {file.name}
+                    {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
                   </Typography>
                 )}
               </div>
@@ -597,10 +634,13 @@ export default function Register() {
                     sx={{
                       borderRadius: '8px',
                       border: '1px solid #444',
-                      maxHeight: '150px',
+                      maxHeight: '200px',
                       objectFit: 'contain'
                     }}
                   />
+                  <Typography variant="caption" className="text-gray-400 mt-1 block">
+                    This image will be uploaded to Cloudinary when you register
+                  </Typography>
                   <Button
                     size="small"
                     color="error"

@@ -6,6 +6,18 @@ const Student = require("../models/studentModel");
 const SCHOOL_ONLY_EXAM_TYPES = ['Mid Term', 'Final Term', 'Annual Exam', 'Semester Exam'];
 const TEACHER_ALLOWED_EXAM_TYPES = ['Quiz', 'Class Test', 'Pop Quiz', 'Unit Test', 'Weekly Test', 'Slip Test'];
 
+// Helper function to check if exam is completed
+function isExamCompleted(examDate, endTime) {
+  const now = new Date();
+  const examEndDateTime = new Date(examDate);
+  
+  // Parse endTime (HH:MM format) and set it on the exam date
+  const [hours, minutes] = endTime.split(':').map(Number);
+  examEndDateTime.setHours(hours, minutes, 0, 0);
+  
+  return now > examEndDateTime;
+}
+
 module.exports = {
   createExamination: async (req, res) => {
     try {
@@ -188,16 +200,21 @@ module.exports = {
         };
       }
       
-      const examinations = await Examination.find(query)
+      const allExaminations = await Examination.find(query)
         .populate('subject', 'subjectName')
         .populate('class', 'classText')
         .populate('createdBy', 'name schoolName')
         .sort({ examDate: 1, startTime: 1 });
 
+      // Filter out completed exams
+      const activeExaminations = allExaminations.filter(exam => 
+        !isExamCompleted(exam.examDate, exam.endTime)
+      );
+
       res.status(200).json({ 
         success: true, 
-        data: examinations,
-        count: examinations.length
+        data: activeExaminations,
+        count: activeExaminations.length
       });
     } catch (error) {
       console.error("Get all examinations error:", error);
@@ -262,16 +279,21 @@ module.exports = {
         }
       }
       
-      const classExaminations = await Examination.find(query)
+      const allClassExaminations = await Examination.find(query)
         .populate('subject', 'subjectName')
         .populate('class', 'classText')
         .populate('createdBy', 'name schoolName')
         .sort({ examDate: 1, startTime: 1 });
+
+      // Filter out completed exams
+      const activeClassExaminations = allClassExaminations.filter(exam => 
+        !isExamCompleted(exam.examDate, exam.endTime)
+      );
         
       res.status(200).json({ 
         success: true, 
-        data: classExaminations,
-        count: classExaminations.length
+        data: activeClassExaminations,
+        count: activeClassExaminations.length
       });
     } catch (error) {
       console.error("Get examinations by class error:", error);
@@ -306,6 +328,14 @@ module.exports = {
         return res.status(404).json({
           success: false,
           message: "Examination not found"
+        });
+      }
+
+      // Check if exam is already completed
+      if (isExamCompleted(examination.examDate, examination.endTime)) {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot update a completed examination"
         });
       }
 
@@ -469,6 +499,14 @@ module.exports = {
         return res.status(404).json({
           success: false,
           message: "Examination not found"
+        });
+      }
+
+      // Check if exam is already completed
+      if (isExamCompleted(examination.examDate, examination.endTime)) {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot delete a completed examination"
         });
       }
 

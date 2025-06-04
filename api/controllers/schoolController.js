@@ -604,7 +604,7 @@ module.exports = {
             <p><strong>This link will expire in 1 hour.</strong></p>
             <p>If you did not request this password reset, please ignore this email and your password will remain unchanged.</p>
             <br>
-            <p>Best regards,<br>School Management System Team</p>
+            <p>Best regards,<br>BeaconPort Team</p>
           </div>
         `,
       };

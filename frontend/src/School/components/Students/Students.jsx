@@ -22,7 +22,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import SchoolIcon from '@mui/icons-material/School';
+import PeopleIcon from '@mui/icons-material/School';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import CakeIcon from '@mui/icons-material/Cake';
@@ -33,13 +33,14 @@ import { baseApi } from '../../../environment';
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import LockIcon from '@mui/icons-material/Lock';
+import PeopleIcon1 from "@mui/icons-material/People";
 
 // Enhanced dark theme with better responsive design
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#FF9800',
+      main: '#FF6B35',
       light: '#FFB74D',
       male: '#1ca3f0',
       female: "#ef598e",
@@ -657,7 +658,7 @@ export default function Students() {
                   width: isMobile ? 40 : 56,
                   height: isMobile ? 40 : 56
                 }}>
-                  <SchoolIcon sx={{ fontSize: isMobile ? 20 : 28 }} />
+                  <PeopleIcon1 sx={{ fontSize: isMobile ? 20 : 28 }} />
                 </Avatar>
                 <Box>
                   <Typography
@@ -673,7 +674,7 @@ export default function Students() {
                     Student Management
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Manage and organize student records
+                    Manage and organize student Data
                   </Typography>
                 </Box>
               </Box>
@@ -953,10 +954,21 @@ export default function Students() {
         {!form && (
           <Container maxWidth="xl" sx={{ mb: 4, }}>
             <div sx={{ p: 3 }} className='flex flex-col lg:flex-row justify-center  lg:justify-end items-center gap-3 lg:gap-10'>
-              <Grid item xs={12} md={2}>
-                <Typography variant="body2" color="text.secondary" textAlign="center">
+              <Grid item xs={12} md={2} className="flex items-center justify-center gap-5 w-[80%] m-auto">
+                <Typography width={3/4} variant="body1" color="text.secondary" textAlign="center">
                   {students.length} student{students.length !== 1 ? 's' : ''} found
                 </Typography>
+                {filterClass && <Grid item xs={12} sm={12} md={3}>
+                  <Button
+                    onClick={handleClearFilter}
+                    variant="outlined"
+                    sx={{ height: "50px"}}
+
+                  >
+                    <CloseIcon />
+
+                  </Button>
+                </Grid>}
               </Grid>
               <Grid className="flex justify-center lg:justify-end gap-5" spacing={3} alignItems="center">
                 <Grid width={1 / 2} xs={12} sm={6} md={4}>
@@ -987,18 +999,7 @@ export default function Students() {
                   </FormControl>
                 </Grid>
 
-                {filterClass && <Grid item xs={12} sm={12} md={3}>
-                  <Button
-                    onClick={handleClearFilter}
-                    variant="outlined"
-                    fullWidth
-                    sx={{ height: "50px" }}
 
-                  >
-                    <CloseIcon />
-
-                  </Button>
-                </Grid>}
               </Grid>
             </div>
           </Container>
@@ -1009,7 +1010,7 @@ export default function Students() {
           <Container maxWidth="xl">
             {students.length === 0 ? (
               <StyledPaper sx={{ textAlign: 'center', py: 8 }}>
-                <SchoolIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2, opacity: 0.5 }} />
+                <PeopleIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2, opacity: 0.5 }} />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   No students found
                 </Typography>
