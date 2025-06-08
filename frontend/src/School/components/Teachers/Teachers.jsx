@@ -250,42 +250,6 @@ const darkTheme = createTheme({
   },
 });
 
-// Enhanced styled components
-const StyledContainer = styled(Container)(({ theme }) => ({
-  minHeight: '100vh',
-  paddingTop: theme.spacing(4),
-  paddingBottom: theme.spacing(4),
-  position: 'relative',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'radial-gradient(circle at 50% 50%, rgba(255, 107, 53, 0.05) 0%, transparent 70%)',
-    pointerEvents: 'none',
-  },
-}));
-
-const FloatingActionButton = styled(Button)(({ theme }) => ({
-  position: 'absolute',
-  top: theme.spacing(3),
-  right: theme.spacing(3),
-  zIndex: 1000,
-  borderRadius: '10%',
-  minWidth: 64,
-  height: 64,
-  '&:hover': {
-    transform: 'translateY(-2px) scale(1.05)',
-  },
-  [theme.breakpoints.down('sm')]: {
-    top: 'auto',
-    bottom: theme.spacing(3),
-    minWidth: 56,
-    height: 56,
-  },
-}));
 
 const GlassCard = styled(Card)(({ theme }) => ({
   backdropFilter: 'blur(20px)',
@@ -295,25 +259,17 @@ const GlassCard = styled(Card)(({ theme }) => ({
 }));
 
 const TeacherCard = styled(Card)(({ theme }) => ({
-  background: 'rgba(30, 30, 46, 0.9)',
+  background: '#1e1e1e',
   backdropFilter: 'blur(20px)',
-  borderRadius: 10,
+  width: "300px",
+  borderRadius: 5,
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    background: 'linear-gradient(90deg, #FF6B35, #FFC107)',
-  },
   '&:hover': {
     transform: 'translateY(-8px) scale(1.02)',
     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 107, 53, 0.2)',
-    border: '1px solid rgba(255, 107, 53, 0.3)',
+    border: '2px solid rgba(255, 107, 53, 0.3)',
   },
 }));
 
@@ -752,13 +708,13 @@ export default function Teachers() {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <StyledContainer maxWidth={false} disableGutters>
-        <div className='p-4'>
-          <div className='flex px-0 justify-between flex-col lg:flex-row'>
+      <div>
+        <div>
+          <div className='flex lg:px-5 justify-between lg:items-center lg:w-[100%] flex-col lg:flex-row mb-3 lg:mb-0'>
             {/* Header */}
             {!form && (
               <Fade in={!form}>
-                <Box className="flex gap-[16px] items-center" sx={{ textAlign: 'center', mb: 4 }}>
+                <Box className="flex gap-[16px] items-center p-5" sx={{ textAlign: 'center'}}>
                   <Avatar sx={{
                     bgcolor: 'primary.main',
                     width: isMobile ? 40 : 56,
@@ -809,14 +765,14 @@ export default function Teachers() {
                   startIcon={<PersonAddIcon />}
                   size="medium"
                   variant="outlined"
-                  sx={{ height: "50px" }}
+                  sx={{ height: "50px", borderRadius:"5px" }}
                 >
                   Add Teacher
                 </Button>
               )
             )}
-
           </div>
+
           <Divider sx={{ mb: 2, bgcolor: 'rgba(255, 255, 255, 0.1)' }} />
 
           {/* Success/Error Messages */}
@@ -1188,26 +1144,27 @@ export default function Teachers() {
           )}
 
           {!form && (
-            <Container maxWidth="xl" sx={{ mb: 4, }}>
-              <div sx={{ p: 3 }} className='flex flex-col lg:flex-row justify-center  lg:justify-end items-center gap-3 lg:gap-10'>
-                <Grid item xs={12} md={2} className="flex items-center justify-center gap-5 w-[80%] m-auto">
-                  <Typography width={3 / 4} variant="body1" color="text.secondary" textAlign="center">
+            <div className='min-h-20 p-2'>
+              <div className='flex flex-col lg:flex-row justify-between w-[100%]'>
+                <div className=' flex justify-center items-center mb-4'>
+                  <Typography variant="body1" color="text.secondary" textAlign="center">
                     {teachers.length} student{teachers.length !== 1 ? 's' : ''} found
                   </Typography>
-                  {filterClass && <Grid item xs={12} sm={12} md={3}>
-                    <Button
-                      onClick={handleClearFilter}
-                      variant="outlined"
-                      sx={{ height: "50px" }}
+                </div>
+                <div className="flex justify-evenly flex-col lg:flex-row items-center gap-5 lg:gap-2 lg:p-2">
+                  <div className='order-1'>
+                    {(filterClass || filterSubject) && <Grid item xs={12} sm={12} md={3}>
+                      <Button
+                        onClick={handleClearFilter}
+                        variant="outlined"
+                        sx={{ height: "50px" }}
 
-                    >
-                      <CloseIcon />
-
-                    </Button>
-                  </Grid>}
-                </Grid>
-                <Grid className="flex justify-center lg:justify-end gap-5" spacing={3} alignItems="center">
-                  <Grid width={1 / 2} xs={12} sm={6} md={4}>
+                      >
+                        <CloseIcon />
+                      </Button>
+                    </Grid>}
+                  </div>
+                  <Grid  sx={{ width: { lg: "300px", xs: "250px" } }} xs={12} sm={6} md={4}>
                     <TextField
                       fullWidth
                       placeholder="Search Teachers..."
@@ -1218,56 +1175,49 @@ export default function Teachers() {
                       }}
                     />
                   </Grid>
-                  <Grid width={1 / 2}>
-                    <FormControl fullWidth>
-                      <InputLabel startIcon={<FilterListIcon />}>Filter</InputLabel>
-                      <Select
-                        label="Filter"
-                      >
-                        <MenuItem>
-                          <FormControl>
-                            <InputLabel>Filter by Class</InputLabel>
-                            <Select
-                              value={filterClass}
-                              label="Filter by Class"
-                              onChange={handleClass}
-                              sx={{ width: { xs: "150px", lg: "200px" } }}
-                            >
-                              <MenuItem value="">All Classes</MenuItem>
-                              {classes && classes.map((cls) => (
-                                <MenuItem key={cls._id} value={cls._id}>{cls.classText}</MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        </MenuItem>
-                        <MenuItem>
-                          <FormControl>
-                            <InputLabel>Filter by Subjects</InputLabel>
-                            <Select
-                              value={filterSubject}
-                              label="Filter by Class"
-                              onChange={handleSubject}
-                              sx={{ width: { xs: "150px", lg: "200px" } }}
-                            >
-                              <MenuItem value="">All Subjects</MenuItem>
-                              {subjects && subjects.map((subject) => (
-                                <MenuItem key={subject._id} value={subject._id}>{subject.subjectName}</MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                </Grid>
+                  <div className='flex gap-5 w-[100%]'>
+                    <div className='w-1/2'>
+                      <FormControl fullWidth>
+                        <InputLabel>Filter by Class</InputLabel>
+                        <Select
+                          value={filterClass}
+                          label="Filter by Class"
+                          onChange={handleClass}
+                          sx={{ width: { xs: "100%", lg: "100%" } }}
+                        >
+                          <MenuItem value="">All Classes</MenuItem>
+                          {classes && classes.map((cls) => (
+                            <MenuItem key={cls._id} value={cls._id}>{cls.classText}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
+                    <div className='w-1/2'>
+                      <FormControl fullWidth>
+                        <InputLabel>Filter by Subject</InputLabel>
+                        <Select
+                          value={filterSubject}
+                          label="Filter by Subject"
+                          onChange={handleSubject}
+                          sx={{ width: { xs: "100%", lg: "200px" } }}
+                        >
+                          <MenuItem value="">All Subjects</MenuItem>
+                          {subjects && subjects.map((subject) => (
+                            <MenuItem key={subject._id} value={subject._id}>{subject.subjectName}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </Container>
+            </div>
           )}
 
           {/* Teachers Grid */}
           {!form && (
             <Fade in={!form}>
-              <Grid container spacing={3}>
+              <div className='flex flex-wrap gap-5 mt-5 lg:mt-10 justify-center'>
                 {teachers.length === 0 ? (
                   <Grid item xs={12}>
                     <Paper
@@ -1294,143 +1244,141 @@ export default function Teachers() {
                   </Grid>
                 ) : (
                   teachers.map((teacher, index) => (
-                    <Grid item xs={12} sm={6} lg={4} key={teacher._id}>
-                      <Zoom in={true} style={{ transitionDelay: `${index * 100}ms` }}>
-                        <TeacherCard>
-                          <div className='p-5'>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                              <Avatar
-                                src={teacher.teacherImg}
-                                sx={{
-                                  width: 100,
-                                  height: 100,
-                                  mr: 2,
-                                  border: '2px solid #FF6B35',
-                                }}
-                              >
-                                <PersonIcon />
-                              </Avatar>
-                              <Box sx={{ flex: 1 }}>
-                                <Typography variant="h6" noWrap>
-                                  {teacher.name}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  {teacher.qualification}
-                                </Typography>
-                              </Box>
+                    <div>
+                      <TeacherCard>
+                        <div className='p-5'>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                            <Avatar
+                              src={teacher.teacherImg}
+                              sx={{
+                                width: 100,
+                                height: 100,
+                                mr: 2,
+                                border: '2px solid #FF6B35',
+                              }}
+                            >
+                              <PersonIcon />
+                            </Avatar>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography variant="h6" noWrap>
+                                {teacher.name}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {teacher.qualification}
+                              </Typography>
                             </Box>
+                          </Box>
 
-                            <Divider sx={{ mb: 2, bgcolor: 'rgba(255, 255, 255, 0.1)' }} />
+                          <Divider sx={{ mb: 2, bgcolor: 'rgba(255, 255, 255, 0.1)' }} />
 
-                            <Stack spacing={1}>
-                              <IconBox>
-                                <EmailIcon sx={{ fontSize: 16 }} />
-                                <Typography variant="body2" noWrap>
-                                  {teacher.email}
-                                </Typography>
-                              </IconBox>
+                          <Stack spacing={1}>
+                            <IconBox>
+                              <EmailIcon sx={{ fontSize: 16 }} />
+                              <Typography variant="body2" noWrap>
+                                {teacher.email}
+                              </Typography>
+                            </IconBox>
 
-                              <IconBox>
-                                <CakeIcon sx={{ fontSize: 16 }} />
-                                <Typography variant="body2">
-                                  {teacher.age} years old
-                                </Typography>
-                              </IconBox>
+                            <IconBox>
+                              <CakeIcon sx={{ fontSize: 16 }} />
+                              <Typography variant="body2">
+                                {teacher.age} years old
+                              </Typography>
+                            </IconBox>
 
-                              <IconBox>
-                                {teacher.gender == "male" ? <MaleIcon sx={{ fontSize: 16, color: 'primary.male' }} /> : <FemaleIcon sx={{ fontSize: 16, color: 'primary.female' }} />}
-                                <Typography variant="body2">
-                                  {teacher.gender}
-                                </Typography>
-                              </IconBox>
+                            <IconBox>
+                              {teacher.gender == "male" ? <MaleIcon sx={{ fontSize: 16, color: 'primary.male' }} /> : <FemaleIcon sx={{ fontSize: 16, color: 'primary.female' }} />}
+                              <Typography variant="body2">
+                                {teacher.gender}
+                              </Typography>
+                            </IconBox>
 
-                              {teacher.subjects && teacher.subjects.length > 0 && (
-                                <Box>
-                                  <IconBox>
-                                    <MenuBookIcon sx={{ fontSize: 16 }} />
-                                    <Typography variant="body2">Subjects:</Typography>
-                                  </IconBox>
-                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                                    {teacher.subjects.map((subject, idx) => (
-                                      <Chip
-                                        key={idx}
-                                        label={typeof subject === 'object' ? subject.subjectName : subject}
-                                        size="small"
-                                        variant="outlined"
-                                        color="primary"
-                                      />
-                                    ))}
-                                  </Box>
+                            {teacher.subjects && teacher.subjects.length > 0 && (
+                              <Box>
+                                <IconBox>
+                                  <MenuBookIcon sx={{ fontSize: 16 }} />
+                                  <Typography variant="body2">Subjects:</Typography>
+                                </IconBox>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                                  {teacher.subjects.map((subject, idx) => (
+                                    <Chip
+                                      key={idx}
+                                      label={typeof subject === 'object' ? subject.subjectName : subject}
+                                      size="small"
+                                      variant="outlined"
+                                      color="primary"
+                                    />
+                                  ))}
                                 </Box>
-                              )}
-
-                              {teacher.teacherClasses && teacher.teacherClasses.length > 0 && (
-                                <Box>
-                                  <IconBox>
-                                    <ClassIcon sx={{ fontSize: 16 }} />
-                                    <Typography variant="body2">Classes:</Typography>
-                                  </IconBox>
-                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                                    {teacher.teacherClasses.map((cls, idx) => (
-                                      <Chip
-                                        key={idx}
-                                        label={typeof cls === 'object' ? cls.classText : cls}
-                                        size="small"
-                                        variant="outlined"
-                                        color="secondary"
-                                      />
-                                    ))}
-                                  </Box>
-                                </Box>
-                              )}
-
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <LockIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                <Typography variant="body2" sx={{ flex: 1 }}>
-                                  {passwordVisibility[teacher._id] ? teacher.password || 'Not available' : '••••••••'}
-                                </Typography>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => togglePasswordVisibility(teacher._id)}
-                                  sx={{ color: 'text.secondary' }}
-                                >
-                                  {passwordVisibility[teacher._id] ? (
-                                    <VisibilityOffIcon sx={{ fontSize: 16 }} />
-                                  ) : (
-                                    <VisibilityIcon sx={{ fontSize: 16 }} />
-                                  )}
-                                </IconButton>
                               </Box>
-                            </Stack>
+                            )}
 
-                            <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-                              <Button
-                                variant="outlined"
+                            {teacher.teacherClasses && teacher.teacherClasses.length > 0 && (
+                              <Box>
+                                <IconBox>
+                                  <ClassIcon sx={{ fontSize: 16 }} />
+                                  <Typography variant="body2">Classes:</Typography>
+                                </IconBox>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                                  {teacher.teacherClasses.map((cls, idx) => (
+                                    <Chip
+                                      key={idx}
+                                      label={typeof cls === 'object' ? cls.classText : cls}
+                                      size="small"
+                                      variant="outlined"
+                                      color="secondary"
+                                    />
+                                  ))}
+                                </Box>
+                              </Box>
+                            )}
+
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <LockIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                              <Typography variant="body2" sx={{ flex: 1 }}>
+                                {passwordVisibility[teacher._id] ? teacher.password || 'Not available' : '••••••••'}
+                              </Typography>
+                              <IconButton
                                 size="small"
-                                startIcon={<EditIcon />}
-                                onClick={() => handleEdit(teacher._id)}
-                                sx={{ flex: 1 }}
+                                onClick={() => togglePasswordVisibility(teacher._id)}
+                                sx={{ color: 'text.secondary' }}
                               >
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                color="error"
-                                startIcon={<PersonRemoveIcon />}
-                                onClick={() => handleDelete(teacher._id)}
-                                sx={{ flex: 1 }}
-                              >
-                                Delete
-                              </Button>
-                            </Stack>
-                          </div>
-                        </TeacherCard>
-                      </Zoom>
-                    </Grid>
+                                {passwordVisibility[teacher._id] ? (
+                                  <VisibilityOffIcon sx={{ fontSize: 16 }} />
+                                ) : (
+                                  <VisibilityIcon sx={{ fontSize: 16 }} />
+                                )}
+                              </IconButton>
+                            </Box>
+                          </Stack>
+
+                          <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              startIcon={<EditIcon />}
+                              onClick={() => handleEdit(teacher._id)}
+                              sx={{ flex: 1 }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              color="error"
+                              startIcon={<PersonRemoveIcon />}
+                              onClick={() => handleDelete(teacher._id)}
+                              sx={{ flex: 1 }}
+                            >
+                              Delete
+                            </Button>
+                          </Stack>
+                        </div>
+                      </TeacherCard>
+                    </div>
                   ))
                 )}
-              </Grid>
+              </div>
             </Fade>
           )}
         </div>
@@ -1707,7 +1655,7 @@ export default function Teachers() {
         >
           <CircularProgress color="inherit" />
         </Backdrop>
-      </StyledContainer>
+      </div>
     </ThemeProvider>
   );
 }

@@ -190,7 +190,7 @@ const Subjects = () => {
           
           {!showForm && (
             <Button
-              variant="contained"
+              variant="outlined"
               startIcon={<AddIcon />}
               onClick={handleAddNewSubject}
               sx={{
@@ -200,10 +200,10 @@ const Subjects = () => {
                 textTransform: 'none',
                 fontWeight: 600,
                 fontSize: '1rem',
-                backgroundColor: '#ff8c00',
-                color: '#1a1a1a',
+                color: '#ff8c00',
                 '&:hover': {
                   backgroundColor: '#e67e00',
+                  color:"#1e1e1e"
                 }
               }}
             >
@@ -512,7 +512,7 @@ const Subjects = () => {
                           minWidth:"250px",
                           borderRadius: 2,
                           transition: 'all 0.2s ease-in-out',
-                          backgroundColor: '#2a2a2a',
+                          backgroundColor: '#1e1e1e',
                           border: '1px solid #404040',
                           '&:hover': {
                             transform: 'translateY(-2px)',

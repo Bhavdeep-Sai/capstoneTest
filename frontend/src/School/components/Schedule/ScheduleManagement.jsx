@@ -11,12 +11,24 @@ import {
   Grid,
   FormHelperText,
   Box,
-  CircularProgress
+  CircularProgress,
+  Card,
+  CardContent,
+  Typography,
+  useTheme,
+  useMediaQuery,
+  Container,
+  Paper,
+  Alert
 } from '@mui/material';
 import { baseApi } from '../../../environment';
 import axios from 'axios';
 
 const ScheduleManagement = ({ selectedClass, selectedEvent, editMode, onScheduleAdded, onScheduleUpdated }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [formData, setFormData] = useState({
     teacher: '',
     subject: '',
@@ -302,155 +314,337 @@ const ScheduleManagement = ({ selectedClass, selectedEvent, editMode, onSchedule
   };
   
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth required error={Boolean(error && !formData.teacher)}>
-            <InputLabel id="teacher-label">Teacher</InputLabel>
-            <Select
-              labelId="teacher-label"
-              id="teacher"
-              name="teacher"
-              value={formData.teacher}
-              label="Teacher"
-              onChange={handleChange}
-              disabled={loading}
-            >
-              {teachers.map(teacher => (
-                <MenuItem key={teacher._id} value={teacher._id}>
-                  {teacher.name}
-                </MenuItem>
-              ))}
-            </Select>
-            {error && !formData.teacher && <FormHelperText>Teacher is required</FormHelperText>}
-          </FormControl>
-        </Grid>
-        
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth required error={Boolean(error && !formData.subject)}>
-            <InputLabel id="subject-label">Subject</InputLabel>
-            <Select
-              labelId="subject-label"
-              id="subject"
-              name="subject"
-              value={formData.subject}
-              label="Subject"
-              onChange={handleChange}
-              disabled={loading || !formData.teacher || availableSubjects.length === 0}
-            >
-              {availableSubjects.length > 0 ? (
-                availableSubjects.map(subject => (
-                  <MenuItem key={subject._id} value={subject._id}>
-                    {subject.subjectName}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>
-                  {formData.teacher ? "No subjects assigned to this teacher" : "Select a teacher first"}
-                </MenuItem>
-              )}
-            </Select>
-            {error && !formData.subject && <FormHelperText>Subject is required</FormHelperText>}
-            {formData.teacher && availableSubjects.length === 0 && 
-              <FormHelperText>No subjects are assigned to this teacher</FormHelperText>
-            }
-          </FormControl>
-        </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            id="date"
-            name="date"
-            label="Date"
-            type="date"
-            value={formData.date}
-            onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
-            required
-            error={Boolean(error && !formData.date)}
-            helperText={error && !formData.date ? "Date is required" : ""}
-            disabled={loading}
-            inputProps={{ min: new Date().toISOString().split('T')[0], max: "2030-12-31" }}
-          />
-        </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            id="startTime"
-            name="startTime"
-            label="Start Time"
-            type="time"
-            value={formData.startTime}
-            onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
-            required
-            error={Boolean(error && !formData.startTime)}
-            helperText={error && !formData.startTime ? "Start time is required" : ""}
-            disabled={loading}
-          />
-        </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            id="endTime"
-            name="endTime"
-            label="End Time"
-            type="time"
-            value={formData.endTime}
-            onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
-            required
-            error={Boolean(error && !formData.endTime)}
-            helperText={error && !formData.endTime ? "End time is required" : ""}
-            disabled={loading}
-          />
-        </Grid>
-        
-        {/* Status select - only show in edit mode */}
-        {editMode && (
-          <Grid item xs={12}>
-            <FormControl fullWidth>
-              <InputLabel id="status-label">Status</InputLabel>
-              <Select
-                labelId="status-label"
-                id="status"
-                name="status"
-                value={formData.status}
-                label="Status"
-                onChange={handleChange}
-                disabled={loading}
-              >
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="cancelled">Cancelled</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        )}
-      </Grid>
-      
-      {error && <Box sx={{ color: 'error.main', mt: 2 }}>{error}</Box>}
-      {success && <Box sx={{ color: 'success.main', mt: 2 }}>{success}</Box>}
-      
-      <Button
-        type="submit"
-        variant="contained"
-        color="primary"
-        disabled={loading}
-        sx={{ mt: 3 }}
+    <Container 
+      maxWidth="lg" 
+      sx={{ 
+        px: { xs: 1, sm: 2, md: 3 },
+        py: { xs: 1, sm: 2 }
+      }}
+    >
+      <Paper 
+        elevation={isMobile ? 1 : 3}
+        sx={{ 
+          p: { xs: 2, sm: 3, md: 4 },
+          borderRadius: { xs: 2, sm: 3 }
+        }}
       >
-        {loading ? (
-          <>
-            <CircularProgress size={24} sx={{ mr: 1 }} color="inherit" />
-            {editMode ? "Updating..." : "Creating..."}
-          </>
-        ) : (
-          editMode ? "Update Schedule" : "Create Schedule"
+        {/* Header */}
+        <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+          <Typography 
+            variant={isMobile ? "h6" : "h5"} 
+            component="h2"
+            sx={{ 
+              fontWeight: 600,
+              color: 'primary.main',
+              mb: 1
+            }}
+          >
+            {editMode ? 'Update Schedule' : 'Create New Schedule'}
+          </Typography>
+          {selectedClass && (
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+            >
+              Class: {selectedClass}
+            </Typography>
+          )}
+        </Box>
+
+        {/* Alerts */}
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 2,
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
+            onClose={() => setError('')}
+          >
+            {error}
+          </Alert>
         )}
-      </Button>
-    </Box>
+        
+        {success && (
+          <Alert 
+            severity="success" 
+            sx={{ 
+              mb: 2,
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
+            onClose={() => setSuccess('')}
+          >
+            {success}
+          </Alert>
+        )}
+
+        {/* Form */}
+        <Box component="form" onSubmit={handleSubmit}>
+          <Grid container spacing={{ xs: 2, sm: 2.5, md: 3 }}>
+            {/* Teacher Selection */}
+            <Grid item xs={12} sm={6}>
+              <FormControl 
+                fullWidth 
+                required 
+                error={Boolean(error && !formData.teacher)}
+                size={isMobile ? "small" : "medium"}
+              >
+                <InputLabel id="teacher-label">Teacher</InputLabel>
+                <Select
+                  labelId="teacher-label"
+                  id="teacher"
+                  name="teacher"
+                  value={formData.teacher}
+                  label="Teacher"
+                  onChange={handleChange}
+                  disabled={loading}
+                  MenuProps={{
+                    PaperProps: {
+                      style: {
+                        maxHeight: isMobile ? 200 : 300,
+                      },
+                    },
+                  }}
+                >
+                  {teachers.map(teacher => (
+                    <MenuItem key={teacher._id} value={teacher._id}>
+                      <Typography
+                        sx={{ 
+                          fontSize: { xs: '0.875rem', sm: '1rem' },
+                          wordBreak: 'break-word'
+                        }}
+                      >
+                        {teacher.name}
+                      </Typography>
+                    </MenuItem>
+                  ))}
+                </Select>
+                {error && !formData.teacher && (
+                  <FormHelperText>Teacher is required</FormHelperText>
+                )}
+              </FormControl>
+            </Grid>
+            
+            {/* Subject Selection */}
+            <Grid item xs={12} sm={6}>
+              <FormControl 
+                fullWidth 
+                required 
+                error={Boolean(error && !formData.subject)}
+                size={isMobile ? "small" : "medium"}
+              >
+                <InputLabel id="subject-label">Subject</InputLabel>
+                <Select
+                  labelId="subject-label"
+                  id="subject"
+                  name="subject"
+                  value={formData.subject}
+                  label="Subject"
+                  onChange={handleChange}
+                  disabled={loading || !formData.teacher || availableSubjects.length === 0}
+                  MenuProps={{
+                    PaperProps: {
+                      style: {
+                        maxHeight: isMobile ? 200 : 300,
+                      },
+                    },
+                  }}
+                >
+                  {availableSubjects.length > 0 ? (
+                    availableSubjects.map(subject => (
+                      <MenuItem key={subject._id} value={subject._id}>
+                        <Typography
+                          sx={{ 
+                            fontSize: { xs: '0.875rem', sm: '1rem' },
+                            wordBreak: 'break-word'
+                          }}
+                        >
+                          {subject.subjectName}
+                        </Typography>
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>
+                      <Typography
+                        sx={{ 
+                          fontSize: { xs: '0.875rem', sm: '1rem' },
+                          fontStyle: 'italic'
+                        }}
+                      >
+                        {formData.teacher ? "No subjects assigned to this teacher" : "Select a teacher first"}
+                      </Typography>
+                    </MenuItem>
+                  )}
+                </Select>
+                {error && !formData.subject && (
+                  <FormHelperText>Subject is required</FormHelperText>
+                )}
+                {formData.teacher && availableSubjects.length === 0 && (
+                  <FormHelperText>No subjects are assigned to this teacher</FormHelperText>
+                )}
+              </FormControl>
+            </Grid>
+            
+            {/* Date */}
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                id="date"
+                name="date"
+                label="Date"
+                type="date"
+                value={formData.date}
+                onChange={handleChange}
+                InputLabelProps={{ shrink: true }}
+                required
+                error={Boolean(error && !formData.date)}
+                helperText={error && !formData.date ? "Date is required" : ""}
+                disabled={loading}
+                inputProps={{ 
+                  min: new Date().toISOString().split('T')[0], 
+                  max: "2030-12-31",
+                  style: { fontSize: isMobile ? '16px' : '14px' } // Prevents zoom on iOS
+                }}
+                size={isMobile ? "small" : "medium"}
+              />
+            </Grid>
+            
+            {/* Start Time */}
+            <Grid item xs={6} sm={4}>
+              <TextField
+                fullWidth
+                id="startTime"
+                name="startTime"
+                label="Start Time"
+                type="time"
+                value={formData.startTime}
+                onChange={handleChange}
+                InputLabelProps={{ shrink: true }}
+                required
+                error={Boolean(error && !formData.startTime)}
+                helperText={error && !formData.startTime ? "Required" : ""}
+                disabled={loading}
+                inputProps={{
+                  style: { fontSize: isMobile ? '16px' : '14px' }
+                }}
+                size={isMobile ? "small" : "medium"}
+              />
+            </Grid>
+            
+            {/* End Time */}
+            <Grid item xs={6} sm={4}>
+              <TextField
+                fullWidth
+                id="endTime"
+                name="endTime"
+                label="End Time"
+                type="time"
+                value={formData.endTime}
+                onChange={handleChange}
+                InputLabelProps={{ shrink: true }}
+                required
+                error={Boolean(error && !formData.endTime)}
+                helperText={error && !formData.endTime ? "Required" : ""}
+                disabled={loading}
+                inputProps={{
+                  style: { fontSize: isMobile ? '16px' : '14px' }
+                }}
+                size={isMobile ? "small" : "medium"}
+              />
+            </Grid>
+            
+            {/* Status select - only show in edit mode */}
+            {editMode && (
+              <Grid item xs={12} sm={6}>
+                <FormControl 
+                  fullWidth
+                  size={isMobile ? "small" : "medium"}
+                >
+                  <InputLabel id="status-label">Status</InputLabel>
+                  <Select
+                    labelId="status-label"
+                    id="status"
+                    name="status"
+                    value={formData.status}
+                    label="Status"
+                    onChange={handleChange}
+                    disabled={loading}
+                  >
+                    <MenuItem value="active">
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            bgcolor: 'success.main',
+                            mr: 1
+                          }}
+                        />
+                        Active
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="cancelled">
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            bgcolor: 'error.main',
+                            mr: 1
+                          }}
+                        />
+                        Cancelled
+                      </Box>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
+          </Grid>
+          
+          {/* Submit Button */}
+          <Box 
+            sx={{ 
+              mt: { xs: 3, sm: 4 },
+              display: 'flex',
+              justifyContent: { xs: 'stretch', sm: 'flex-start' }
+            }}
+          >
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={loading}
+              size={isMobile ? "large" : "medium"}
+              sx={{ 
+                minWidth: { xs: '100%', sm: 200 },
+                py: { xs: 1.5, sm: 1 },
+                fontSize: { xs: '1rem', sm: '0.875rem' },
+                fontWeight: 600,
+                borderRadius: 2,
+                textTransform: 'none'
+              }}
+            >
+              {loading ? (
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <CircularProgress 
+                    size={isMobile ? 20 : 24} 
+                    sx={{ mr: 1 }} 
+                    color="inherit" 
+                  />
+                  {editMode ? "Updating..." : "Creating..."}
+                </Box>
+              ) : (
+                editMode ? "Update Schedule" : "Create Schedule"
+              )}
+            </Button>
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 

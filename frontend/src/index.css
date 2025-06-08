@@ -1,20 +1,24 @@
 @import "tailwindcss";
 
 .scroll-container::-webkit-scrollbar {
-  width: 8px;
-  height: 4px;
+  width: 3px;
+  height: 0px;
 }
 
 .scroll-container::-webkit-scrollbar-track {
-  background: theme('colors.gray.200');
+  background: theme('colors.gray.900');
   border-radius: theme('borderRadius.lg');
 }
 
 .scroll-container::-webkit-scrollbar-thumb {
-  background: theme('colors.blue.500');
+  background: theme('colors.amber.500');
   border-radius: theme('borderRadius.sm');
 }
 
 .scroll-container::-webkit-scrollbar-thumb:hover {
-  background: theme('colors.blue.700');
+  background: theme('colors.amber.700');
+}
+
+html {
+  scroll-behavior: smooth;
 }
