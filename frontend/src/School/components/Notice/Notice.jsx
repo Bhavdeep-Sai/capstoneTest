@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { Search, Edit, Trash2, Plus, Filter, RefreshCw, AlertCircle, Bell, Lock, Eye, EyeOff } from "lucide-react";
+import { Search, Edit, Trash2, Plus, Filter, RefreshCw, AlertCircle, Bell, Lock, Eye, EyeOff, ChevronDown, ChevronUp } from "lucide-react";
 import { baseApi } from "../../../environment";
 
 const Notice = () => {
@@ -27,6 +27,7 @@ const Notice = () => {
   const [deleteId, setDeleteId] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [filtersExpanded, setFiltersExpanded] = useState(false); // New state for filter expansion
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
@@ -419,6 +420,9 @@ const Notice = () => {
   const expiredCount = notices.filter(notice => isExpired(notice.expiryDate)).length;
   const activeCount = notices.filter(notice => !isExpired(notice.expiryDate)).length;
 
+  // Check if any filters are active (for showing indicator)
+  const hasActiveFilters = searchTerm || audienceFilter !== "All" || importantFilter || expiredFilter !== "active";
+
   return (
     <div className="pt-4 sm:pt-6 lg:pt-10 px-3 sm:px-4 lg:px-6 min-h-screen text-white">
       <div className="max-w-7xl mx-auto">
@@ -468,78 +472,119 @@ const Notice = () => {
         </div>
 
         {/* Filters and Search */}
-        <div className="mb-6 bg-gray-800 p-3 sm:p-4 lg:p-6 rounded-lg shadow-md">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
-            <h3 className="text-base sm:text-lg font-semibold text-amber-400">Filters</h3>
-          </div>
+        <div className="mb-6 bg-gray-800 rounded-lg shadow-md overflow-hidden">
+          {/* Filter Header - Always visible */}
+          <div className="p-3 sm:p-4 lg:p-6">
+            <button
+              onClick={() => setFiltersExpanded(!filtersExpanded)}
+              className="flex items-center justify-between w-full sm:w-auto sm:pointer-events-none"
+            >
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                <h3 className="text-base sm:text-lg font-semibold text-amber-400">Filters</h3>
+                {hasActiveFilters && (
+                  <span className="ml-2 px-2 py-1 bg-amber-500 text-black rounded-full text-xs font-medium">
+                    Active
+                  </span>
+                )}
+              </div>
+              <div className="sm:hidden">
+                {filtersExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-amber-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-amber-400" />
+                )}
+              </div>
+            </button>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-            {/* Search */}
-            <div className="relative sm:col-span-2 lg:col-span-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search notices..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
-              />
-            </div>
-
-            {/* Audience Filter */}
-            <div>
-              <select
-                value={audienceFilter}
-                onChange={(e) => setAudienceFilter(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
-              >
-                <option value="All">All Audiences</option>
-                {userInfo.role !== 'TEACHER' && <option value="Student">For Students</option>}
-                {userInfo.role !== 'STUDENT' && <option value="Teacher">For Teachers</option>}
-
-              </select>
-            </div>
-
-            {/* Expiry Status Filter */}
-            <div>
-              <select
-                value={expiredFilter}
-                onChange={(e) => setExpiredFilter(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
-              >
-                <option value="active">Active ({activeCount})</option>
-                <option value="expired">Expired ({expiredCount})</option>
-                <option value="all">All Notices</option>
-              </select>
-            </div>
-
-            {/* Important Filter */}
-            <div className="flex items-center gap-2 bg-gray-700 px-3 py-2 rounded-lg">
-              <input
-                type="checkbox"
-                id="importantFilter"
-                checked={importantFilter}
-                onChange={(e) => setImportantFilter(e.target.checked)}
-                className="w-4 h-4 text-amber-600 bg-gray-700 border-gray-600 rounded focus:ring-amber-500 focus:ring-2"
-              />
-              <label htmlFor="importantFilter" className="text-white text-sm">
-                Important only
-              </label>
-            </div>
-
-            {/* Filter Status Display */}
-            <div className="sm:col-span-2 lg:col-span-1 flex items-center gap-2 text-xs text-gray-400">
-              {expiredFilter === "expired" && (
-                <div className="flex items-center gap-1 bg-red-900 px-2 py-1 rounded">
-                  <EyeOff className="w-3 h-3" />
-                  Showing Expired
+            {/* Filter Content - Hidden on mobile unless expanded */}
+            <div className={`mt-4 transition-all duration-300 ease-in-out ${
+              filtersExpanded ? 'block' : 'hidden sm:block'
+            }`}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                {/* Search */}
+                <div className="relative sm:col-span-2 lg:col-span-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search notices..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                  />
                 </div>
-              )}
-              {expiredFilter === "active" && (
-                <div className="flex items-center gap-1 bg-green-900 px-2 py-1 rounded">
-                  <Eye className="w-3 h-3" />
-                  Showing Active
+
+                {/* Audience Filter */}
+                <div>
+                  <select
+                    value={audienceFilter}
+                    onChange={(e) => setAudienceFilter(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                  >
+                    <option value="All">All Audiences</option>
+                    {userInfo.role !== 'TEACHER' && <option value="Student">For Students</option>}
+                    {userInfo.role !== 'STUDENT' && <option value="Teacher">For Teachers</option>}
+                  </select>
+                </div>
+
+                {/* Expiry Status Filter */}
+                <div>
+                  <select
+                    value={expiredFilter}
+                    onChange={(e) => setExpiredFilter(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                  >
+                    <option value="active">Active ({activeCount})</option>
+                    <option value="expired">Expired ({expiredCount})</option>
+                    <option value="all">All Notices</option>
+                  </select>
+                </div>
+
+                {/* Important Filter */}
+                <div className="flex items-center gap-2 bg-gray-700 px-3 py-2 rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="importantFilter"
+                    checked={importantFilter}
+                    onChange={(e) => setImportantFilter(e.target.checked)}
+                    className="w-4 h-4 text-amber-600 bg-gray-700 border-gray-600 rounded focus:ring-amber-500 focus:ring-2"
+                  />
+                  <label htmlFor="importantFilter" className="text-white text-sm">
+                    Important only
+                  </label>
+                </div>
+
+                {/* Filter Status Display */}
+                <div className="sm:col-span-2 lg:col-span-1 flex items-center gap-2 text-xs text-gray-400">
+                  {expiredFilter === "expired" && (
+                    <div className="flex items-center gap-1 bg-red-900 px-2 py-1 rounded">
+                      <EyeOff className="w-3 h-3" />
+                      Showing Expired
+                    </div>
+                  )}
+                  {expiredFilter === "active" && (
+                    <div className="flex items-center gap-1 bg-green-900 px-2 py-1 rounded">
+                      <Eye className="w-3 h-3" />
+                      Showing Active
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Clear Filters Button - Mobile only, shown when filters are active */}
+              {hasActiveFilters && (
+                <div className="mt-3 sm:hidden">
+                  <button
+                    onClick={() => {
+                      setSearchTerm("");
+                      setAudienceFilter("All");
+                      setImportantFilter(false);
+                      setExpiredFilter("active");
+                    }}
+                    className="w-full px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors text-sm"
+                  >
+                    Clear All Filters
+                  </button>
                 </div>
               )}
             </div>
@@ -675,93 +720,86 @@ const Notice = () => {
           </div>
         )}
 
-        {/* Pagination */}
+{/* Pagination */}
         {pagination.pages > 1 && (
           <div className="flex justify-center items-center gap-2 mb-8 flex-wrap">
             <button
               onClick={() => handlePageChange(pagination.page - 1)}
               disabled={pagination.page === 1}
-              className="px-2 py-2 sm:px-3 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="px-3 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
-              <span className="sm:hidden">‹</span>
-              <span className="hidden sm:inline">Previous</span>
+              Previous
             </button>
-
-            <div className="flex gap-1 overflow-x-auto max-w-xs sm:max-w-none">
-              {Array.from({ length: Math.min(pagination.pages, 5) }, (_, i) => {
-                let page;
-                if (pagination.pages <= 5) {
-                  page = i + 1;
-                } else {
-                  const start = Math.max(1, pagination.page - 2);
-                  const end = Math.min(pagination.pages, start + 4);
-                  page = start + i;
-                  if (page > end) return null;
-                }
-
-                return (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-2 py-2 sm:px-3 rounded text-sm ${page === pagination.page
-                        ? 'bg-amber-500 text-white'
-                        : 'bg-gray-700 text-white hover:bg-gray-600'
-                      }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
-            </div>
-
+            
+            {/* Page numbers */}
+            {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`px-3 py-2 rounded text-sm ${
+                  page === pagination.page
+                    ? 'bg-amber-500 text-black font-medium'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            
             <button
               onClick={() => handlePageChange(pagination.page + 1)}
               disabled={pagination.page === pagination.pages}
-              className="px-2 py-2 sm:px-3 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="px-3 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
-              <span className="sm:hidden">›</span>
-              <span className="hidden sm:inline">Next</span>
+              Next
             </button>
+            
+            <div className="text-sm text-gray-400 ml-4">
+              Page {pagination.page} of {pagination.pages} ({pagination.total} total)
+            </div>
           </div>
         )}
       </div>
 
-      {/* Create/Update Modal */}
+      {/* Create/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-4 sm:p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-amber-500">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-amber-500">
                   {modalType === 'create' ? 'Create New Notice' : 'Update Notice'}
                 </h2>
                 <button
                   onClick={closeModal}
-                  className="text-gray-400 hover:text-white transition-colors p-1"
+                  className="text-gray-400 hover:text-white transition-colors"
                 >
-                  <Plus className="w-5 h-5 sm:w-6 sm:h-6 transform rotate-45" />
+                  <span className="sr-only">Close</span>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
 
               {error && (
-                <div className="mb-4 p-3 sm:p-4 bg-red-900 border border-red-600 text-red-200 rounded-lg flex items-center gap-2 text-sm">
-                  <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <div className="mb-4 p-3 bg-red-900 border border-red-600 text-red-200 rounded-lg flex items-center gap-2 text-sm">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Title */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Title *
+                    Title <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
                     value={form.title}
-                    onChange={(e) => setForm(prev => ({ ...prev, title: e.target.value }))}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
                     placeholder="Enter notice title"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm sm:text-base"
                     maxLength={100}
                     required
                   />
@@ -773,14 +811,14 @@ const Notice = () => {
                 {/* Message */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Message *
+                    Message <span className="text-red-400">*</span>
                   </label>
                   <textarea
                     value={form.message}
-                    onChange={(e) => setForm(prev => ({ ...prev, message: e.target.value }))}
-                    placeholder="Enter notice message"
+                    onChange={(e) => setForm({ ...form, message: e.target.value })}
                     rows={4}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm sm:text-base resize-vertical"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm resize-vertical"
+                    placeholder="Enter notice message"
                     required
                   />
                 </div>
@@ -788,79 +826,84 @@ const Notice = () => {
                 {/* Audience */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Audience *
+                    Audience <span className="text-red-400">*</span>
                   </label>
                   <select
                     value={form.audience}
-                    onChange={(e) => setForm(prev => ({ ...prev, audience: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm sm:text-base"
+                    onChange={(e) => setForm({ ...form, audience: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
                     required
                   >
-                    <option value="Student">Students</option>
-                    {userInfo.role === "SCHOOL" && (
+                    {userInfo.role === "TEACHER" ? (
+                      <option value="Student">Students</option>
+                    ) : (
                       <>
+                        <option value="Student">Students</option>
                         <option value="Teacher">Teachers</option>
-                        <option value="All">Everyone</option>
+                        <option value="All">All</option>
                       </>
                     )}
                   </select>
                   {userInfo.role === "TEACHER" && (
                     <div className="text-xs text-amber-400 mt-1">
-                      As a teacher, you can only create notices for students
+                      Teachers can only create notices for students
                     </div>
                   )}
                 </div>
 
-                {/* Important and Expiry Date Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Important Checkbox */}
-                  <div className="flex items-center gap-3 bg-gray-700 p-3 rounded-lg">
-                    <input
-                      type="checkbox"
-                      id="isImportant"
-                      checked={form.isImportant}
-                      onChange={(e) => setForm(prev => ({ ...prev, isImportant: e.target.checked }))}
-                      className="w-4 h-4 text-amber-600 bg-gray-700 border-gray-600 rounded focus:ring-amber-500 focus:ring-2"
-                    />
-                    <label htmlFor="isImportant" className="text-sm font-medium text-gray-300">
-                      Mark as Important
-                    </label>
-                  </div>
-
-                  {/* Expiry Date */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Expiry Date (Optional)
-                    </label>
-                    <input
-                      type="date"
-                      value={form.expiryDate}
-                      onChange={(e) => setForm(prev => ({ ...prev, expiryDate: e.target.value }))}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm sm:text-base"
-                    />
+                {/* Expiry Date */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Expiry Date (Optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={form.expiryDate}
+                    onChange={(e) => setForm({ ...form, expiryDate: e.target.value })}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                  />
+                  <div className="text-xs text-gray-400 mt-1">
+                    Leave empty for notices that don't expire
                   </div>
                 </div>
 
-                {/* Form Actions */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-700">
+                {/* Important Checkbox */}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="isImportant"
+                    checked={form.isImportant}
+                    onChange={(e) => setForm({ ...form, isImportant: e.target.checked })}
+                    className="w-4 h-4 text-amber-600 bg-gray-700 border-gray-600 rounded focus:ring-amber-500 focus:ring-2"
+                  />
+                  <label htmlFor="isImportant" className="text-sm font-medium text-gray-300">
+                    Mark as Important
+                  </label>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm sm:text-base order-2 sm:order-1"
+                    className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors text-sm"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:from-orange-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 text-sm sm:text-base order-1 sm:order-2 flex-1 sm:flex-none flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:from-orange-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 text-sm"
                   >
-                    {submitting && <RefreshCw className="w-4 h-4 animate-spin" />}
-                    {submitting
-                      ? (modalType === 'create' ? 'Creating...' : 'Updating...')
-                      : (modalType === 'create' ? 'Create Notice' : 'Update Notice')
-                    }
+                    {submitting ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>{modalType === 'create' ? 'Creating...' : 'Updating...'}</span>
+                      </div>
+                    ) : (
+                      modalType === 'create' ? 'Create Notice' : 'Update Notice'
+                    )}
                   </button>
                 </div>
               </form>
@@ -871,41 +914,47 @@ const Notice = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg shadow-2xl w-full max-w-md">
             <div className="p-4 sm:p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
+                  <AlertCircle className="w-6 h-6 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Delete Notice</h3>
+                  <h3 className="text-lg font-semibold text-white">Confirm Delete</h3>
                   <p className="text-sm text-gray-400">This action cannot be undone.</p>
                 </div>
               </div>
 
-              <p className="text-gray-300 mb-6 text-sm sm:text-base">
+              <p className="text-gray-300 mb-6">
                 Are you sure you want to delete this notice? This will permanently remove it from the system.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={() => {
                     setShowDeleteModal(false);
                     setDeleteId(null);
                   }}
-                  disabled={submitting}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors text-sm sm:text-base order-2 sm:order-1"
+                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={submitting}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base order-1 sm:order-2 flex-1 sm:flex-none flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
                 >
-                  {submitting && <RefreshCw className="w-4 h-4 animate-spin" />}
-                  {submitting ? 'Deleting...' : 'Delete Notice'}
+                  {submitting ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Deleting...</span>
+                    </div>
+                  ) : (
+                    'Delete Notice'
+                  )}
                 </button>
               </div>
             </div>

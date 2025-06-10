@@ -573,17 +573,17 @@ export default function Dashboard() {
                 background: 'linear-gradient(45deg, #ff7043, #ff5722)',
                 borderRadius: isMobile ? '8px' : '15px',
                 boxShadow: '0 12px 40px rgba(255, 112, 67, 0.3)',
-                width: isMobile ? '200px' : isTablet ? '280px' : '100%',
-                maxWidth: isMobile ? '200px' : isTablet ? '300px' : '450px',
+                width: isMobile ? '300px' : isTablet ? '280px' : '100%',
+                maxWidth: isMobile ? '300px' : isTablet ? '300px' : '450px',
                 height: 'fit-content',
                 justifyContent: "center",
               }}>
                 <img
-                  src={`${baseApi}/uploads/teacher/${teacherData.teacherImg || 'default.png'}`}
+                  src={teacherData.teacherImg}
                   alt="Teacher"
                   style={{
                     width: '100%',
-                    height: isMobile ? '200px' : isTablet ? '280px' : '450px',
+                    height: isMobile ? '300px' : isTablet ? '280px' : '450px',
                     borderRadius: isMobile ? '5px' : '14px',
                     objectFit: 'cover',
                     border: '4px solid rgba(255, 255, 255, 0.1)',

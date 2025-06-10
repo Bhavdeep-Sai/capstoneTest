@@ -283,7 +283,8 @@ module.exports = {
           // Handle special cases and skip password updates here
           if (
             field !== "teacherClasses" &&
-            field !== "subjects" // password handled separately below
+            field !== "subjects" &&
+            field !== "password" // Handle password separately
           ) {
             teacher[field] = Array.isArray(fields[field])
               ? fields[field][0]
@@ -329,7 +330,13 @@ module.exports = {
           try {
             // Delete old image from Cloudinary if exists
             if (teacher.teacherImgPublicId) {
-              await cloudinary.uploader.destroy(teacher.teacherImgPublicId);
+              try {
+                await cloudinary.uploader.destroy(teacher.teacherImgPublicId);
+                console.log("Old image deleted from Cloudinary");
+              } catch (deleteError) {
+                console.error("Error deleting old image from Cloudinary:", deleteError);
+                // Continue with upload even if deletion fails
+              }
             }
 
             // Upload new image to Cloudinary
@@ -344,6 +351,8 @@ module.exports = {
 
             teacher.teacherImg = cloudinaryResult.secure_url;
             teacher.teacherImgPublicId = cloudinaryResult.public_id;
+            
+            console.log("New image uploaded to Cloudinary:", cloudinaryResult.secure_url);
           } catch (cloudinaryError) {
             console.error("Cloudinary update error:", cloudinaryError);
             return res.status(500).json({
@@ -353,7 +362,17 @@ module.exports = {
           }
         }
 
-        await teacher.save();
+        // Save the updated teacher
+        try {
+          await teacher.save();
+          console.log("Teacher updated successfully");
+        } catch (saveError) {
+          console.error("Error saving teacher:", saveError);
+          return res.status(500).json({
+            success: false,
+            message: "Failed to save teacher data"
+          });
+        }
 
         // Return updated teacher without sensitive data
         const updatedTeacher = await Teacher.findById(teacher._id)
@@ -380,11 +399,36 @@ module.exports = {
       const id = req.params.id;
       const schoolId = req.user.schoolId;
 
+      // First find the teacher to get the image public_id
+      const teacherToDelete = await Teacher.findOne({
+        _id: id,
+        school: schoolId,
+      });
+
+      if (!teacherToDelete) {
+        return res.status(404).json({
+          success: false,
+          message: "Teacher not found",
+        });
+      }
+
+      // Delete teacher image from Cloudinary if exists
+      if (teacherToDelete.teacherImgPublicId) {
+        try {
+          await cloudinary.uploader.destroy(teacherToDelete.teacherImgPublicId);
+          console.log("Teacher image deleted from Cloudinary:", teacherToDelete.teacherImgPublicId);
+        } catch (cloudinaryError) {
+          console.error("Error deleting image from Cloudinary:", cloudinaryError);
+          // Continue with teacher deletion even if image deletion fails
+        }
+      }
+
+      // Now delete the teacher from database
       const deletedTeacher = await Teacher.findOneAndDelete({
         _id: id,
         school: schoolId,
       });
-      
+
       if (!deletedTeacher) {
         return res.status(404).json({
           success: false,
@@ -392,19 +436,9 @@ module.exports = {
         });
       }
 
-      // Delete teacher image from Cloudinary if exists
-      if (deletedTeacher.teacherImgPublicId) {
-        try {
-          await cloudinary.uploader.destroy(deletedTeacher.teacherImgPublicId);
-        } catch (cloudinaryError) {
-          console.error("Error deleting image from Cloudinary:", cloudinaryError);
-          // Continue with deletion even if image deletion fails
-        }
-      }
-
       res.status(200).json({
         success: true,
-        message: "Teacher Deleted Successfully",
+        message: "Teacher and associated image deleted successfully",
       });
     } catch (error) {
       console.error("Delete Teacher error:", error);
@@ -413,4 +447,48 @@ module.exports = {
         .json({ success: false, message: "Internal Server Error" });
     }
   },
+
+  // Additional helper method to clean up orphaned images
+  cleanupOrphanedImages: async (req, res) => {
+    try {
+      // This is an optional method to clean up any orphaned images in Cloudinary
+      // You can call this periodically or manually when needed
+      
+      const teachers = await Teacher.find({ school: req.user.schoolId });
+      const teacherImageIds = teachers
+        .filter(teacher => teacher.teacherImgPublicId)
+        .map(teacher => teacher.teacherImgPublicId);
+
+      // Get all images from Cloudinary teachers folder
+      const cloudinaryImages = await cloudinary.api.resources({
+        type: 'upload',
+        prefix: 'teachers/',
+        max_results: 500
+      });
+
+      // Find orphaned images
+      const orphanedImages = cloudinaryImages.resources.filter(
+        image => !teacherImageIds.includes(image.public_id)
+      );
+
+      // Delete orphaned images
+      const deletionPromises = orphanedImages.map(image => 
+        cloudinary.uploader.destroy(image.public_id)
+      );
+
+      await Promise.all(deletionPromises);
+
+      res.status(200).json({
+        success: true,
+        message: `Cleaned up ${orphanedImages.length} orphaned images`,
+        deletedImages: orphanedImages.length
+      });
+    } catch (error) {
+      console.error("Cleanup orphaned images error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error cleaning up orphaned images"
+      });
+    }
+  }
 };

@@ -509,7 +509,7 @@ const Subjects = () => {
                         elevation={2}
                         sx={{
                           height: '100%',
-                          minWidth:"250px",
+                          minWidth:{md:"250px", xs:'320px'},
                           borderRadius: 2,
                           transition: 'all 0.2s ease-in-out',
                           backgroundColor: '#1e1e1e',
