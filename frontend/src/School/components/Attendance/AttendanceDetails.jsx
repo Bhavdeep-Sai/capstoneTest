@@ -443,12 +443,12 @@ const AttendanceDetails = () => {
                     Progress
                   </Typography>
                   <Typography variant="caption" color={color} fontWeight={600}>
-                    {progress}%
+                    {progress.toFixed(2)}%
                   </Typography>
                 </Box>
                 <LinearProgress
                   variant="determinate"
-                  value={progress}
+                  value={progress.toFixed(2)}
                   sx={{
                     height: 6,
                     borderRadius: 3,
@@ -664,7 +664,7 @@ const AttendanceDetails = () => {
                       {/* Pie Chart */}
                       <Grid item xs={12} lg={4}>
                         <Zoom in timeout={800}>
-                          <Card sx={{ height: { xs: 350, sm: 400 }, width: { xs: "300px", lg: "400px" } }}>
+                          <Card sx={{ height: { xs: 350, sm: 400 }, width: { xs: "320px", lg: "400px" } }}>
                             <CardContent sx={{ p: { xs: 2, sm: 3 }, height: '100%' }}>
                               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                 <Analytics sx={{ mr: 1, color: 'primary.main' }} />
@@ -702,7 +702,7 @@ const AttendanceDetails = () => {
                       {/* Bar Chart */}
                       <Grid item xs={12} lg={4}>
                         <Zoom in timeout={1000}>
-                          <Card sx={{ height: { xs: 350, sm: 400 }, width: { xs: "300px", lg: "400px" } }}>
+                          <Card sx={{ height: { xs: 350, sm: 400 }, width: { xs: "320px", lg: "400px" } }}>
                             <CardContent sx={{ p: { xs: 2, sm: 3 }, height: '100%' }}>
                               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                 <BarChart sx={{ mr: 1, color: 'primary.main' }} />
@@ -736,7 +736,7 @@ const AttendanceDetails = () => {
                       {/* Line Chart */}
                       <Grid item xs={12} lg={4}>
                         <Zoom in timeout={1200}>
-                          <Card sx={{ height: { xs: 350, sm: 400 }, width: { xs: "300px", lg: "400px" } }}>
+                          <Card sx={{ height: { xs: 350, sm: 400 }, width: { xs: "320px", lg: "400px" } }}>
                             <CardContent sx={{ p: { xs: 2, sm: 3 }, height: '100%' }}>
                               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                 <Timeline sx={{ mr: 1, color: 'primary.main' }} />
