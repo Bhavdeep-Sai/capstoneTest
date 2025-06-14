@@ -175,9 +175,9 @@ const Examination = () => {
       console.error('Failed to fetch exam types:', error);
       // Fallback exam types based on user role
       if (userRole === 'TEACHER') {
-        setAvailableExamTypes(['Quiz', 'Class Test', 'Pop Quiz', 'Unit Test', 'Weekly Test', 'Slip Test']);
+        setAvailableExamTypes(['Quiz', 'Class Test','Weekly Test', 'Slip Test']);
       } else {
-        setAvailableExamTypes(['Mid Term', 'Final Term', 'Annual Exam', 'Semester Exam', 'Quiz', 'Class Test', 'Pop Quiz', 'Unit Test', 'Weekly Test', 'Slip Test']);
+        setAvailableExamTypes(['Mid Term', 'Final Term', 'Annual Exam', 'Unit Test']);
       }
     }
   };
@@ -475,7 +475,7 @@ const Examination = () => {
 
   // Get exam type badge color based on exam type
   const getExamTypeBadge = (examType) => {
-    const majorExams = ['Mid Term', 'Final Term', 'Annual Exam', 'Semester Exam'];
+    const majorExams = ['Mid Term', 'Final Term', 'Annual Exam'];
 
     if (majorExams.includes(examType)) {
       return 'bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold';
@@ -502,14 +502,14 @@ const Examination = () => {
   const canViewActions = userRole === 'SCHOOL' || userRole === 'TEACHER';
 
   return (
-    <div className="pt-20 px-6 min-h-screen text-white">
+    <div className="pt-8 px-6 min-h-screen text-white">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-amber-500">Examination Management</h1>
+        <div className="flex lg:justify-between items-end gap-4 flex-col lg:flex-row lg:items-center mb-8">
+          <h1 className="text-2xl w-full lg:text-3xl text-center lg:text-left font-bold text-amber-500">Examination Management</h1>
           {canCreateExam && (
             <button
               onClick={openCreateModal}
-              className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded hover:from-orange-600 hover:to-red-700 transition-all duration-300 shadow-lg"
+              className="px-4 cursor-pointer py-2 w-1/2 lg:w-1/4 text-sm lg:text-lg bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded hover:from-amber-600 hover:to-amber-700 transition-all duration-300 shadow-lg"
             >
               Create New Examination
             </button>
@@ -521,7 +521,7 @@ const Examination = () => {
           <span>Role: <span className="text-amber-400 font-semibold">{userRole}</span></span>
           {userRole === 'TEACHER' && (
             <span className="ml-4 text-blue-400">
-              (Can create: Quiz, Class Test, Pop Quiz, Unit Test, Weekly Test, Slip Test)
+              (Can create: Quiz, Class Test, Weekly Test, Slip Test)
             </span>
           )}
           {userRole === 'STUDENT' && (

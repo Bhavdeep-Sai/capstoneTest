@@ -185,8 +185,8 @@ const Attendee = ({ classId }) => {
   };
 
   const currentAttendee = selectedClassData?.attendee;
-  const attendeeName = typeof currentAttendee === 'object' 
-    ? currentAttendee.name 
+  const attendeeName = typeof currentAttendee === 'object'
+    ? currentAttendee.name
     : getTeacherName(currentAttendee);
 
   return (
@@ -212,8 +212,8 @@ const Attendee = ({ classId }) => {
         {/* Alert Messages */}
         {message.text && (
           <Fade in>
-            <Alert 
-              severity={message.type} 
+            <Alert
+              severity={message.type}
               sx={{ mb: 3, borderRadius: 2 }}
               onClose={() => setMessage({ type: '', text: '' })}
             >
@@ -227,8 +227,19 @@ const Attendee = ({ classId }) => {
           <Fade in>
             <AttendeeCard sx={{ mb: 3 }}>
               <CardContent sx={{ p: 2.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
+                  Current Attendee
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', lg: 'row' },
+                    gap: { xs: "10px" },
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Box sx={{display: 'flex', alignItems: 'center' }}>
                     <Avatar
                       sx={{
                         bgcolor: 'success.main',
@@ -241,19 +252,16 @@ const Attendee = ({ classId }) => {
                       {attendeeName ? getInitials(attendeeName) : <PersonIcon />}
                     </Avatar>
                     <Box>
-                      <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>
-                        Current Attendee
-                      </Typography>
-                      <Typography variant="h6" fontWeight={600}>
+                      <Typography sx={{ fontSize: { lg: "1.5rem" } }} fontWeight={600}>
                         {attendeeName}
                       </Typography>
                     </Box>
                   </Box>
-                  
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Chip 
-                      label="Active" 
-                      color="success" 
+
+                  <Box sx={{ mt:{xs:2}, display: 'flex', alignItems: 'center', gap: {xs:2, lg: 2} }}>
+                    <Chip
+                      label="Active"
+                      color="success"
                       size="small"
                       icon={<CheckIcon />}
                       sx={{ fontWeight: 600 }}
@@ -321,7 +329,7 @@ const Attendee = ({ classId }) => {
         <Collapse in={edit}>
           <Box>
             <Divider sx={{ my: 3, borderColor: 'rgba(255, 152, 0, 0.2)' }} />
-            
+
             <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
               <SchoolIcon sx={{ mr: 1, color: 'primary.main' }} />
               {currentAttendee ? 'Change Attendee' : 'Assign New Attendee'}
@@ -395,7 +403,7 @@ const Attendee = ({ classId }) => {
                 >
                   Cancel
                 </ActionButton>
-                
+
                 <ActionButton
                   variant="contained"
                   onClick={handleSubmit}
@@ -412,10 +420,10 @@ const Attendee = ({ classId }) => {
                     },
                   }}
                 >
-                  {submitting 
-                    ? 'Saving...' 
-                    : currentAttendee 
-                      ? 'Update Attendee' 
+                  {submitting
+                    ? 'Saving...'
+                    : currentAttendee
+                      ? 'Update Attendee'
                       : 'Assign Attendee'
                   }
                 </ActionButton>

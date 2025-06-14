@@ -20,9 +20,9 @@ const examinationSchema = new mongoose.Schema({
     required: true,
     enum: [
       // School-only exam types (main/big exams)
-      'Mid Term', 'Final Term', 'Annual Exam', 'Semester Exam',
+      'Mid Term', 'Final Term', 'Annual Exam','Unit Test','Semester Exam',
       // Teacher-allowed exam types (small tests/quizzes)
-      'Quiz', 'Class Test', 'Pop Quiz', 'Unit Test', 'Weekly Test', 'Slip Test'
+      'Quiz', 'Class Test','Weekly Test', 'Slip Test'
     ]
   },
   class: {

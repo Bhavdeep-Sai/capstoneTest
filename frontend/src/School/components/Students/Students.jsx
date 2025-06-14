@@ -225,6 +225,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   flexDirection: 'column',
   position: 'relative',
   overflow: 'hidden',
+  backgroundColor:"#1e1e1e",
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -1022,7 +1023,7 @@ export default function Students() {
               <Grid className="flex gap-5 flex-wrap justify-evenly" spacing={3}>
                 {students.map((student) => (
                   <Grid item xs={12} sm={6} md={4} lg={3} key={student._id}>
-                    <StyledCard sx={{ width: { lg: "400px" } }}>
+                    <StyledCard  sx={{ width: { lg: "400px" }}}>
                       <Box sx={{ position: 'relative' }}>
                         <CardMedia
                           component="img"

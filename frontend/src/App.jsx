@@ -36,6 +36,7 @@ import { AuthProvider } from './context/AuthContext'
 import AttendanceDetails from './School/components/Attendance/AttendanceDetails'
 import Logout from './Client/components/Logout/Logout'
 import RoleSelection from './Client/components/RoleSelection/RoleSelection'
+import ChatBot from './Student/Components/ChatBot/ChatBot'
 
 const App = () => {
   return (
@@ -82,6 +83,7 @@ const App = () => {
             <Route path='attendance/:id' element={<StudentAttendance />} />
             <Route path='examination' element={<StudentExamination />} />
             <Route path='notice' element={<StudentNotice />} />
+            <Route path='chatbot' element={<ChatBot />} />
           </Route>
 
           {/* Teacher Routes */}

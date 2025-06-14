@@ -3,8 +3,8 @@ const Teacher = require("../models/teacherModel");
 const Student = require("../models/studentModel");
 
 // Define exam types that only schools can create
-const SCHOOL_ONLY_EXAM_TYPES = ['Mid Term', 'Final Term', 'Annual Exam', 'Semester Exam'];
-const TEACHER_ALLOWED_EXAM_TYPES = ['Quiz', 'Class Test', 'Pop Quiz', 'Unit Test', 'Weekly Test', 'Slip Test'];
+const SCHOOL_ONLY_EXAM_TYPES = ['Mid Term', 'Unit Test','Final Term', 'Annual Exam', 'Semester Exam'];
+const TEACHER_ALLOWED_EXAM_TYPES = ['Quiz', 'Class Test', 'Weekly Test', 'Slip Test'];
 
 // Helper function to check if exam is completed
 function isExamCompleted(examDate, endTime) {
@@ -36,7 +36,7 @@ module.exports = {
       if (role === 'TEACHER' && SCHOOL_ONLY_EXAM_TYPES.includes(examType)) {
         return res.status(403).json({
           success: false,
-          message: `Teachers cannot create ${examType} exams. Only Quiz, Class Test, Pop Quiz, Unit Test, Weekly Test, and Slip Test are allowed.`
+          message: `Teachers cannot create ${examType} exams. Only Quiz, Class Test, Weekly Test, and Slip Test are allowed.`
         });
       }
 

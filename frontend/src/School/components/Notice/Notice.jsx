@@ -459,7 +459,7 @@ const Notice = () => {
             {(userInfo.role === "SCHOOL" || userInfo.role === "TEACHER") && (
               <button
                 onClick={openCreateModal}
-                className="flex items-center gap-2 px-3 py-2 sm:px-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded hover:from-orange-600 hover:to-red-700 transition-all duration-300 shadow-lg text-sm flex-1 sm:flex-none justify-center"
+                className="flex items-center gap-2 px-3 py-2 sm:px-4 bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded hover:from-orange-600 hover:to-red-700 transition-all duration-300 shadow-lg text-sm flex-1 sm:flex-none justify-center"
               >
                 <Plus className="w-4 h-4" />
                 <span className="sm:hidden">Create</span>
