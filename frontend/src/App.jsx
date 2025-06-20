@@ -83,8 +83,8 @@ const App = () => {
             <Route path='attendance/:id' element={<StudentAttendance />} />
             <Route path='examination' element={<StudentExamination />} />
             <Route path='notice' element={<StudentNotice />} />
-            <Route path='chatbot' element={<ChatBot />} />
           </Route>
+            <Route path='chatbot' element={<ChatBot />} />
 
           {/* Teacher Routes */}
           <Route path='/teacher' element={<ProtectedRoute allowedRoles={['TEACHER']}><Teacher /></ProtectedRoute>}>

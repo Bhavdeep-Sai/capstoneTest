@@ -99,6 +99,8 @@ const Schedule = () => {
   const [view, setView] = useState('week');
   const [date, setDate] = useState(new Date());
   const [error, setError] = useState("");
+  const [calendarViews, setCalendarViews] = useState(['month', 'week', 'day', 'agenda']);
+  const [currentView, setCurrentView] = useState('day');
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -236,46 +238,39 @@ const Schedule = () => {
   };
 
   const getEventStyle = (event) => {
-    const baseStyle = {
-      borderRadius: '8px',
-      border: 'none',
-      fontWeight: '600',
-      fontSize: isMobile ? '0.8rem' : '0.9rem',
-      padding: '6px 10px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-      color: '#ffffff',
-      textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-    };
-
+    // Style based on event type and status
     if (event.eventType === 'exam') {
       return {
-        ...baseStyle,
-        background: 'linear-gradient(135deg, #fc8181 0%, #e53e3e 100%)',
-        border: '2px solid #feb2b2',
-        fontWeight: '700',
+        backgroundColor: '#e53e3e',
+        color: 'white',
+        border: 'none',
+        boxShadow: '0 2px 4px rgba(229, 62, 62, 0.2)'
       };
     }
 
+    // Style based on event status
     if (event.status === 'completed') {
       return {
-        ...baseStyle,
-        background: 'linear-gradient(135deg, #a0aec0 0%, #718096 100%)',
-        border: '2px solid #cbd5e0',
-        opacity: 0.9,
+        backgroundColor: '#073B3A',
+        opacity: 0.8,
+        border: 'none',
+        borderRadius: '8px',
+        boxShadow: '0 2px 4px rgba(104, 211, 145, 0.2)'
       };
     } else if (event.status === 'cancelled') {
       return {
-        ...baseStyle,
-        background: 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)',
-        border: '2px solid #fc8181',
+        backgroundColor: '#919191',
+        color: '#1e1e1e',
         textDecoration: 'line-through',
+        border: 'none',
+        borderRadius: '2px',
+        boxShadow: '0 2px 4px rgba(252, 129, 129, 0.2)'
       };
     }
-
     return {
-      ...baseStyle,
-      background: 'linear-gradient(135deg, #63b3ed 0%, #4299e1 100%)',
-      border: '2px solid #90cdf4',
+      backgroundColor: '#93C572',
+      border: 'none',
+      boxShadow: '0 2px 4px rgba(66, 153, 225, 0.2)'
     };
   };
 
@@ -321,194 +316,7 @@ const Schedule = () => {
     </Box>
   );
 
-  const calendarStyle = {
-    height: isMobile ? 500 : isTablet ? 600 : 700,
-    backgroundColor: '#1a202c',
-    borderRadius: '12px',
-    padding: isMobile ? '12px' : '24px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-    border: '1px solid #2d3748',
-    color: '#f7fafc',
 
-    '& .rbc-calendar': {
-      fontFamily: theme.typography.fontFamily,
-      color: '#f7fafc',
-    },
-
-    // Header styling
-    '& .rbc-header': {
-      backgroundColor: '#2d3748',
-      borderBottom: '2px solid #4a5568',
-      padding: '14px 10px',
-      fontWeight: '700',
-      color: '#f7fafc',
-      fontSize: isMobile ? '0.9rem' : '1rem',
-      textAlign: 'center',
-    },
-
-    // Time header styling
-    '& .rbc-time-header': {
-      borderBottom: '2px solid #4a5568',
-      backgroundColor: '#1a202c',
-    },
-
-    // Time slots
-    '& .rbc-timeslot-group': {
-      borderBottom: '1px solid #2d3748',
-      backgroundColor: '#1a202c',
-    },
-
-    '& .rbc-time-slot': {
-      borderTop: '1px solid #2d3748',
-      color: '#a0aec0',
-    },
-
-    '& .rbc-day-slot .rbc-time-slot': {
-      borderTop: '1px solid #2d3748',
-    },
-
-    // Time gutter
-    '& .rbc-time-gutter': {
-      backgroundColor: '#1a202c',
-      color: '#a0aec0',
-      fontWeight: '500',
-    },
-
-    '& .rbc-time-gutter .rbc-timeslot-group': {
-      borderRight: '1px solid #4a5568',
-    },
-
-    // Today highlight
-    '& .rbc-today': {
-      backgroundColor: '#2a4365',
-    },
-
-    // Toolbar
-    '& .rbc-toolbar': {
-      marginBottom: '20px',
-      flexWrap: 'wrap',
-      gap: '8px',
-      color: '#f7fafc',
-    },
-
-    '& .rbc-toolbar button': {
-      backgroundColor: '#2d3748',
-      border: '2px solid #4a5568',
-      borderRadius: '10px',
-      padding: '10px 18px',
-      fontWeight: '600',
-      color: '#f7fafc',
-      transition: 'all 0.3s ease',
-      fontSize: isMobile ? '0.8rem' : '0.9rem',
-    },
-
-    '& .rbc-toolbar button:hover': {
-      backgroundColor: '#4a5568',
-      borderColor: '#63b3ed',
-      transform: 'translateY(-1px)',
-      boxShadow: '0 4px 12px rgba(99, 179, 237, 0.3)',
-    },
-
-    '& .rbc-toolbar button.rbc-active': {
-      backgroundColor: '#4299e1',
-      borderColor: '#4299e1',
-      color: 'white',
-      boxShadow: '0 4px 12px rgba(66, 153, 225, 0.4)',
-    },
-
-    // Month view
-    '& .rbc-month-view': {
-      border: '1px solid #4a5568',
-      borderRadius: '10px',
-      overflow: 'hidden',
-      backgroundColor: '#1a202c',
-    },
-
-    '& .rbc-date-cell': {
-      padding: isMobile ? '6px' : '10px',
-      textAlign: 'right',
-      fontSize: isMobile ? '0.8rem' : '0.9rem',
-      fontWeight: '600',
-      color: '#f7fafc',
-    },
-
-    '& .rbc-off-range-bg': {
-      backgroundColor: '#171923',
-    },
-
-    // Event container
-    '& .rbc-event': {
-      borderRadius: '8px',
-      border: 'none',
-      padding: '2px',
-      margin: '1px',
-    },
-
-    // Month row
-    '& .rbc-month-row': {
-      borderBottom: '1px solid #2d3748',
-    },
-
-    // Date cell
-    '& .rbc-date-cell > a': {
-      color: '#f7fafc',
-      textDecoration: 'none',
-    },
-
-    '& .rbc-date-cell.rbc-off-range > a': {
-      color: '#4a5568',
-    },
-
-    // Week/Day view
-    '& .rbc-time-content': {
-      backgroundColor: '#1a202c',
-      border: '1px solid #2d3748',
-      borderRadius: '8px',
-    },
-
-    '& .rbc-time-column': {
-      backgroundColor: '#1a202c',
-    },
-
-    '& .rbc-day-slot': {
-      backgroundColor: '#1a202c',
-    },
-
-    // Current time indicator
-    '& .rbc-current-time-indicator': {
-      backgroundColor: '#63b3ed',
-      height: '2px',
-    },
-
-    // All day events
-    '& .rbc-allday-cell': {
-      backgroundColor: '#2d3748',
-      color: '#f7fafc',
-    },
-
-    // Agenda view
-    '& .rbc-agenda-view': {
-      backgroundColor: '#1a202c',
-      color: '#f7fafc',
-    },
-
-    '& .rbc-agenda-view table': {
-      backgroundColor: '#1a202c',
-    },
-
-    '& .rbc-agenda-view tbody > tr > td': {
-      borderTop: '1px solid #2d3748',
-      color: '#f7fafc',
-    },
-
-    '& .rbc-agenda-time-cell': {
-      color: '#a0aec0',
-    },
-
-    '& .rbc-agenda-event-cell': {
-      color: '#f7fafc',
-    },
-  };
 
   const statsData = [
     {
@@ -534,10 +342,27 @@ const Schedule = () => {
     },
   ];
 
+  useEffect(() => {
+    const updateViews = () => {
+      const isMobile = window.innerWidth <= 768;
+      const newViews = isMobile ? ['day', 'agenda'] : ['month', 'week', 'day', 'agenda'];
+      setCalendarViews(newViews);
+
+      // If current view is not valid for new view list, fallback to first available
+      if (!newViews.includes(currentView)) {
+        setCurrentView(newViews[0]);
+      }
+    };
+
+    updateViews();
+    window.addEventListener('resize', updateViews);
+    return () => window.removeEventListener('resize', updateViews);
+  }, [currentView]);
+
   return (
     <ThemeProvider theme={darkTheme}>
-      <Box sx={{ backgroundColor: '#0f1419', minHeight: '100vh', pb: 4 }}>
-        <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Box sx={{minHeight: '100vh', pb: 4 }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 2, md: 2 } }}>
           {/* Header Section */}
           <Paper
             elevation={0}
@@ -759,67 +584,212 @@ const Schedule = () => {
                 </Typography>
               </Box>
             ) : selectedClass ? (
-              <Box sx={calendarStyle}>
+              <Box>
+                <Box
+                  sx={{
+                    '& .rbc-calendar': {
+                      fontFamily: 'inherit',
+                      backgroundColor: '#292929',
+                      color: '#facc15',
+                    },
+                    '& .rbc-toolbar': {
+                      padding: '16px',
+                      background: 'linear-gradient(135deg, #ff7c17 0%, #c9694f 100%)',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '12px',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      color: '#1e1e1e',
+                    },
+                    '& .rbc-toolbar-label': {
+                      fontSize: '1.5rem',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                    },
+                    '& .rbc-toolbar button': {
+                      borderRadius: '6px',
+                      border: 'none',
+                      backgroundColor: '#1e1e1e',
+                      color: '#ff7c17',
+                      fontWeight: 600,
+                      padding: '8px 14px',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        backgroundColor: '#1e1e1e',
+                        color: 'white',
+                      },
+                      '&.rbc-active': {
+                        backgroundColor: 'rgb(41, 41, 41, 0.5)',
+                        borderRadius: '2px',
+                        color: '#fff',
+                        boxShadow: "none",
+                      },
+                    },
+                    '& .rbc-btn-group': {
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '6px',
+                    },
+                    '& .rbc-header': {
+                      backgroundColor: '#111827',
+                      padding: '10px 6px',
+                      fontWeight: 600,
+                      fontSize: '0.85rem',
+                      textTransform: 'uppercase',
+                      textAlign: 'center',
+                      color: '#facc15',
+                    },
+                    '& .rbc-time-view .rbc-time-gutter': {
+                      backgroundColor: '#111827',
+                      color: '#facc15',
+                      fontSize: '0.85rem',
+                    },
+                    '& .rbc-today': {
+                      backgroundColor: 'rgba(141, 83, 138, 0.2)',
+                    },
+                    '& .rbc-current-time-indicator': {
+                      backgroundColor: '#f97316',
+                      height: '2px',
+                    },
+                    '& .rbc-event': {
+                      backgroundColor: '#fcd34d',
+                      borderRadius: '2px',
+                      color: '#1e293b',
+                      padding: '4px 8px',
+                      fontWeight: 500,
+                      border: '1px solid #fbbf24',
+                      fontSize: '0.875rem',
+                    },
+                    '& .rbc-events-container': {
+                      margin: 0,
+                    },
+                    '& .rbc-event.rbc-selected': {
+                      backgroundColor: '#f97316',
+                      color: '#fff',
+                    },
+                    '& .rbc-day-bg + .rbc-day-bg': {
+                      borderLeft: '1px solid #374151',
+                    },
+                    '& .rbc-agenda-view': {
+                      color: '#1e1e1e',
+                    },
+                    '& .rbc-agenda-time-cell, & .rbc-agenda-date-cell': {
+                      borderRight: '1px solid #1e1e1e',
+                      padding: '8px',
+                    },
+                    '& .rbc-agenda-event-cell': {
+                      color: '#1e1e1e',
+                      fontWeight: 500,
+                      padding: '8px',
+                    },
+                    '& .rbc-allday-cell': {
+                      display: 'none',
+                    },
+                    '& .rbc-time-header-content': {
+                      borderLeft: 'none',
+                    },
+                    '& .rbc-time-header-gutter': {
+                      backgroundColor: '#111827',
+                      color: '#facc15',
+                    },
+                    '& .rbc-date-cell': {
+                      padding: '4px',
+                    },
+                    '& .rbc-show-more': {
+                      color: '#fcd34d',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                    },
+                    '& .rbc-off-range-bg': {
+                      color: '#fcd34d',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      backgroundColor: '#1e293b',
+                    },
+                    '& .rbc-time-slot': {
+                      minHeight: '60px',
+                      display: "flex",
+                      alignItems: "end",
+                      justifyContent: "center"
+                    },
+
+                    '& .rbc-time-content': {
+                      width: '100%', // Ensures the content fills the available space
+                      display: 'flex', // Required to align gutter and events correctly
+                    },
+
+                    '& .rbc-time-gutter': {
+                      width: '150px', // Sets the width of the time gutter
+                    },
+
+                    '& .rbc-time-gutter .rbc-time-column': {
+                      width: '100%', // Ensures inner column uses full width of gutter
+                    },
+
+                    // Responsive Enhancements
+                    '@media (max-width: 768px)': {
+                      '& .rbc-toolbar': {
+                        flexDirection: 'column',
+                        alignItems: 'flex-center',
+                        gap: '8px',
+                      },
+                      '& .rbc-toolbar-label': {
+                        fontSize: '1.2rem',
+                      },
+                      '& .rbc-toolbar button': {
+                        padding: '6px 12px',
+                        fontSize: '0.85rem',
+                      },
+                      '& .rbc-header': {
+                        fontSize: '0.75rem',
+                      },
+                    },
+                  }}
+                >
+                  <Calendar
+                    localizer={localizer}
+                    events={events}
+                    date={date}
+                    onNavigate={handleNavigate}
+                    view={currentView}
+                    onView={setCurrentView}
+                    views={calendarViews}
+                    step={60}
+                    timeslots={1}
+                    startAccessor="start"
+                    endAccessor="end"
+                    min={new Date(0, 0, 0, 7, 0, 0)}
+                    max={new Date(0, 0, 0, 19, 30, 0)}
+                    style={{ height: '80vh', width: '100%' }}
+                    components={{
+                      event: EventComponent,
+                    }}
+                    eventPropGetter={(event) => ({
+                      style: getEventStyle(event),
+                    })}
+                  />
+                </Box>
+
                 {events.length > 0 && (
-                  <Box sx={{ mb: 3, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <Chip
-                      label="Regular Classes"
-                      sx={{
-                        backgroundColor: '#4299e1',
-                        color: 'white',
-                        fontWeight: '600',
-                        border: '1px solid #63b3ed',
-                      }}
-                      size={isMobile ? "small" : "medium"}
-                    />
-                    <Chip
-                      label="Examinations"
-                      sx={{
-                        backgroundColor: '#fc8181',
-                        color: 'white',
-                        fontWeight: '600',
-                        border: '1px solid #feb2b2',
-                      }}
-                      size={isMobile ? "small" : "medium"}
-                    />
-                    <Chip
-                      label="Completed"
-                      sx={{
-                        backgroundColor: '#a0aec0',
-                        color: 'white',
-                        fontWeight: '600',
-                        border: '1px solid #cbd5e0',
-                      }}
-                      size={isMobile ? "small" : "medium"}
-                    />
-                  </Box>
+                  <>
+                    <div className='flex flex-wrap gap-4 p-4 mt-4'>
+                      <div className='flex items-center gap-2'>
+                        <div className='w-5 h-5 bg-[#93c572] rounded-full' />
+                        <p>Regular Classes</p>
+                      </div>
+                      <div className='flex items-center gap-2'>
+                        <div className='w-5 h-5 bg-[#e53e3e] rounded-full' />
+                        <p>Examination</p>
+                      </div>
+                      <div className='flex items-center gap-2'>
+                        <div className='w-5 h-5 bg-[#919191] rounded-full' />
+                        <p>Cancelled</p>
+                      </div>
+                    </div>
+                  </>
                 )}
-                <Calendar
-                  localizer={localizer}
-                  events={events}
-                  date={date}
-                  onNavigate={handleNavigate}
-                  view={view}
-                  onView={setView}
-                  views={['month', 'week', 'day', 'agenda']}
-                  step={30}
-                  timeslots={1}
-                  startAccessor="start"
-                  endAccessor="end"
-                  min={new Date(0, 0, 0, 7, 0, 0)}
-                  max={new Date(0, 0, 0, 22, 0, 0)}
-                  style={{ height: isMobile ? 500 : isTablet ? 600 : 700 }}
-                  components={{
-                    event: EventComponent,
-                  }}
-                  eventPropGetter={() => ({ style: { border: 'none' } })}
-                  formats={{
-                    timeGutterFormat: (date, culture, localizer) =>
-                      localizer.format(date, isMobile ? 'HH:mm' : 'h:mm A', culture),
-                    dayFormat: (date, culture, localizer) =>
-                      localizer.format(date, isMobile ? 'ddd M/D' : 'dddd M/D', culture),
-                  }}
-                />
+
               </Box>
             ) : (
               <Box

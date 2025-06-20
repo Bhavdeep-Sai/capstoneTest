@@ -186,10 +186,12 @@ export default function Dashboard() {
 
   const fetchNotices = async () => {
     try {
-      const res = await axios.get(`${baseApi}/notice/important`);
-      setNotices(res.data.data);
+      const res = await axios.get(`${baseApi}/notice/active`);
+      const notices = res.data?.data;
+      console.log("Notices:", notices);
+      setNotices(Array.isArray(notices) ? notices.filter(notice => notice.isImportant) : []);
     } catch (error) {
-      console.log("Error in Fetching Notices:", error);
+      console.error("Error in Fetching Notices:", error);
     }
   };
 
@@ -260,46 +262,16 @@ export default function Dashboard() {
   };
 
   return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
+    <>
       <div style={{
         position: 'relative',
         minHeight: '100vh',
-        background: '#0a0a0a',
       }}>
-        {/* Animated background elements - hide on mobile for performance */}
-        {!isMobile && (
-          <>
-            <div style={{
-              position: 'absolute',
-              top: '10%',
-              left: '10%',
-              width: isTablet ? '150px' : '200px',
-              height: isTablet ? '150px' : '200px',
-              background: 'radial-gradient(circle, rgba(255, 112, 67, 0.1) 0%, transparent 70%)',
-              borderRadius: '50%',
-              animation: 'float 6s ease-in-out infinite',
-              zIndex: 0,
-            }} />
-            <div style={{
-              position: 'absolute',
-              top: '60%',
-              right: '10%',
-              width: isTablet ? '100px' : '150px',
-              height: isTablet ? '100px' : '150px',
-              background: 'radial-gradient(circle, rgba(255, 87, 34, 0.08) 0%, transparent 70%)',
-              borderRadius: '50%',
-              animation: 'float 8s ease-in-out infinite reverse',
-              zIndex: 0,
-            }} />
-          </>
-        )}
-
-        <div style={{...containerStyles, position: 'relative', zIndex: 10}}>
+        <div style={{ ...containerStyles, position: 'relative', zIndex: 10 }}>
           {/* Header */}
           <div style={headerStyles}>
-            <Typography 
-              variant={isMobile ? "h4" : isTablet ? "h3" : "h3"} 
+            <Typography
+              variant={isMobile ? "h4" : isTablet ? "h3" : "h3"}
               style={{
                 color: '#ffab91',
                 fontWeight: 'bold',
@@ -322,9 +294,9 @@ export default function Dashboard() {
                 {studentData.name || 'Student'}
               </span>
             </Typography>
-            <Typography 
-              variant={isMobile ? "body1" : "h6"} 
-              style={{ 
+            <Typography
+              variant={isMobile ? "body1" : "h6"}
+              style={{
                 color: '#ffab91',
                 fontSize: isMobile ? '1rem' : undefined,
               }}
@@ -336,10 +308,10 @@ export default function Dashboard() {
           {/* Profile and Data Section */}
           <div style={mainGridStyles}>
             {/* Student Details Table */}
-            <TableContainer 
-              component={Paper} 
-              style={{ 
-                borderRadius: isMobile ? '12px' : '20px', 
+            <TableContainer
+              component={Paper}
+              style={{
+                borderRadius: isMobile ? '12px' : '20px',
                 overflow: 'hidden',
                 order: 1,
               }}
@@ -356,8 +328,8 @@ export default function Dashboard() {
               }}
                 onClick={togglePersonalInfoExpansion}
               >
-                <Typography 
-                  variant={isMobile ? "h6" : "h5"} 
+                <Typography
+                  variant={isMobile ? "h6" : "h5"}
                   style={{
                     color: '#ff7043',
                     fontWeight: 'bold',
@@ -506,7 +478,7 @@ export default function Dashboard() {
                 width: isMobile ? '200px' : isTablet ? '280px' : '100%',
                 maxWidth: isMobile ? '200px' : isTablet ? '300px' : '450px',
                 height: 'fit-content',
-                justifyContent:"center",
+                justifyContent: "center",
               }}>
                 <img
                   src={studentData.studentImg}
@@ -529,15 +501,15 @@ export default function Dashboard() {
           {/* Calendar and Notices Container */}
           <div style={bottomGridStyles}>
             {/* Calendar Section */}
-            <Box 
-              component={Paper} 
-              style={{ 
-                padding: isMobile ? '1rem' : '1.5rem', 
+            <Box
+              component={Paper}
+              style={{
+                padding: isMobile ? '1rem' : '1.5rem',
                 borderRadius: isMobile ? '12px' : '20px',
               }}
             >
-              <Typography 
-                variant={isMobile ? "h6" : "h5"} 
+              <Typography
+                variant={isMobile ? "h6" : "h5"}
                 style={{
                   color: '#ff7043',
                   fontWeight: 'bold',
@@ -548,8 +520,8 @@ export default function Dashboard() {
               >
                 Calendar
               </Typography>
-              <div style={{ 
-                display: 'flex', 
+              <div style={{
+                display: 'flex',
                 justifyContent: 'center',
                 overflow: 'hidden',
               }}>
@@ -561,15 +533,15 @@ export default function Dashboard() {
             </Box>
 
             {/* Notices Section */}
-            <Box 
-              component={Paper} 
-              style={{ 
-                padding: isMobile ? '1rem' : '1.5rem', 
+            <Box
+              component={Paper}
+              style={{
+                padding: isMobile ? '1rem' : '1.5rem',
                 borderRadius: isMobile ? '12px' : '20px',
               }}
             >
-              <Typography 
-                variant={isMobile ? "h6" : "h5"} 
+              <Typography
+                variant={isMobile ? "h6" : "h5"}
                 style={{
                   color: '#ff7043',
                   fontWeight: 'bold',
@@ -581,8 +553,8 @@ export default function Dashboard() {
                 Latest Notices
               </Typography>
               {Array.isArray(notices) && notices.length > 0 ? (
-                <div style={{ 
-                  maxHeight: isMobile ? '250px' : '300px', 
+                <div style={{
+                  maxHeight: isMobile ? '250px' : '300px',
                   overflowY: 'auto',
                   paddingRight: isMobile ? '4px' : '8px',
                 }}>
@@ -598,8 +570,8 @@ export default function Dashboard() {
                       onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                       onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                     >
-                      <Typography 
-                        variant={isMobile ? "subtitle1" : "h6"} 
+                      <Typography
+                        variant={isMobile ? "subtitle1" : "h6"}
                         style={{
                           color: '#ff7043',
                           fontWeight: 'bold',
@@ -671,6 +643,7 @@ export default function Dashboard() {
           `}
         </style>
       </div>
-    </ThemeProvider>
+    </>
+
   );
 }

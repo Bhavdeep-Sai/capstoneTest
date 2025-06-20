@@ -509,7 +509,7 @@ const AttendanceDetails = () => {
           }
         }}
       >
-        <Container maxWidth="xl" sx={{ py: { xs: 3, sm: 4, md: 6 } }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 3, sm: 4, md: 3 } }}>
           <Fade in timeout={800}>
             <Box>
               {/* Header Section */}
@@ -632,7 +632,7 @@ const AttendanceDetails = () => {
                         icon={<CheckCircle />}
                         color={theme.palette.success.main}
                         subtitle="Present"
-                        progress={stats.presentPercentage}
+                        progress={parseFloat(stats.presentPercentage).toFixed(2)}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} lg={3}>
@@ -642,7 +642,7 @@ const AttendanceDetails = () => {
                         icon={<Cancel />}
                         color={theme.palette.error.main}
                         subtitle="Absent"
-                        progress={((stats.totalClasses - stats.presentCount) / stats.totalClasses) * 100}
+                        progress={parseFloat((((stats.totalClasses - stats.presentCount) / stats.totalClasses) * 100).toFixed(2))}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} lg={3}>
@@ -653,7 +653,7 @@ const AttendanceDetails = () => {
                         color={attendanceStatus.color}
                         subtitle={attendanceStatus.status}
                         trend={stats.presentPercentage >= 75 ? 5 : -3}
-                        progress={stats.presentPercentage}
+                        progress={parseFloat(stats.presentPercentage).toFixed(2)}
                       />
                     </Grid>
                   </Grid>

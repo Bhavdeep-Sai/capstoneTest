@@ -35,6 +35,7 @@ import { baseApi } from "../environment";
 import { useEffect } from "react";
 import ChatBot from "./Components/ChatBot/ChatBot";
 
+
 const drawerWidth = 240;
 
 const darkTheme = createTheme({
@@ -369,9 +370,9 @@ export default function Student() {
             maxWidth: "100%",
             padding: { xs: "8px", sm: "16px", md: "24px" },
           }}>
-            <ChatBot/>
             <Outlet />
           </Box>
+          <ChatBot/>
         </Box>
       </Box>
     </ThemeProvider>
